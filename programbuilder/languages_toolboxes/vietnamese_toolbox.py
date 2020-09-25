@@ -214,11 +214,13 @@ class VietnameseToolbox(LanguageToolbox):
                          if is_learnable_word(annotated_word["form"], annotated_word["posTag"])
                          }
 
-                    extracted_sentence = ExtractedSentence(
-                        full_sentence=full_sentence,
-                        full_sentence_traduction=full_sentence_traduction,
-                        learnable_words_to_start_stop_index_in_sentence=learnable_words_to_start_stop_index_in_sentence
-                    )
+                    if len(learnable_words_to_start_stop_index_in_sentence) > 0:
+                        extracted_sentence = ExtractedSentence(
+                            full_sentence=full_sentence,
+                            full_sentence_traduction=full_sentence_traduction,
+                            learnable_words_to_start_stop_index_in_sentence=learnable_words_to_start_stop_index_in_sentence
+                        )
+                        included.append(extracted_sentence)
 
-                    included.append(extracted_sentence)
+
         return ExtractedSentences(sentences=included)
