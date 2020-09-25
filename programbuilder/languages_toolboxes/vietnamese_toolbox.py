@@ -103,7 +103,7 @@ def find_word_indexes_in_line(line: str, annotated_sentences: List) -> List[List
                 print(line)
                 return None
             else:
-                end_index = start_index + len(word)
+                end_index = start_index + len(word) - 1
                 current_index_in_line = end_index
                 sentence_result.append((start_index, end_index))
     return result
