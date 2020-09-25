@@ -14,6 +14,7 @@ class ExactSentenceData:
 @dataclass
 class LearnableSentenceData:
     exact_sentence_to_data: Dict[str, ExactSentenceData]
+    count_in_corpus: int
 
 
 @dataclass
@@ -68,8 +69,11 @@ def build_program_data(language: str, language_toolbox: LanguageToolbox) -> Lang
 
             if learnable_sentence_repr not in learnable_sentence_to_data:
                 learnable_sentence_to_data[learnable_sentence_repr] = LearnableSentenceData(
-                    exact_sentence_to_data={}
+                    exact_sentence_to_data={},
+                    count_in_corpus=1
                 )
+            else:
+                learnable_sentence_to_data[learnable_sentence_repr].count_in_corpus += 1
 
             learnable_sentence_data: LearnableSentenceData = learnable_sentence_to_data[learnable_sentence_repr]
 
