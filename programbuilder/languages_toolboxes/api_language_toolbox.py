@@ -14,10 +14,16 @@ class LearnableWordsFrequencyList:
 
 
 @dataclass(frozen=True)
+class LearnableWordInSentence:
+    word: str
+    start_index: int
+    end_index: int
+
+
+@dataclass(frozen=True)
 class ExtractedSentence:
     full_sentence: str
-    full_sentence_traduction: str
-    learnable_words_to_start_stop_index_in_sentence: Dict[str, Tuple[int, int]]  # under standard format
+    learnable_words_in_sentence: [LearnableWordInSentence]  # under standard format
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from languages_toolboxes.api_language_toolbox import LanguageToolbox, LearnableWordsFrequencyList, ExtractedSentences, \
-    ExtractedSentence
+    ExtractedSentence, LearnableWordInSentence
 from typing import List, Dict, Tuple
 from vncorenlp import VnCoreNLP
 
@@ -134,7 +134,6 @@ class AnnotatedLine:
 
 
 
-
 class VietnameseToolbox(LanguageToolbox):
 
     annotated_lines = Dict
@@ -201,24 +200,27 @@ class VietnameseToolbox(LanguageToolbox):
                 _, sentence_last_index = sentence_indexes[-1]
 
                 full_sentence: str = row[sentence_start_index:sentence_last_index]
-                full_sentence_traduction: str = ""
                 learnable_words_to_start_stop_index_in_sentence: Dict[str, Tuple[int, int]]
 
                 if any(is_exclude_word(annotated_word["form"], annotated_word["posTag"]) for annotated_word in annotated_sentence):
                     excluded.append(full_sentence)
                     continue
                 else:
-                    learnable_words_to_start_stop_index_in_sentence =\
-                        {to_standard_word(annotated_word["form"]): word_indexes
-                         for word_indexes, annotated_word in zip(sentence_indexes, annotated_sentence)
-                         if is_learnable_word(annotated_word["form"], annotated_word["posTag"])
-                         }
 
-                    if len(learnable_words_to_start_stop_index_in_sentence) > 0:
+                    learnable_words_in_sentence = [
+                        LearnableWordInSentence(
+                            word=to_standard_word(annotated_word["form"]),
+                            start_index= word_indexes[0],
+                            end_index= word_indexes[1],
+                        )
+                        for word_indexes, annotated_word in zip(sentence_indexes, annotated_sentence)
+                        if is_learnable_word(annotated_word["form"], annotated_word["posTag"])
+                    ]
+
+                    if len(learnable_words_in_sentence) > 0:
                         extracted_sentence = ExtractedSentence(
                             full_sentence=full_sentence,
-                            full_sentence_traduction=full_sentence_traduction,
-                            learnable_words_to_start_stop_index_in_sentence=learnable_words_to_start_stop_index_in_sentence
+                            learnable_words_in_sentence=learnable_words_in_sentence
                         )
                         included.append(extracted_sentence)
 
