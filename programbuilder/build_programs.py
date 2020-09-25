@@ -21,14 +21,14 @@ def build_program(language: str, language_toolbox: LanguageToolbox):
 
         frequency_list: LearnableWordsFrequencyList = language_toolbox.extract_learnable_words()
 
-        sentences: ExtractedSentences = language_toolbox.extract_learnable_sentences()
+        extracted_sentences: ExtractedSentences = language_toolbox.extract_learnable_sentences()
         word_to_position = {freq_word.word: index for index,freq_word in enumerate(frequency_list.sorted_words)}
 
         word_to_sentences = {word.word: [] for word in frequency_list.sorted_words}
 
-        for sentence in sentences.sentences:
+        for sentence in extracted_sentences.sentences:
             learnable_words = sentence.learnable_words_to_start_stop_index_in_sentence.keys()
-            max_word_index = 0
+            max_word_index = -1
             less_frequent_word_in_sentence: str = ""
             for word in learnable_words:
                 current_word_index = word_to_position[word]
