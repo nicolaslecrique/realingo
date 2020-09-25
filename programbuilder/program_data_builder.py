@@ -36,7 +36,7 @@ def build_program_data(language: str, language_toolbox: LanguageToolbox) -> Lang
         print("start read lines")
         lines: List[str] = open_subtitles_file.readlines()
         print("end read lines")
-        lines = lines[:5000] # for dev
+        lines = lines[:5000]  # for dev
         language_toolbox.init(lines)
 
         frequency_list: LearnableWordsFrequencyList = language_toolbox.extract_learnable_words()

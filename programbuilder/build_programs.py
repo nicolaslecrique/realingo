@@ -1,20 +1,25 @@
 from dataclasses import dataclass
 from typing import Dict
+import json
 
 from languages_toolboxes.vietnamese_toolbox import VietnameseToolbox
+from program_builder import build_program, LanguageProgram
 from program_data_builder import build_program_data, LanguageProgramData, LearnableWordData, LearnableSentenceData, \
     ExactSentenceData
 
 
-@dataclass(frozen=True)
-class LanguageProgram:
-    pass
-
-
 program_data: LanguageProgramData = build_program_data("vietnamese", VietnameseToolbox())
 
+program: LanguageProgram = build_program(program_data, 5000, 50)
+
+print("start dump")
+with open("temp/program_vietnamese.json", 'w') as dump_file_tokenized:
+    json.dump(program, dump_file_tokenized, indent=2)
+print("end dump")
+
+
 word_index = 0
-max_word_index = 2000
+max_word_index = 500
 
 list_words = list(program_data.learnable_word_to_data.items())
 sorted_word_list = sorted(list_words, key= lambda pair: -pair[1].count_in_corpus)
@@ -29,7 +34,7 @@ for word, word_data in sorted_word_list:
     print("=============")
 
     sentence_index = 0
-    max_sentence_index = 20
+    max_sentence_index = 10
     word_index+=1
     if word_index == max_word_index:
         break
