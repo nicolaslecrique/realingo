@@ -199,7 +199,7 @@ class VietnameseToolbox(LanguageToolbox):
                 sentence_start_index, _ = sentence_indexes[0]
                 _, sentence_last_index = sentence_indexes[-1]
 
-                full_sentence: str = row[sentence_start_index:sentence_last_index]
+                full_sentence: str = row[sentence_start_index:sentence_last_index+1]
                 learnable_words_to_start_stop_index_in_sentence: Dict[str, Tuple[int, int]]
 
                 if any(is_exclude_word(annotated_word["form"], annotated_word["posTag"]) for annotated_word in annotated_sentence):
