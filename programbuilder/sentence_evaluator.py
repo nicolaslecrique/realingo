@@ -75,8 +75,8 @@ class SentenceEvaluatorTwo:
 
         with torch.no_grad():
 
-            #tokenized_sentence = self.tokenizer.tokenize(sentence.sentence)
-            #tokenized_words = [self.tokenizer.tokenize(word) for word in sentence.words]
+            tokenized_sentence = self.tokenizer.tokenize(sentence.sentence)
+            tokenized_words = [self.tokenizer.tokenize(word) for word in sentence.words]
 
             encoded_words = [self.tokenizer.encode(word, add_special_tokens=False, return_tensors="pt")[0] for word in sentence.words]
             encoded_sentence: torch.tensor = self.tokenizer.encode(sentence.sentence, return_tensors="pt")[0]
@@ -107,7 +107,7 @@ class SentenceEvaluatorTwo:
 s = SentenceEvaluatorTwo()
 
 
-sentences = [
+sentences_ = [
     Sentence(sentence="Le bébé a fait caca.", words=["Le", "bébé", "a", "fait", "caca"]),
     Sentence(sentence="Le bébé a fait caca dans sa couche.", words=["Le", "bébé", "a", "fait", "caca", 'dans', 'sa', 'couche']),
     Sentence(sentence="Le bébé fait caca dans sa couche.", words=["Le", "bébé", "fait", "caca", 'dans', 'sa', 'couche']),
@@ -121,9 +121,23 @@ sentences = [
 ]
 
 
-sentences_ = [
+sentences_viet = [
+    Sentence(sentence="Đó là truyền thống gia đình.", words=["Đó", "là", "truyền thống", "gia đình"]),
+    Sentence(sentence="Đó là một truyền thống gia đình.", words=["Đó", "là", "một", "truyền thống", "gia đình"]),
+    Sentence(sentence="Đó là truyền thống.", words=["Đó", "là", "truyền thống"]),
+    Sentence(sentence="Hãy tôn trọng truyền thống.", words=["Hãy", "tôn trọng", "truyền thống"]),
+]
+
+
+sentences__ = [
     Sentence(sentence="Le bébé a fait caca.", words=["le", "bébé", "a", "fait", "caca"]),
 
+]
+
+sentences = [
+    Sentence(sentence="Il fait beau aujourd'hui.", words=["Il", 'fait', 'beau', "aujourd'hui"]),
+    Sentence(sentence="Il fait un beau temps aujourd'hui.", words=["Il", 'fait', 'un', 'beau', 'temps', "aujourd'hui"]),
+    Sentence(sentence="Il est beau aujourd'hui.", words=["Il", 'est', 'beau', "aujourd'hui"]),
 ]
 
 #proba = s.compute_sentence_proba(sentences)
