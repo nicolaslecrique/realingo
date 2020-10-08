@@ -18,6 +18,11 @@ class SentenceEvaluationResult:
     sentence_proba: float
     words_proba: [np.ndarray]
 
+
+
+# TODO: refacto to not give indexes bounds but all token indexes that should be masked
+# Will allow to test more things
+
 class SentenceEvaluatorTwo:
 
     def __init__(self):
@@ -25,7 +30,7 @@ class SentenceEvaluatorTwo:
         self.model: XLMRobertaForMaskedLM = AutoModelForMaskedLM.from_pretrained("xlm-roberta-large")
 
     @staticmethod
-    def _extract_words_indexes_in_sentence(encoded_sentence: torch.tensor, encoded_words: [torch.tensor]) -> List[Tuple[int, int]]:
+    def _extract_mask_indexes_in_sentence(encoded_sentence: torch.tensor, encoded_words: [torch.tensor]) -> List[np.ndarray]:
 
         indexes = []
         size_encoded_sentence = encoded_sentence.shape[0]
@@ -35,39 +40,37 @@ class SentenceEvaluatorTwo:
             for idx_in_sentence in range(current_start_idx_in_sentence, size_encoded_sentence):
                 end_index = idx_in_sentence + size_encoded_word
                 if torch.equal(encoded_sentence[idx_in_sentence:end_index], encoded_word):
-                    indexes.append((idx_in_sentence, end_index))
+                    indexes.append(np.arange(idx_in_sentence, end_index, dtype=np.int))
                     current_start_idx_in_sentence = end_index
                     break
         if len(indexes) != len(encoded_words):
             raise Exception("problem with sentence")
         return indexes
 
-    def _build_masked_sentences(self, encoded_sentence: torch.tensor, mask_indexes: List[Tuple[int,int]]) -> torch.tensor:
+    def _build_masked_sentences(self, encoded_sentence: torch.tensor, mask_indexes: List[np.ndarray]) -> torch.tensor:
         encoded_sentence_for_masks = encoded_sentence.repeat(len(mask_indexes), 1)
-        for idx_word, (min_index, max_index) in enumerate(mask_indexes):
-            encoded_sentence_for_masks[idx_word, min_index:max_index] = self.tokenizer.mask_token_id
+        for idx_mask_set, masks_idxes in enumerate(mask_indexes):
+            encoded_sentence_for_masks[idx_mask_set, masks_idxes] = self.tokenizer.mask_token_id # fancy indexing
         return encoded_sentence_for_masks
 
     @staticmethod
     def _extract_log_proba_world_tensor_from_model_result(
             model_result_log_probs_by_word: torch.tensor, # Tensor(nb_words, nb_tokens_in_sentence, nb_tokens_in_dict)
-            min_max_mask_index_by_word: List[Tuple[int,int]],
-            target_tokens_by_word: List[torch.tensor]) -> np.ndarray:
+            mask_indexes: List[np.ndarray],
+            sentence_tokens: torch.tensor) -> np.ndarray:
 
-        log_proba_by_word = np.empty(len(min_max_mask_index_by_word))
+        log_proba_mask_set = np.empty(len(mask_indexes))
+        for mask_set_idx, masks_indexes in enumerate(mask_indexes):
 
-        for word_idx, (min_max_mask_index_current_word, target_tokens_current_word) in enumerate(zip(min_max_mask_index_by_word, target_tokens_by_word)):
+            mask_set_log_prob = 0.0
+            expected_tokens = sentence_tokens[masks_indexes]
+            nb_token = masks_indexes.size
+            for mask_index, target_token in zip(masks_indexes, expected_tokens):
+                mask_set_log_prob += model_result_log_probs_by_word[mask_set_idx, mask_index, target_token]
+            mask_set_log_prob /= nb_token
 
-            word_log_prob = 0.0
-            min_token_index = min_max_mask_index_current_word[0]
-            max_token_index = min_max_mask_index_current_word[1]
-            nb_token = max_token_index - min_token_index
-            for mask_index, target_token in zip(range(min_token_index, max_token_index), target_tokens_current_word):
-                word_log_prob += model_result_log_probs_by_word[word_idx, mask_index, target_token]
-            word_log_prob /= nb_token
-
-            log_proba_by_word[word_idx] = word_log_prob
-        return log_proba_by_word
+            log_proba_mask_set[mask_set_idx] = mask_set_log_prob
+        return log_proba_mask_set
 
 
     # return array of size nb_sentences, each row contains a numpy array of size nb_words_in_sentence with log_proba in each cell
@@ -81,11 +84,11 @@ class SentenceEvaluatorTwo:
             encoded_words = [self.tokenizer.encode(word, add_special_tokens=False, return_tensors="pt")[0] for word in sentence.words]
             encoded_sentence: torch.tensor = self.tokenizer.encode(sentence.sentence, return_tensors="pt")[0]
 
-            min_max_token_indexes_by_word: List[Tuple[int,int]] = self._extract_words_indexes_in_sentence(encoded_sentence, encoded_words)
+            min_max_token_indexes_by_word: List[np.ndarray] = self._extract_mask_indexes_in_sentence(encoded_sentence, encoded_words)
             encoded_sentence_for_masks: torch.tensor = self._build_masked_sentences(encoded_sentence, min_max_token_indexes_by_word)
             model_result: torch.tensor = self.model(encoded_sentence_for_masks)[0]
             model_result_log_probs = torch.nn.functional.log_softmax(model_result, dim=2)
-            log_proba_by_word: np.ndarray = self._extract_log_proba_world_tensor_from_model_result(model_result_log_probs, min_max_token_indexes_by_word, encoded_words)
+            log_proba_by_word: np.ndarray = self._extract_log_proba_world_tensor_from_model_result(model_result_log_probs, min_max_token_indexes_by_word, encoded_sentence)
 
             return log_proba_by_word
 
@@ -135,6 +138,7 @@ sentences__ = [
 ]
 
 sentences = [
+    Sentence(sentence="Il fait beau.", words=["Il", 'fait', 'beau']),
     Sentence(sentence="Il fait beau aujourd'hui.", words=["Il", 'fait', 'beau', "aujourd'hui"]),
     Sentence(sentence="Il fait un beau temps aujourd'hui.", words=["Il", 'fait', 'un', 'beau', 'temps', "aujourd'hui"]),
     Sentence(sentence="Il est beau aujourd'hui.", words=["Il", 'est', 'beau', "aujourd'hui"]),
@@ -143,10 +147,7 @@ sentences = [
 #proba = s.compute_sentence_proba(sentences)
 #print(proba)
 for sentence in sentences:
-    try:
-        s.print_words_proba(sentence)
-    except Exception as e:
-        print(e)
+    s.print_words_proba(sentence)
     print("===")
 
 
