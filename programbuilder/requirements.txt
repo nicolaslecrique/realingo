@@ -1,1 +1,4 @@
-vncorenlp
+vncorenlp~=1.0.3
+dataclasses-json
+
+transformers~=3.3.0
