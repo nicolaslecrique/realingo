@@ -30,13 +30,13 @@ class LanguageProgramData:
     learnable_word_to_data: Dict[str,LearnableWordData]
 
 
-def build_program_data(language: str, language_toolbox: LanguageToolbox) -> LanguageProgramData:
+def build_program_data(language: str, language_toolbox: LanguageToolbox, nb_lines: int) -> LanguageProgramData:
 
     with open (f"programs_data/{language}/open_subtitles.txt", "r") as open_subtitles_file:
         print("start read lines")
         lines: List[str] = open_subtitles_file.readlines()
         print("end read lines")
-        lines = lines[:5000]  # for dev
+        lines = lines[:nb_lines]  # for dev
         language_toolbox.init(lines)
 
         frequency_list: LearnableWordsFrequencyList = language_toolbox.extract_learnable_words()
