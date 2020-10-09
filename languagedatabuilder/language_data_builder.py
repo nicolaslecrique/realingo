@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Generator
 
 from dataclasses_json import dataclass_json
 
 from languages_toolboxes.api_language_toolbox import LanguageToolbox, ExtractedSentences, LearnableWordInSentence, \
-    Language
+    Language, ExtractedSentence
 from sentence_evaluator import SentenceEvaluator, Sentence, SentenceEvaluationResult
 
 
@@ -45,10 +45,13 @@ def build_language_data(language_folder: str, language_toolbox: LanguageToolbox,
         lines = lines[:nb_lines]  # for dev
         language_toolbox.init(lines)
 
-        extracted_sentences: ExtractedSentences = language_toolbox.extract_learnable_sentences()
+        extracted_sentences: Generator[ExtractedSentence, None, None] = language_toolbox.extract_learnable_sentences()
 
-        for sentence in extracted_sentences.sentences:
+        for idx_sentence, sentence in enumerate(extracted_sentences):
             learnable_words: [LearnableWordInSentence] = sentence.learnable_words_in_sentence
+
+            if idx_sentence % 100 == 0:
+                print("processing sentence " + str(idx_sentence))
 
             words_array = [word.word_raw_format for word in learnable_words]
             sentence_for_evaluator = Sentence(language, sentence.full_sentence, words_array)

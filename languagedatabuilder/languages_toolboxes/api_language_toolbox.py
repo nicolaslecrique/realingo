@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Generator
 from dataclasses import dataclass
 
 
@@ -32,6 +32,6 @@ class LanguageToolbox:
     def init(self, lines: List[str]):
         pass
 
-    def extract_learnable_sentences(self) -> ExtractedSentences:
+    def extract_learnable_sentences(self) -> Generator[ExtractedSentence, None, None]:
         pass
 

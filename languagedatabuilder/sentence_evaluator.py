@@ -113,25 +113,25 @@ class SentenceEvaluator:
         for word, proba in zip(sentence.words, eval_result.words_proba):
             print(word + ":" + str(proba))
 
-
-s = SentenceEvaluator()
-
-
-sentences = [
-    Sentence(language=Language.VIETNAMESE, sentence="Đó là truyền thống gia đình.", words=["Đó", "là", "truyền thống", "gia đình"]),
-    Sentence(language=Language.VIETNAMESE, sentence="Đó là một truyền thống gia đình.", words=["Đó", "là", "một", "truyền thống", "gia đình"]),
-    Sentence(language=Language.VIETNAMESE, sentence="Đó là truyền thống.", words=["Đó", "là", "truyền thống"]),
-    Sentence(language=Language.VIETNAMESE, sentence="Hãy tôn trọng truyền thống.", words=["Hãy", "tôn trọng", "truyền thống"]),
-]
-
-
-sentences_ = [
-    Sentence(language=Language.FRENCH, sentence="Français. Il fait beau.", words=["Il", 'fait', 'beau']),
-    Sentence(language=Language.FRENCH, sentence="Français. Il fait beau aujourd'hui.", words=["Il", 'fait', 'beau', "aujourd'hui"]),
-    Sentence(language=Language.FRENCH, sentence="Français. Il fait un beau temps aujourd'hui.", words=["Il", 'fait', 'un', 'beau', 'temps', "aujourd'hui"]),
-    Sentence(language=Language.FRENCH, sentence="Français. Il est beau aujourd'hui.", words=["Il", 'est', 'beau', "aujourd'hui"]),
-]
-
-for sentence in sentences:
-    s.print_words_proba(sentence)
-    print("===")
+#
+# s = SentenceEvaluator()
+#
+#
+# sentences = [
+#     Sentence(language=Language.VIETNAMESE, sentence="Đó là truyền thống gia đình.", words=["Đó", "là", "truyền thống", "gia đình"]),
+#     Sentence(language=Language.VIETNAMESE, sentence="Đó là một truyền thống gia đình.", words=["Đó", "là", "một", "truyền thống", "gia đình"]),
+#     Sentence(language=Language.VIETNAMESE, sentence="Đó là truyền thống.", words=["Đó", "là", "truyền thống"]),
+#     Sentence(language=Language.VIETNAMESE, sentence="Hãy tôn trọng truyền thống.", words=["Hãy", "tôn trọng", "truyền thống"]),
+# ]
+#
+#
+# sentences_ = [
+#     Sentence(language=Language.FRENCH, sentence="Français. Il fait beau.", words=["Il", 'fait', 'beau']),
+#     Sentence(language=Language.FRENCH, sentence="Français. Il fait beau aujourd'hui.", words=["Il", 'fait', 'beau', "aujourd'hui"]),
+#     Sentence(language=Language.FRENCH, sentence="Français. Il fait un beau temps aujourd'hui.", words=["Il", 'fait', 'un', 'beau', 'temps', "aujourd'hui"]),
+#     Sentence(language=Language.FRENCH, sentence="Français. Il est beau aujourd'hui.", words=["Il", 'est', 'beau', "aujourd'hui"]),
+# ]
+#
+# for sentence in sentences:
+#     s.print_words_proba(sentence)
+#     print("===")

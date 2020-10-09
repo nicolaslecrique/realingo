@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from languages_toolboxes.api_language_toolbox import LanguageToolbox, ExtractedSentences, \
     ExtractedSentence, LearnableWordInSentence
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Generator
 from vncorenlp import VnCoreNLP
 
 
@@ -135,68 +135,64 @@ class AnnotatedLine:
 
 class VietnameseToolbox(LanguageToolbox):
 
-    annotated_lines = Dict
+    lines = [str]
 
     def __init__(self, path_to_vn_core_nlp_jar="/Users/nicolas/dev/realingo/tools/VnCoreNLP/VnCoreNLP-1.1.1.jar"):
         self.path_to_vn_core_nlp_jar = path_to_vn_core_nlp_jar
 
     def init(self, lines: List[str]):
+        self.lines = lines
+
+    def extract_learnable_sentences(self) -> Generator[ExtractedSentence, None, None]:
+
+        print("extract_learnable_sentences")
+
         with VnCoreNLP(
                 self.path_to_vn_core_nlp_jar,
                 annotators='wseg,pos',
                 max_heap_size='-Xmx4g') as vncorenlp:
 
-            self.lines = lines
+            for idx_line, row in enumerate(self.lines):
 
-            # list of line, a line is a list of sentences
-            self.annotated_lines = {line: vncorenlp.annotate(line) for line in lines if vncorenlp.detect_language(line) == 'vi'}
-            for _, annotated in self.annotated_lines.items():
-                fix_tone_bug_on_annotated_row(annotated)
-
-    def extract_learnable_sentences(self) -> ExtractedSentences:
-
-        excluded: List[str] = []
-        included: List[ExtractedSentence] = []
-        print("extract_learnable_sentences")
-        i = 0
-        for row, tokenized_row in self.annotated_lines.items():
-            i += 1
-            if i % 1000 == 0:
-                print(i)
-            tokenized_sentences = tokenized_row["sentences"]
-            row_indexes: List[List[Tuple[int,int]]] = find_word_indexes_in_line(row, tokenized_sentences)
-            if row_indexes is None:
-                print("exclude row")
-                continue
-
-            for sentence_indexes, annotated_sentence in zip(row_indexes, tokenized_sentences):
-                sentence_start_index, _ = sentence_indexes[0]
-                _, sentence_last_index = sentence_indexes[-1]
-
-                full_sentence: str = row[sentence_start_index:sentence_last_index+1]
-                learnable_words_to_start_stop_index_in_sentence: Dict[str, Tuple[int, int]]
-
-                if any(is_exclude_word(annotated_word["form"], annotated_word["posTag"]) for annotated_word in annotated_sentence):
-                    excluded.append(full_sentence)
+                if vncorenlp.detect_language(row) != 'vi':
                     continue
-                else:
 
-                    learnable_words_in_sentence = [
-                        LearnableWordInSentence(
-                            word_standard_format= to_standard_word(annotated_word["form"]),
-                            word_raw_format= full_sentence[word_indexes[0]:word_indexes[1]+1],
-                            min_index_in_sentence= word_indexes[0],
-                            max_index_in_sentence= word_indexes[1]
-                        )
-                        for word_indexes, annotated_word in zip(sentence_indexes, annotated_sentence)
-                        if is_learnable_word(annotated_word["form"], annotated_word["posTag"])
-                    ]
+                tokenized_row= vncorenlp.annotate(row)
+                fix_tone_bug_on_annotated_row(tokenized_row)
 
-                    if len(learnable_words_in_sentence) > 0:
-                        extracted_sentence = ExtractedSentence(
-                            full_sentence=full_sentence,
-                            learnable_words_in_sentence=learnable_words_in_sentence
-                        )
-                        included.append(extracted_sentence)
+                tokenized_sentences = tokenized_row["sentences"]
+                row_indexes: List[List[Tuple[int,int]]] = find_word_indexes_in_line(row, tokenized_sentences)
+                if row_indexes is None:
+                    print("exclude row")
+                    continue
 
-        return ExtractedSentences(sentences=included)
+                for sentence_indexes, annotated_sentence in zip(row_indexes, tokenized_sentences):
+                    sentence_start_index, _ = sentence_indexes[0]
+                    _, sentence_last_index = sentence_indexes[-1]
+
+                    full_sentence: str = row[sentence_start_index:sentence_last_index+1]
+                    learnable_words_to_start_stop_index_in_sentence: Dict[str, Tuple[int, int]]
+
+                    if any(is_exclude_word(annotated_word["form"], annotated_word["posTag"]) for annotated_word in annotated_sentence):
+                        continue
+                    else:
+
+                        learnable_words_in_sentence = [
+                            LearnableWordInSentence(
+                                word_standard_format= to_standard_word(annotated_word["form"]),
+                                word_raw_format= full_sentence[word_indexes[0]:word_indexes[1]+1],
+                                min_index_in_sentence= word_indexes[0],
+                                max_index_in_sentence= word_indexes[1]
+                            )
+                            for word_indexes, annotated_word in zip(sentence_indexes, annotated_sentence)
+                            if is_learnable_word(annotated_word["form"], annotated_word["posTag"])
+                        ]
+
+                        if len(learnable_words_in_sentence) > 0:
+                            extracted_sentence = ExtractedSentence(
+                                full_sentence=full_sentence,
+                                learnable_words_in_sentence=learnable_words_in_sentence
+                            )
+
+                            yield extracted_sentence
+
