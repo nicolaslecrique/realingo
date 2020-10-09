@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from languages_toolboxes.api_language_toolbox import LanguageToolbox, LearnableWordsFrequencyList, ExtractedSentences, \
+from languages_toolboxes.api_language_toolbox import LanguageToolbox, ExtractedSentences, \
     ExtractedSentence, LearnableWordInSentence
 from typing import List, Dict, Tuple
 from vncorenlp import VnCoreNLP
@@ -32,7 +32,6 @@ from vncorenlp import VnCoreNLP
 
 #exclude_pos_tags = {'Np', 'Ny', 'Nb', 'Vb', 'Y', 'Z', 'CH'}
 # M: if it's nto digits  : don't add for now
-from languages_toolboxes.api_language_toolbox import FrequencyListWord
 
 
 digit_pos_tag = 'M'
