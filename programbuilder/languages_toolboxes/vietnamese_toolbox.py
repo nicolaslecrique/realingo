@@ -154,31 +154,6 @@ class VietnameseToolbox(LanguageToolbox):
             for _, annotated in self.annotated_lines.items():
                 fix_tone_bug_on_annotated_row(annotated)
 
-    def extract_learnable_words(self) -> LearnableWordsFrequencyList:
-
-        i = 0
-        word_to_count: Dict[str, int] = {}
-
-        for row in self.annotated_lines.values():
-            i += 1
-            if i % 1000 == 0:
-                print(i)
-            for sentence in row["sentences"]:
-                for word_dict in sentence:
-                    word: str = word_dict["form"]
-                    pos_tag: str = word_dict["posTag"]
-
-                    if is_learnable_word(word, pos_tag):
-                        word_std_format = to_standard_word(word)
-                        if word_std_format not in word_to_count:
-                            word_to_count[word_std_format] = 0
-                        word_to_count[word_std_format] += 1
-
-        word_list = list(word_to_count.items())
-        sorted_word_list = sorted(word_list, key= lambda pair: -pair[1])
-        typed_list = [FrequencyListWord(word=word, count=count) for word, count in sorted_word_list]
-        return LearnableWordsFrequencyList(sorted_words=typed_list)
-
     def extract_learnable_sentences(self) -> ExtractedSentences:
 
         excluded: List[str] = []
@@ -209,9 +184,10 @@ class VietnameseToolbox(LanguageToolbox):
 
                     learnable_words_in_sentence = [
                         LearnableWordInSentence(
-                            word=to_standard_word(annotated_word["form"]),
-                            start_index= word_indexes[0],
-                            end_index= word_indexes[1],
+                            word_standard_format= to_standard_word(annotated_word["form"]),
+                            word_raw_format= full_sentence[word_indexes[0]:word_indexes[1]+1],
+                            min_index_in_sentence= word_indexes[0],
+                            max_index_in_sentence= word_indexes[1]
                         )
                         for word_indexes, annotated_word in zip(sentence_indexes, annotated_sentence)
                         if is_learnable_word(annotated_word["form"], annotated_word["posTag"])
@@ -223,6 +199,5 @@ class VietnameseToolbox(LanguageToolbox):
                             learnable_words_in_sentence=learnable_words_in_sentence
                         )
                         included.append(extracted_sentence)
-
 
         return ExtractedSentences(sentences=included)

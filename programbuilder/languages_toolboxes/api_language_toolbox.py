@@ -1,23 +1,19 @@
-from typing import List, Dict, Tuple
+from enum import Enum
+from typing import List
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
-class FrequencyListWord:
-    word: str
-    count: int
-
-
-@dataclass(frozen=True)
-class LearnableWordsFrequencyList:
-    sorted_words: List[FrequencyListWord]
+class Language(Enum):
+    VIETNAMESE = 1,
+    FRENCH = 2
 
 
 @dataclass(frozen=True)
 class LearnableWordInSentence:
-    word: str
-    start_index: int
-    end_index: int
+    word_standard_format: str
+    word_raw_format: str
+    min_index_in_sentence: str
+    max_index_in_sentence: str
 
 
 @dataclass(frozen=True)
@@ -34,9 +30,6 @@ class ExtractedSentences:
 class LanguageToolbox:
 
     def init(self, lines: List[str]):
-        pass
-
-    def extract_learnable_words(self) -> LearnableWordsFrequencyList:
         pass
 
     def extract_learnable_sentences(self) -> ExtractedSentences:

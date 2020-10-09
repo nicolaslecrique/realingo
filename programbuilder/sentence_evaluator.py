@@ -1,14 +1,11 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import List
 import numpy as np
 from transformers import AutoTokenizer, AutoModelForMaskedLM, XLMRobertaTokenizer, \
     XLMRobertaForMaskedLM
 import torch
 
-class Language(Enum):
-    VIETNAMESE = 1,
-    FRENCH = 2
+from language_data_builder import Language
 
 
 def _to_prefix(language: Language) -> str:
