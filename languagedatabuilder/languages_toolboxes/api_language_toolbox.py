@@ -29,9 +29,6 @@ class ExtractedSentences:
 
 class LanguageToolbox:
 
-    def init(self, lines: List[str]):
-        pass
-
-    def extract_learnable_sentences(self) -> Generator[ExtractedSentence, None, None]:
+    def extract_learnable_sentences(self, line: str) -> List[ExtractedSentence]:
         pass
 

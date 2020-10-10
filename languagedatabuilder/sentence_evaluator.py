@@ -114,7 +114,7 @@ class SentenceEvaluator:
             print(word + ":" + str(proba))
 
 #
-# s = SentenceEvaluator()
+s = SentenceEvaluator()
 #
 #
 # sentences = [
@@ -132,6 +132,11 @@ class SentenceEvaluator:
 #     Sentence(language=Language.FRENCH, sentence="Français. Il est beau aujourd'hui.", words=["Il", 'est', 'beau', "aujourd'hui"]),
 # ]
 #
-# for sentence in sentences:
-#     s.print_words_proba(sentence)
-#     print("===")
+
+sentences = [
+    Sentence(language=Language.FRENCH, sentence="Français. Il fait beau.", words=[])
+    ]
+
+for sentence in sentences:
+    s.print_words_proba(sentence)
+    print("===")

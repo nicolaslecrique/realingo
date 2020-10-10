@@ -43,34 +43,46 @@ def build_language_data(language_folder: str, language_toolbox: LanguageToolbox,
         lines: List[str] = open_subtitles_file.readlines()
         print("end read lines")
         lines = lines[:nb_lines]  # for dev
-        language_toolbox.init(lines)
 
-        extracted_sentences: Generator[ExtractedSentence, None, None] = language_toolbox.extract_learnable_sentences()
+        for idx_line, line in enumerate(lines):
 
-        for idx_sentence, sentence in enumerate(extracted_sentences):
-            learnable_words: [LearnableWordInSentence] = sentence.learnable_words_in_sentence
+            if idx_line % 100 == 0:
+                print("processing sentence " + str(idx_line))
 
-            if idx_sentence % 100 == 0:
-                print("processing sentence " + str(idx_sentence))
+            try:
+                extracted_sentences: List[ExtractedSentence] = language_toolbox.extract_learnable_sentences(line)
 
-            words_array = [word.word_raw_format for word in learnable_words]
-            sentence_for_evaluator = Sentence(language, sentence.full_sentence, words_array)
-            eval_result: SentenceEvaluationResult = sentence_evaluator.compute_sentence_and_word_proba(sentence_for_evaluator)
+                for sentence in extracted_sentences:
+                    learnable_words: [LearnableWordInSentence] = sentence.learnable_words_in_sentence
 
-            words_in_sentence: [WordInSentenceInData] = [WordInSentenceInData(
-                word_standard_format= word.word_standard_format,
-                word_raw_format= word.word_raw_format,
-                min_index_in_sentence= word.min_index_in_sentence,
-                max_index_in_sentence= word.max_index_in_sentence,
-                word_probability_in_sentence= eval_result.words_proba[idx]
-            ) for idx, word in enumerate(learnable_words)]
+                    words_array = [word.word_raw_format for word in learnable_words]
+                    sentence_for_evaluator = Sentence(language, sentence.full_sentence, words_array)
+                    eval_result: SentenceEvaluationResult = sentence_evaluator.compute_sentence_and_word_proba(sentence_for_evaluator)
 
-            sentence_data: SentenceData = SentenceData(
-                raw_sentence= sentence.full_sentence,
-                words_in_sentence= words_in_sentence,
-                sentence_probability= eval_result.sentence_proba
-            )
+                    sentence_data = _build_sentence_data(eval_result, sentence)
 
-            result_sentences.append(sentence_data)
+                    result_sentences.append(sentence_data)
+
+            except Exception as e:
+                print("error " + str(e))
+                print("line: " + line)
 
         return LanguageData(sentences=result_sentences)
+
+
+def _build_sentence_data(eval_result: SentenceEvaluationResult, sentence: ExtractedSentence):
+
+    words_in_sentence: [WordInSentenceInData] = [WordInSentenceInData(
+        word_standard_format=word.word_standard_format,
+        word_raw_format=word.word_raw_format,
+        min_index_in_sentence=word.min_index_in_sentence,
+        max_index_in_sentence=word.max_index_in_sentence,
+        word_probability_in_sentence=eval_result.words_proba[idx]
+    ) for idx, word in enumerate(sentence.learnable_words_in_sentence)]
+
+    sentence_data: SentenceData = SentenceData(
+        raw_sentence=sentence.full_sentence,
+        words_in_sentence=words_in_sentence,
+        sentence_probability=eval_result.sentence_proba
+    )
+    return sentence_data
