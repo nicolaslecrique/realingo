@@ -143,6 +143,7 @@ class VietnameseToolbox(LanguageToolbox):
             self.path_to_vn_core_nlp_jar,
             annotators='wseg,pos',
             max_heap_size='-Xmx4g')
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.vncorenlp.__exit__(exc_type, exc_value, traceback)
