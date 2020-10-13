@@ -4,7 +4,6 @@ import numpy as np
 from transformers import AutoTokenizer, AutoModelForMaskedLM, XLMRobertaTokenizer, \
     XLMRobertaForMaskedLM
 import torch
-
 from language_data_builder import Language
 
 
@@ -29,6 +28,12 @@ class Sentence:
 class SentenceEvaluationResult:
     sentence_proba: float
     words_proba: [np.ndarray]
+
+@dataclass
+class _SentenceEncoding:
+    encoded_sentence: torch.tensor # 1D
+    encoded_sentence_masked_by_word: torch.tensor # 2D
+    idxes_of_masked_tokens_by_word: List[np.ndarray]
 
 
 class SentenceEvaluator:
@@ -74,11 +79,71 @@ class SentenceEvaluator:
             expected_tokens = sentence_tokens[masks_indexes]
             nb_token = masks_indexes.size
             for mask_index, target_token in zip(masks_indexes, expected_tokens):
-                mask_set_log_prob += model_result_log_probs_by_word[mask_set_idx, mask_index, target_token]
+                try:
+                    mask_set_log_prob += model_result_log_probs_by_word[mask_set_idx, mask_index, target_token]
+                except Exception as e:
+                    print(e)
             mask_set_log_prob /= nb_token
 
             log_proba_mask_set[mask_set_idx] = mask_set_log_prob
         return log_proba_mask_set
+
+
+    # return array of size nb_sentences, each row contains a numpy array of size nb_words_in_sentence with log_proba in each cell
+    def evaluate_sentences_log_proba_by_word(self, sentences: List[Sentence]) -> List[np.ndarray]:
+
+        with torch.no_grad():
+
+            log_proba_by_word_by_sentence = []
+
+            sentence_encodings: [_SentenceEncoding] = [self.extract_encodings(sentence) for sentence in sentences]
+
+            max_encoded_sentence_length = max(sentence_encoding.encoded_sentence.shape[-1] for sentence_encoding in sentence_encodings)
+            all_sentence_tensors = [sentence_encoding.encoded_sentence_masked_by_word for sentence_encoding in sentence_encodings]
+            padded_tensors = [torch.nn.functional.pad(tensor, (0, max_encoded_sentence_length-tensor.shape[-1]), value=self.tokenizer.pad_token_id) for tensor in all_sentence_tensors]
+
+            encoded_sentences_concat = torch.cat(padded_tensors)
+            model_result_all_sentences: torch.tensor = self.model(encoded_sentences_concat)[0]
+            model_result_all_sentences_log_probs: torch.tensor = torch.nn.functional.log_softmax(model_result_all_sentences, dim=2)
+
+            # get indexes splitting sentences in concat batch
+            start_stop_indexes_in_concatenated_tensor: List[(int,int)] = []
+            current_start_index = 0
+            for sentence_encoding in sentence_encodings:
+                size_sentence_encodings = sentence_encoding.encoded_sentence_masked_by_word.shape[0]
+                end_index = current_start_index + size_sentence_encodings
+                start_stop_indexes_in_concatenated_tensor.append((current_start_index, end_index))
+                current_start_index = end_index
+
+            model_result_by_sentence = [model_result_all_sentences_log_probs[start:stop, :, :] for start, stop in start_stop_indexes_in_concatenated_tensor]
+
+            for sentence_encoding, model_result_log_probs in zip(sentence_encodings, model_result_by_sentence):
+
+                log_proba_by_word: np.ndarray = self._extract_log_proba_world_tensor_from_model_result(
+                    model_result_log_probs,
+                    sentence_encoding.idxes_of_masked_tokens_by_word,
+                    sentence_encoding.encoded_sentence)
+                log_proba_by_word_by_sentence.append(log_proba_by_word)
+
+            return log_proba_by_word_by_sentence
+
+    def extract_encodings(self, sentence) -> _SentenceEncoding:
+
+        prefixes_sentence = _to_prefix(sentence.language) + sentence.sentence
+        encoded_words = [self.tokenizer.encode(word, add_special_tokens=False, return_tensors="pt")[0] for word in
+                         sentence.words]
+
+        encoded_sentence: torch.tensor = self.tokenizer.encode(prefixes_sentence, return_tensors="pt")[0]
+
+        tokens_to_mask_idxs_in_sentence_by_words: List[np.ndarray] = self._extract_mask_indexes_in_sentence(
+            encoded_sentence, encoded_words)
+
+        encoded_sentence_for_masks: torch.tensor = self._build_masked_sentences(encoded_sentence,
+                                                                                tokens_to_mask_idxs_in_sentence_by_words)
+        return _SentenceEncoding(
+            encoded_sentence=encoded_sentence,
+            encoded_sentence_masked_by_word=encoded_sentence_for_masks,
+            idxes_of_masked_tokens_by_word=tokens_to_mask_idxs_in_sentence_by_words)
 
 
     # return array of size nb_sentences, each row contains a numpy array of size nb_words_in_sentence with log_proba in each cell
@@ -101,17 +166,22 @@ class SentenceEvaluator:
 
             return log_proba_by_word
 
-    def compute_sentence_and_word_proba(self, sentence: Sentence) -> SentenceEvaluationResult:
-        log_proba_array = self.evaluate_sentence_log_proba_by_word(sentence)
-        sentence_proba = np.exp(np.mean(log_proba_array))
-        words_proba = np.exp(log_proba_array)
-        return SentenceEvaluationResult(sentence_proba=sentence_proba, words_proba=words_proba)
 
-    def print_words_proba(self, sentence: Sentence):
-        eval_result: SentenceEvaluationResult = self.compute_sentence_and_word_proba(sentence)
-        print(sentence.sentence + ":" + str(eval_result.sentence_proba))
-        for word, proba in zip(sentence.words, eval_result.words_proba):
-            print(word + ":" + str(proba))
+
+
+    def compute_sentence_and_word_proba(self, sentences: List[Sentence]) -> List[SentenceEvaluationResult]:
+        log_proba_arrays: List[np.ndarray] = self.evaluate_sentences_log_proba_by_word(sentences)
+        return [SentenceEvaluationResult(
+            sentence_proba=np.exp(np.mean(log_proba_array)),
+            words_proba=np.exp(log_proba_array))
+            for log_proba_array in log_proba_arrays]
+
+    def print_words_proba(self, sentences: List[Sentence]):
+        eval_results: [SentenceEvaluationResult] = self.compute_sentence_and_word_proba(sentences)
+        for sentence, eval_result in zip(sentences, eval_results):
+            print(sentence.sentence + ":" + str(eval_result.sentence_proba))
+            for word, proba in zip(sentence.words, eval_result.words_proba):
+                print(word + ":" + str(proba))
 
 #
 # s = SentenceEvaluator()
@@ -125,12 +195,12 @@ class SentenceEvaluator:
 # ]
 #
 #
-# sentences_ = [
-#     Sentence(language=Language.FRENCH, sentence="Français. Il fait beau.", words=["Il", 'fait', 'beau']),
-#     Sentence(language=Language.FRENCH, sentence="Français. Il fait beau aujourd'hui.", words=["Il", 'fait', 'beau', "aujourd'hui"]),
-#     Sentence(language=Language.FRENCH, sentence="Français. Il fait un beau temps aujourd'hui.", words=["Il", 'fait', 'un', 'beau', 'temps', "aujourd'hui"]),
-#     Sentence(language=Language.FRENCH, sentence="Français. Il est beau aujourd'hui.", words=["Il", 'est', 'beau', "aujourd'hui"]),
-# ]
+sentences = [
+    Sentence(language=Language.FRENCH, sentence="Français. Il fait beau.", words=["Il", 'fait', 'beau']),
+    Sentence(language=Language.FRENCH, sentence="Français. Il fait beau aujourd'hui.", words=["Il", 'fait', 'beau', "aujourd'hui"]),
+    Sentence(language=Language.FRENCH, sentence="Français. Il fait un beau temps aujourd'hui.", words=["Il", 'fait', 'un', 'beau', 'temps', "aujourd'hui"]),
+    Sentence(language=Language.FRENCH, sentence="Français. Il est beau aujourd'hui.", words=["Il", 'est', 'beau', "aujourd'hui"]),
+]
 #
 
 # sentences = [
@@ -140,3 +210,6 @@ class SentenceEvaluator:
 # for sentence in sentences:
 #     s.print_words_proba(sentence)
 #     print("===")
+
+s = SentenceEvaluator()
+s.print_words_proba(sentences)
