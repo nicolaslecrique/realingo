@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Generator
-
+from typing import List
+import json
 from dataclasses_json import dataclass_json
 
-from languages_toolboxes.api_language_toolbox import LanguageToolbox, ExtractedSentences, LearnableWordInSentence, \
-    Language, ExtractedSentence
+from languages_toolboxes.api_language_toolbox import ExtractedSentences, Language, ExtractedSentence
 from sentence_evaluator import SentenceEvaluator, Sentence, SentenceEvaluationResult
 
 
@@ -32,46 +31,63 @@ class LanguageData:
     sentences: List[SentenceData]
 
 
-def build_language_data(language_folder: str, language_toolbox: LanguageToolbox, nb_lines: int, language: Language) -> LanguageData:
+class ExtractedSentencesBatchIterator:
 
-    sentence_evaluator: SentenceEvaluator = SentenceEvaluator()
+    def __init__(self, file_path: str, batch_size):
+        with open(file_path) as extracted_sentences_file:
+            sentences_str: str = json.load(extracted_sentences_file)
+            extracted_sentences_set: ExtractedSentences = ExtractedSentences.from_dict(sentences_str)
+            self.extracted_sentences: List[ExtractedSentence] = extracted_sentences_set.sentences
+
+        self.current_start_index = 0
+        self.batch_size = batch_size
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> List[ExtractedSentence]:
+        if self.current_start_index >= len(self.extracted_sentences):
+            raise StopIteration
+        end_batch_index = self.current_start_index + self.batch_size
+        next_batch: List[ExtractedSentence] = self.extracted_sentences[self.current_start_index:end_batch_index]
+        self.current_start_index = end_batch_index
+        return next_batch
+
+
+def build_language_data_from_file(file_path_extracted_sentences: str, language: Language) -> LanguageData:
 
     result_sentences: [SentenceData] = []
+    batch_size: int = 10
+    sentence_batch_it: ExtractedSentencesBatchIterator = ExtractedSentencesBatchIterator(file_path_extracted_sentences, batch_size)
+    sentence_evaluator: SentenceEvaluator = SentenceEvaluator()
 
-    with open (f"programs_data/{language_folder}/open_subtitles.txt", "r") as open_subtitles_file:
-        print("start read lines")
-        lines: List[str] = open_subtitles_file.readlines()
-        print("end read lines")
-        lines = lines[:nb_lines]  # for dev
+    batch: List[ExtractedSentence]
+    for idx_batch, batch in enumerate(sentence_batch_it):
 
-        for idx_line, line in enumerate(lines):
+        print("processing batch " + str(idx_batch))
 
-            if idx_line % 100 == 0:
-                print("processing sentence " + str(idx_line))
+        try:
+            sentences: List[Sentence] = [Sentence(
+                sentence=extracted.full_sentence,
+                words = [word.word_raw_format for word in extracted.learnable_words_in_sentence]
+            ) for extracted in batch]
 
-            try:
-                extracted_sentences: List[ExtractedSentence] = language_toolbox.extract_learnable_sentences(line)
+            eval_results: List[SentenceEvaluationResult] = sentence_evaluator.compute_sentences_and_word_proba(
+                sentences, language)
 
-                for sentence in extracted_sentences:
-                    learnable_words: [LearnableWordInSentence] = sentence.learnable_words_in_sentence
+            sentences_data = [_build_sentence_data(eval_result, extracted_sentence)
+                              for eval_result, extracted_sentence in zip(eval_results, batch)]
+            result_sentences.extend(sentences_data)
 
-                    words_array = [word.word_raw_format for word in learnable_words]
-                    sentence_for_evaluator = Sentence(language, sentence.full_sentence, words_array)
-                    eval_result: SentenceEvaluationResult = sentence_evaluator.compute_sentence_and_word_proba(sentence_for_evaluator)
+        except Exception as e:
+            print("error " + str(e))
+            print("batch: " + str(idx_batch))
 
-                    sentence_data = _build_sentence_data(eval_result, sentence)
+    return LanguageData(sentences=result_sentences)
 
-                    result_sentences.append(sentence_data)
-
-            except Exception as e:
-                print("error " + str(e))
-                print("line: " + line)
-
-        return LanguageData(sentences=result_sentences)
 
 
 def _build_sentence_data(eval_result: SentenceEvaluationResult, sentence: ExtractedSentence):
-
     words_in_sentence: [WordInSentenceInData] = [WordInSentenceInData(
         word_standard_format=word.word_standard_format,
         word_raw_format=word.word_raw_format,
