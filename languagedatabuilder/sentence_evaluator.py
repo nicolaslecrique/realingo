@@ -4,7 +4,7 @@ import numpy as np
 from transformers import AutoTokenizer, AutoModelForMaskedLM, XLMRobertaTokenizer, \
     XLMRobertaForMaskedLM
 import torch
-from language_data_builder import Language
+from languages_toolboxes.api_language_toolbox import Language
 
 
 def _to_prefix(language: Language) -> str:
@@ -38,8 +38,13 @@ class _SentenceEncoding:
 class SentenceEvaluator:
 
     def __init__(self):
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+
         self.tokenizer: XLMRobertaTokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large")
-        self.model: XLMRobertaForMaskedLM = AutoModelForMaskedLM.from_pretrained("xlm-roberta-large")
+        self.model: XLMRobertaForMaskedLM = AutoModelForMaskedLM.from_pretrained("xlm-roberta-large").to(device=self.device)
 
     @staticmethod
     def _extract_mask_indexes_in_sentence(encoded_sentence: torch.tensor, encoded_words: [torch.tensor]) -> List[np.ndarray]:
@@ -130,10 +135,10 @@ class SentenceEvaluator:
     def _extract_encodings(self, sentence: Sentence, prefix: str) -> _SentenceEncoding:
 
         prefixes_sentence = prefix + sentence.sentence
-        encoded_words = [self.tokenizer.encode(word, add_special_tokens=False, return_tensors="pt")[0] for word in
+        encoded_words = [self.tokenizer.encode(word, add_special_tokens=False, return_tensors="pt")[0].to(device=self.device) for word in
                          sentence.words]
 
-        encoded_sentence: torch.tensor = self.tokenizer.encode(prefixes_sentence, return_tensors="pt")[0]
+        encoded_sentence: torch.tensor = self.tokenizer.encode(prefixes_sentence, return_tensors="pt")[0].to(device=self.device)
 
         tokens_to_mask_idxs_in_sentence_by_words: List[np.ndarray] = self._extract_mask_indexes_in_sentence(
             encoded_sentence, encoded_words)
