@@ -35,7 +35,7 @@ def build_extracted_sentences(language_folder: str, language_toolbox: LanguageTo
     for idx_batch, lines_batch in enumerate(lines_batch_generator):
 
         if idx_batch % 10 == 0:
-            print("processing sentence " + str(idx_batch * batch_size))
+            print("processing line " + str(idx_batch * batch_size))
 
         for line in lines_batch:
             extracted_sentences: List[ExtractedSentence] = language_toolbox.extract_learnable_sentences(line)
