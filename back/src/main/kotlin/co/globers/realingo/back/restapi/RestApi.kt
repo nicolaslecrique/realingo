@@ -13,7 +13,10 @@ val availableOriginLanguages: List<Language> = listOf(
 )
 
 val availableTargetLanguages: List<Language> = listOf(
-        Language("vietnamese", languageLabel = "Vietnamese")
+        Language("vietnamese", languageLabel = "Vietnamese"),
+        Language("english", languageLabel = "English"),
+        Language("french", languageLabel = "French"),
+        Language("spanish", languageLabel = "Spanish")
 )
 
 @RestController
