@@ -13,13 +13,13 @@ class SelectOriginLanguageRouteArgs {
 
 class SelectOriginLanguageRoute extends StatefulWidget {
   static const route = '/select_origin_language';
-  final Language targetLanguage;
+  final SelectOriginLanguageRouteArgs args;
 
-  SelectOriginLanguageRoute({Key key, this.targetLanguage}) : super(key: key);
+  SelectOriginLanguageRoute(this.args, {Key key}) : super(key: key);
 
   @override
   _SelectOriginLanguageRouteState createState() =>
-      _SelectOriginLanguageRouteState(targetLanguage);
+      _SelectOriginLanguageRouteState(this.args.targetLanguage);
 }
 
 class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
@@ -27,7 +27,7 @@ class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
   Language selectedLanguage;
   final Language targetLanguage;
 
-  _SelectOriginLanguageRouteState(Language this.targetLanguage);
+  _SelectOriginLanguageRouteState(this.targetLanguage);
 
   @override
   void initState() {
