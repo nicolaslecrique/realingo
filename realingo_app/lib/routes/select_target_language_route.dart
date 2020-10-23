@@ -32,17 +32,15 @@ class _SelectTargetLanguageRouteState extends State<SelectTargetLanguageRoute> {
         child: LanguagePicker(
           languages: languages,
           selected: selectedLanguage,
-          onSelect: (e) => setState(() {
-            selectedLanguage = e;
-          }),
+          onSelect: (e) => setState(() => selectedLanguage = e),
         ),
         title: "Courses",
         buttonText: "OK",
         onButtonPressed: selectedLanguage == null
             ? null
-            : () {
-                Navigator.pushNamed(context, SelectOriginLanguageRoute.route);
-              },
+            : () => Navigator.pushNamed(
+                context, SelectOriginLanguageRoute.route,
+                arguments: SelectOriginLanguageRouteArgs(selectedLanguage)),
       ),
     );
   }

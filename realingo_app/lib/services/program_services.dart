@@ -13,4 +13,12 @@ class ProgramServices {
         .map((l) => Language(l.languageUri, l.languageLabel))
         .toList();
   }
+
+  static Future<List<Language>> getAvailableOriginLanguages(
+      Language targetLanguage) async {
+    return (await RestApi.getAvailableOriginLanguages(
+            targetLanguage.languageUri))
+        .map((l) => Language(l.languageUri, l.languageLabel))
+        .toList();
+  }
 }
