@@ -1,6 +1,7 @@
 package co.globers.realingo.back.restapi
 
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 data class Language(
@@ -19,11 +20,13 @@ val availableTargetLanguages: List<Language> = listOf(
         Language("spanish", languageLabel = "Spanish")
 )
 
+
 @RestController
 class RestApi {
 
     @GetMapping("/available_origin_languages")
-    suspend fun getAvailableOriginLanguages(): List<Language> {
+    suspend fun getAvailableOriginLanguages(
+            @RequestParam(value = "target_language_uri") targetLanguageUri: String): List<Language> {
         return availableOriginLanguages
     }
 
