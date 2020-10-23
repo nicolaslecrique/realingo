@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/routes/select_origin_language_route.dart';
-import 'package:realingo_app/screens/loading_screen.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
+import 'package:realingo_app/widgets/future_builder_wrapper.dart';
 import 'package:realingo_app/widgets/language_picker.dart';
 
 class SelectTargetLanguageRoute extends StatefulWidget {
@@ -26,33 +26,24 @@ class _SelectTargetLanguageRouteState extends State<SelectTargetLanguageRoute> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return FutureBuilderWrapper(
       future: futureLanguages,
-      builder: (context, AsyncSnapshot<List<Language>> snapshot) {
-        if (snapshot.hasData) {
-          return OneButtonScreen(
-            child: LanguagePicker(
-              languages: snapshot.data,
-              selected: selectedLanguage,
-              onSelect: (e) => setState(() {
-                selectedLanguage = e;
-              }),
-            ),
-            title: "Courses",
-            buttonText: "OK",
-            onButtonPressed: selectedLanguage == null
-                ? null
-                : () {
-                    Navigator.pushNamed(
-                        context, SelectOriginLanguageRoute.route);
-                  },
-          );
-        } else if (snapshot.hasError) {
-          return Center(child: Text("error"));
-        } else {
-          return LoadingScreen();
-        }
-      },
+      childBuilder: (languages) => OneButtonScreen(
+        child: LanguagePicker(
+          languages: languages,
+          selected: selectedLanguage,
+          onSelect: (e) => setState(() {
+            selectedLanguage = e;
+          }),
+        ),
+        title: "Courses",
+        buttonText: "OK",
+        onButtonPressed: selectedLanguage == null
+            ? null
+            : () {
+                Navigator.pushNamed(context, SelectOriginLanguageRoute.route);
+              },
+      ),
     );
   }
 }
