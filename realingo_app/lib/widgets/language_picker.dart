@@ -7,24 +7,23 @@ class LanguagePicker extends StatelessWidget {
   final void Function(Language) onSelect;
 
   LanguagePicker(
-      {@required this.languages,
-      @required this.selected,
-      @required this.onSelect,
-      Key key})
+      {@required this.languages, this.selected, this.onSelect, Key key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: languages
-          .map((e) => Container(
-                color: e == selected ? Colors.blue : Colors.white,
-                child: ListTile(
-                  title: Text(e.languageLabel),
-                  onTap: () => onSelect(e),
-                ),
-              ))
-          .toList(),
+    return Expanded(
+      child: ListView(
+        children: languages
+            .map((e) => Container(
+                  color: e == selected ? Colors.blue : Colors.white,
+                  child: ListTile(
+                    title: Text(e.languageLabel),
+                    onTap: () => onSelect(e),
+                  ),
+                ))
+            .toList(),
+      ),
     );
   }
 }

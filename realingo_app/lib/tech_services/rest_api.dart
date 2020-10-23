@@ -27,9 +27,10 @@ Rest API wrapper
 class RestApi {
   static const String _restApiBaseUrl = AppConfig.apiUrl;
 
-  static Future<List<RestLanguage>> getAvailableOriginLanguages() async {
-    http.Response response =
-        await http.get("$_restApiBaseUrl/available_origin_languages");
+  static Future<List<RestLanguage>> getAvailableOriginLanguages(
+      String targetLanguageUri) async {
+    http.Response response = await http.get(
+        "$_restApiBaseUrl/available_origin_languages?target_language_uri=$targetLanguageUri");
 
     final languages = (json.decode(response.body) as List)
         .map((i) => RestLanguage.fromJson(i))

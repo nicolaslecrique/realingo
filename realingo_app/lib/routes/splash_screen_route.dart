@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/screens/program_screen.dart';
-import 'package:realingo_app/screens/select_target_language_screen.dart';
+import 'package:realingo_app/routes/program_route.dart';
 import 'package:realingo_app/services/user_program_services.dart';
 import 'package:realingo_app/tech_services/db.dart';
 
-class SplashScreen extends StatefulWidget {
-  static const routeName = '/splash_screen';
+import 'login_route.dart';
+
+class SplashScreenRoute extends StatefulWidget {
+  static const route = '/splash_screen';
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  _SplashScreenRouteState createState() => _SplashScreenRouteState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenRouteState extends State<SplashScreenRoute> {
   @override
   void initState() {
     super.initState();
@@ -24,11 +25,10 @@ class _SplashScreenState extends State<SplashScreen> {
     var userProgram = userProgramServices.getCurrentUserProgramOrNull();
 
     if (userProgram == null) {
-      Navigator.pushReplacementNamed(
-          context, SelectTargetLanguageScreen.routeName);
+      Navigator.pushReplacementNamed(context, LoginRoute.route);
     } else {
-      Navigator.pushReplacementNamed(context, ProgramScreen.routeName,
-          arguments: ProgramScreenArgs(db, userProgram));
+      Navigator.pushReplacementNamed(context, ProgramRoute.route,
+          arguments: ProgramRouteArgs(db, userProgram));
     }
   }
 

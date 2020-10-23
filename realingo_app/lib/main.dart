@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/screens/program_screen.dart';
-import 'package:realingo_app/screens/select_target_language_screen.dart';
-import 'package:realingo_app/screens/splash_screen.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:realingo_app/routes/login_route.dart';
+import 'package:realingo_app/routes/program_route.dart';
+import 'package:realingo_app/routes/select_origin_language_route.dart';
+import 'package:realingo_app/routes/select_target_language_route.dart';
+import 'package:realingo_app/routes/splash_screen_route.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(Phoenix(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -16,12 +19,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: SplashScreen.routeName,
+      initialRoute: SplashScreenRoute.route,
       routes: {
-        SplashScreen.routeName: (context) => SplashScreen(),
-        SelectTargetLanguageScreen.routeName: (context) =>
-            SelectTargetLanguageScreen(),
-        ProgramScreen.routeName: (context) => ProgramScreen(),
+        SplashScreenRoute.route: (context) => SplashScreenRoute(),
+        SelectTargetLanguageRoute.route: (context) =>
+            SelectTargetLanguageRoute(),
+        SelectOriginLanguageRoute.route: (context) =>
+            SelectOriginLanguageRoute(),
+        ProgramRoute.route: (context) => ProgramRoute(),
+        LoginRoute.route: (context) => LoginRoute()
       },
     );
   }
