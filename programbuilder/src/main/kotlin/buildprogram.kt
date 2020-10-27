@@ -44,7 +44,7 @@ fun computeScore(sentence: SentenceData, learnableWord: String) =
 
 fun main() {
 
-    val languageDataStr = FileLoader.getFileFromResource("./language_data/vietnamese/language_data_10000.json").readText()
+    val languageDataStr = FileLoader.getFileFromResource("./language_data/vietnamese/language_data_vietnamese_100000.json").readText()
     val languageData = Json.decodeFromString<LanguageData>(languageDataStr)
 
     val countByWord = mutableMapOf<String,Int>()
@@ -59,6 +59,8 @@ fun main() {
     val learnableWordToSentences = languageData.sentences
         .groupBy { sentence -> sentence.words_in_sentence.map { it.word_standard_format }.minByOrNull{ countByWord.getValue(it) }!! }
         .mapValues { pair -> pair.value.sortedBy { -computeScore(it,pair.key) }.take(100) }
+
+    val sortedWords = learnableWordToSentences.toList().sortedByDescending { countByWord.getValue(it.first) }
 
 
 
