@@ -4,7 +4,7 @@ import json
 from dataclasses_json import dataclass_json
 
 from languages_toolboxes.api_language_toolbox import ExtractedSentences, Language, ExtractedSentence
-from sentence_evaluator import SentenceEvaluator, Sentence, SentenceEvaluationResult
+from services.sentence_evaluator import SentenceEvaluator, Sentence, SentenceEvaluationResult
 
 
 @dataclass_json
