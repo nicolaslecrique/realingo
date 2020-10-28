@@ -9,5 +9,5 @@ json_result = result.to_dict()
 
 print("start dump")
 with open("../temp/translation_vi_fr_200.json", 'w') as dump_file_tokenized:
-    json.dump(json_result, dump_file_tokenized, indent=2, ensure_ascii=False)
+    json.dump(json_result, dump_file_tokenized, indent=2, ensure_ascii=True)
 print("end dump")
