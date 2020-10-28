@@ -25,11 +25,16 @@ def translate_sentences(
     translator: Translator = Translator(source_language, target_language)
 
     batch: List[ExtractedSentence]
-    for id_batch, batch in enumerate(sentence_batch_it):
-        print(f"translate batch {id_batch}")
+    for idx_batch, batch in enumerate(sentence_batch_it):
+        print(f"translate batch {idx_batch}")
 
-        batch_str = [e.full_sentence for e in batch]
-        translated_batch: List[TranslatedSentence] = translator.translate(batch_str)
-        result_sentences.extend(translated_batch)
+        try:
+            batch_str = [e.full_sentence for e in batch]
+            translated_batch: List[TranslatedSentence] = translator.translate(batch_str)
+            result_sentences.extend(translated_batch)
+
+        except Exception as e:
+            print("error " + str(e))
+            print("batch: " + str(idx_batch))
 
     return SentencesTranslation(translated_sentences=result_sentences)
