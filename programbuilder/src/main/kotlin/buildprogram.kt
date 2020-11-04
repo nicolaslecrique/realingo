@@ -1,5 +1,6 @@
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.net.URL
@@ -26,6 +27,20 @@ data class LanguageData(
         val sentences: List<SentenceData>
 )
 
+@Serializable
+data class TranslatedSentence(
+        val original_sentence: String,
+        val translated_sentence: String,
+        val back_translation: String,
+        val confidence: Float  // number between zero and one, for now: one if back-translation is equals to original sentence
+)
+
+@Serializable
+data class SentencesTranslation(
+        val translated_sentences: List<TranslatedSentence>
+)
+
+
 class FileLoader {
 
     companion object {
@@ -44,8 +59,15 @@ fun computeScore(sentence: SentenceData, learnableWord: String) =
 
 fun main() {
 
+    val nbItems = 2000
+    val nbSentencesByItem = 10
+
     val languageDataStr = FileLoader.getFileFromResource("./language_data/vietnamese/language_data_vietnamese_100000.json").readText()
     val languageData = Json.decodeFromString<LanguageData>(languageDataStr)
+
+    val translationsStr = FileLoader.getFileFromResource("./language_data/vietnamese/translation_vn_fr_100000.json").readText()
+    val translations = Json.decodeFromString<SentencesTranslation>(translationsStr)
+    val translationMap = translations.translated_sentences.associateBy { it.original_sentence }
 
     val countByWord = mutableMapOf<String,Int>()
     for (sentence in languageData.sentences){
@@ -56,13 +78,25 @@ fun main() {
     }
     // associate each sentence to its less frequent word in the sentence
     // then filter the 100 best sentences for each word
-    val learnableWordToSentences = languageData.sentences
+    val learnableWordToItem = languageData.sentences
         .groupBy { sentence -> sentence.words_in_sentence.map { it.word_standard_format }.minByOrNull{ countByWord.getValue(it) }!! }
-        .mapValues { pair -> pair.value.sortedBy { -computeScore(it,pair.key) }.take(100) }
+        .mapValues { pair ->
+            val keptSentences = pair.value.sortedBy { -computeScore(it,pair.key) }.take(nbSentencesByItem)
+            val sentences = keptSentences.map { Sentence(it.raw_sentence, translationMap.getValue(it.raw_sentence).translated_sentence) }
+            Item(pair.key, pair.key, sentences)
+         }
+            .values
 
-    val sortedWords = learnableWordToSentences.toList().sortedByDescending { countByWord.getValue(it.first) }
+    val sortedItems = learnableWordToItem.toList().sortedByDescending { countByWord.getValue(it.itemUri) }.take(nbItems)
 
+    sortedItems.forEachIndexed { index, it ->
+        println(index.toString() + "-" + it.itemString + "-" + it.sentences.count())
+    }
 
+    val program = LearningProgram(sortedItems)
+    val programStr = Json.encodeToString(program)
+
+    File("learn_vn_from_fr_100k_program.json").writeText(programStr)
 
 
 
@@ -70,6 +104,4 @@ fun main() {
     // 2) associer à chaque mot ses phrases
     // 3) trier les phrases par qualité
 
-
-    println("Hello World")
 }
