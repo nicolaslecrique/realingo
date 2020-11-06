@@ -24,7 +24,7 @@ class _HomeRouteState extends State<HomeRoute> {
     final HomeRouteArgs args = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
-      body: Center(child: Text("program")),
+      body: Center(child: Text("Home:" + args.userProgramUri)),
     );
   }
 }

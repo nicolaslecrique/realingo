@@ -18,8 +18,11 @@ class UserProgramServices {
     LearningProgram program =
         await ProgramServices.getProgram(targetLanguage, originLanguage);
 
-    await Db.saveLearningProgram(DbLearningProgram(program.uri,
-        program.itemsToLearn.map((e) => DbItemToLearn(e.uri, e.itemLabel))));
+    await Db.saveLearningProgram(DbLearningProgram(
+        program.uri,
+        program.itemsToLearn
+            .map((e) => DbItemToLearn(e.uri, e.itemLabel))
+            .toList(growable: false)));
     String userProgramUri =
         program.uri + "-" + DateTime.now().toIso8601String();
     DbUserProgram userProgram = DbUserProgram(userProgramUri, program.uri);

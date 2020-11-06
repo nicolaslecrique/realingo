@@ -40,7 +40,10 @@ class ProgramServices {
     RestLearningProgram restProgram =
         await RestApi.getProgram(targetLanguage.uri, originLanguage.uri);
 
-    return new LearningProgram(restProgram.uri,
-        restProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.itemLabel)));
+    return new LearningProgram(
+        restProgram.uri,
+        restProgram.itemsToLearn
+            .map((e) => ItemToLearn(e.uri, e.itemLabel))
+            .toList(growable: false));
   }
 }

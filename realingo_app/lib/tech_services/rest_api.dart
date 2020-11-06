@@ -27,6 +27,11 @@ class RestItemToLearn {
   final String itemLabel;
 
   RestItemToLearn(this.uri, this.itemLabel);
+
+  factory RestItemToLearn.fromJson(Map<String, dynamic> json) =>
+      _$RestItemToLearnFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RestItemToLearnToJson(this);
 }
 
 @JsonSerializable()
@@ -38,6 +43,11 @@ class RestLearningProgram {
 
   RestLearningProgram(this.uri, this.originLanguageUri, this.targetLanguageUri,
       this.itemsToLearn);
+
+  factory RestLearningProgram.fromJson(Map<String, dynamic> json) =>
+      _$RestLearningProgramFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RestLearningProgramToJson(this);
 }
 
 /*
@@ -73,7 +83,7 @@ class RestApi {
       String targetLanguageUri, String originLanguageUri) async {
     http.Response response = await http.get(
         "$_restApiBaseUrl/program?target_language_uri=$targetLanguageUri&origin_language_uri=$originLanguageUri");
-    final program = json.decode(response.body);
+    final program = RestLearningProgram.fromJson(json.decode(response.body));
     return program;
   }
 }

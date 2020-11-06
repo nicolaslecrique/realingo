@@ -1,5 +1,10 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:realingo_app/tech_services/app_config.dart';
+
+
+TODO NICO ADD HIVE TYPE
+// https://docs.hivedb.dev/#/custom-objects/generate_adapter
 
 class DbItemToLearn {
   final String uri;
@@ -27,22 +32,25 @@ Access to data in hive database
  */
 class Db {
   static final String _boxGlobalVariablesKey = "global_variables";
-  static final String _boxUserProgramsKey = "userPrograms";
-  static final String _boxLearningProgramsKey = "learningPrograms";
+  static final String _boxUserProgramsKey = "user_programs";
+  static final String _boxLearningProgramsKey = "learning_programs";
 
   static Future<void> load() async {
     await Hive.initFlutter();
-    await Hive.openBox(_boxGlobalVariablesKey);
-    await Hive.openBox(_boxUserProgramsKey);
-    await Hive.openBox(_boxLearningProgramsKey);
+
+    if (AppConfig.deleteHiveData == "TRUE") {
+      (await Hive.openBox<dynamic>(_boxGlobalVariablesKey)).deleteFromDisk();
+      (await Hive.openBox<dynamic>(_boxUserProgramsKey)).deleteFromDisk();
+      (await Hive.openBox<dynamic>(_boxLearningProgramsKey)).deleteFromDisk();
+    }
+
+    await Hive.openBox<dynamic>(_boxGlobalVariablesKey);
+    await Hive.openBox<DbUserProgram>(_boxUserProgramsKey);
+    await Hive.openBox<DbLearningProgram>(_boxLearningProgramsKey);
   }
 
-  static close() {
-    Hive.close();
-  }
-
-  static Box<String> _boxGlobalVariables() {
-    return Hive.box<String>(_boxGlobalVariablesKey);
+  static Box<dynamic> _boxGlobalVariables() {
+    return Hive.box<dynamic>(_boxGlobalVariablesKey);
   }
 
   static Box<DbUserProgram> _boxUserPrograms() {
@@ -51,6 +59,10 @@ class Db {
 
   static Box<DbLearningProgram> _boxLearningPrograms() {
     return Hive.box<DbLearningProgram>(_boxLearningProgramsKey);
+  }
+
+  static close() {
+    Hive.close();
   }
 
   static String getCurrentUserProgramUriOrNull() {
