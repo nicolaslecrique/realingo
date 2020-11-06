@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/routes/program_route.dart';
+import 'package:realingo_app/routes/home_route.dart';
 import 'package:realingo_app/services/user_program_services.dart';
 import 'package:realingo_app/tech_services/db.dart';
 
@@ -20,15 +20,14 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   }
 
   Future<void> loadUserDataThenRedirect() async {
-    Db db = await DbLoader.load();
-    UserProgramServices userProgramServices = UserProgramServices(db);
-    var userProgram = userProgramServices.getCurrentUserProgramOrNull();
+    await Db.load();
+    var userProgramUri = UserProgramServices.getCurrentUserProgramUriOrNull();
 
-    if (userProgram == null) {
+    if (userProgramUri == null) {
       Navigator.pushReplacementNamed(context, LoginRoute.route);
     } else {
-      Navigator.pushReplacementNamed(context, ProgramRoute.route,
-          arguments: ProgramRouteArgs(db, userProgram));
+      Navigator.pushReplacementNamed(context, HomeRoute.route,
+          arguments: HomeRouteArgs(userProgramUri));
     }
   }
 

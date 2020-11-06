@@ -1,23 +1,30 @@
+import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/tech_services/db.dart';
 
 class UserProgram {
   final String uri;
+  final LearningProgram program;
 
-  UserProgram(this.uri);
+  UserProgram(this.uri, this.program);
 }
 
 class UserProgramServices {
-  final Db _db;
+  static String getCurrentUserProgramUriOrNull() {
+    return Db.getCurrentUserProgramUriOrNull();
+  }
 
-  UserProgramServices(this._db);
+  static Future<String> initUserProgramReturnUri(
+      Language originLanguage, Language targetLanguage) async {
+    LearningProgram program =
+        await ProgramServices.getProgram(targetLanguage, originLanguage);
 
-  UserProgram getCurrentUserProgramOrNull() {
-    var currentUserProgramUriOrNull = _db.getCurrentUserProgramUriOrNull();
-    if (currentUserProgramUriOrNull != null) {
-      var userProgram = _db.getUserProgram(currentUserProgramUriOrNull);
-      return UserProgram(userProgram.uri);
-    } else {
-      return null;
-    }
+    await Db.saveLearningProgram(DbLearningProgram(program.uri,
+        program.itemsToLearn.map((e) => DbItemToLearn(e.uri, e.itemLabel))));
+    String userProgramUri =
+        program.uri + "-" + DateTime.now().toIso8601String();
+    DbUserProgram userProgram = DbUserProgram(userProgramUri, program.uri);
+
+    await Db.saveUserProgram(userProgram);
+    return userProgramUri;
   }
 }

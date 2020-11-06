@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/routes/program_route.dart';
+import 'package:realingo_app/routes/building_program_route.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/widgets/future_builder_wrapper.dart';
@@ -51,7 +51,9 @@ class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
         buttonText: "OK",
         onButtonPressed: selectedLanguage == null
             ? null
-            : () => Navigator.pushNamed(context, ProgramRoute.route),
+            : () => Navigator.pushNamed(context, BuildingProgramRoute.route,
+                arguments:
+                    BuildingProgramRouteArgs(selectedLanguage, targetLanguage)),
       ),
     );
   }

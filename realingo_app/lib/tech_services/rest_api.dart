@@ -10,15 +10,34 @@ part 'rest_api.g.dart';
 
 @JsonSerializable()
 class RestLanguage {
-  final String languageUri;
+  final String uri;
   final String languageLabel;
 
-  RestLanguage(this.languageUri, this.languageLabel);
+  RestLanguage(this.uri, this.languageLabel);
 
   factory RestLanguage.fromJson(Map<String, dynamic> json) =>
       _$RestLanguageFromJson(json);
 
   Map<String, dynamic> toJson() => _$RestLanguageToJson(this);
+}
+
+@JsonSerializable()
+class RestItemToLearn {
+  final String uri;
+  final String itemLabel;
+
+  RestItemToLearn(this.uri, this.itemLabel);
+}
+
+@JsonSerializable()
+class RestLearningProgram {
+  final String uri;
+  final String originLanguageUri;
+  final String targetLanguageUri;
+  final List<RestItemToLearn> itemsToLearn;
+
+  RestLearningProgram(this.uri, this.originLanguageUri, this.targetLanguageUri,
+      this.itemsToLearn);
 }
 
 /*
@@ -48,5 +67,13 @@ class RestApi {
         .toList();
 
     return languages;
+  }
+
+  static Future<RestLearningProgram> getProgram(
+      String targetLanguageUri, String originLanguageUri) async {
+    http.Response response = await http.get(
+        "$_restApiBaseUrl/program?target_language_uri=$targetLanguageUri&origin_language_uri=$originLanguageUri");
+    final program = json.decode(response.body);
+    return program;
   }
 }
