@@ -7,16 +7,17 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 data class RestLanguage(
-        val languageUri: String,
+        val uri: String,
         val languageLabel: String
 )
 
 data class RestItemToLearn(
+        val uri: String,
         val itemLabel: String,
-        val itemUri: String
 )
 
 data class RestLearningProgram(
+        val uri: String,
         val originLanguageUri: String,
         val targetLanguageUri: String,
         val itemsToLearn: List<RestItemToLearn>
@@ -60,7 +61,10 @@ class RestApi {
 
         val program = loadProgram(originLanguage, targetLanguage)
 
+        val uri = "${targetLanguageUri}-from-${originLanguageUri}-1"
+
         return RestLearningProgram(
+                uri,
                 originLanguageUri,
                 targetLanguageUri,
                 program.items.map { RestItemToLearn(it.itemString, it.itemUri) }
