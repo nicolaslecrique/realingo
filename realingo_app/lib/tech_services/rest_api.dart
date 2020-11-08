@@ -5,6 +5,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:realingo_app/tech_services/app_config.dart';
 
 // command to run generation watch: ../../../../tools/flutter/flutter/bin/flutter pub run build_runner watch
+// or to not watch but ust build one shot:  ../../../../tools/flutter/flutter/bin/flutter pub run build_runner build
 // https://flutter.dev/docs/development/data-and-backend/json#serializing-json-using-code-generation-libraries
 part 'rest_api.g.dart';
 

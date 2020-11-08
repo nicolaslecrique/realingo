@@ -2,26 +2,39 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:realingo_app/tech_services/app_config.dart';
 
+// command line to generate the TypeAdaptater for objects put in hive
+// ../../../../tools/flutter/flutter/bin/flutter pub run build_runner build
+// flutter packages pub run build_runner build
+part 'db.g.dart';
 
-TODO NICO ADD HIVE TYPE
-// https://docs.hivedb.dev/#/custom-objects/generate_adapter
-
+@HiveType(typeId: 0)
 class DbItemToLearn {
+  @HiveField(0)
   final String uri;
+
+  @HiveField(1)
   final String itemLabel;
 
   DbItemToLearn(this.uri, this.itemLabel);
 }
 
+@HiveType(typeId: 1)
 class DbLearningProgram {
+  @HiveField(0)
   final String uri;
+
+  @HiveField(1)
   final List<DbItemToLearn> itemsToLearn;
 
   DbLearningProgram(this.uri, this.itemsToLearn);
 }
 
+@HiveType(typeId: 2)
 class DbUserProgram {
+  @HiveField(0)
   final String uri;
+
+  @HiveField(1)
   final String learningProgramUri;
 
   DbUserProgram(this.uri, this.learningProgramUri);
@@ -37,6 +50,9 @@ class Db {
 
   static Future<void> load() async {
     await Hive.initFlutter();
+    Hive.registerAdapter(DbItemToLearnAdapter());
+    Hive.registerAdapter(DbLearningProgramAdapter());
+    Hive.registerAdapter(DbUserProgramAdapter());
 
     if (AppConfig.deleteHiveData == "TRUE") {
       (await Hive.openBox<dynamic>(_boxGlobalVariablesKey)).deleteFromDisk();

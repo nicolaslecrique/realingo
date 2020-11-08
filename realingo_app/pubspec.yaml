@@ -43,7 +43,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-    # local database
+    # local database: dependency to generate type adaptater from annotations
   hive_generator: ^0.8.2
 
   # to generate source code, used by json_serializable
