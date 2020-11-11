@@ -13,21 +13,26 @@ class UserProgramServices {
     return Db.getCurrentUserProgramUriOrNull();
   }
 
-  static Future<String> initUserProgramReturnUri(
-      Language originLanguage, Language targetLanguage) async {
-    LearningProgram program =
-        await ProgramServices.getProgram(targetLanguage, originLanguage);
+  static Future<void> setCurrentUserProgramUri(String uri) async {
+    return Db.setCurrentUserProgramUri(uri);
+  }
 
-    await Db.saveLearningProgram(DbLearningProgram(
-        program.uri,
-        program.itemsToLearn
-            .map((e) => DbItemToLearn(e.uri, e.itemLabel))
-            .toList(growable: false)));
-    String userProgramUri =
-        program.uri + "-" + DateTime.now().toIso8601String();
+  static Future<void> initUserProgram(Language originLanguage, Language targetLanguage) async {
+    final program = await ProgramServices.getProgram(targetLanguage, originLanguage);
+
+    await Db.setLearningProgram(DbLearningProgram(
+        program.uri, program.itemsToLearn.map((e) => DbItemToLearn(e.uri, e.itemLabel)).toList(growable: false)));
+    String userProgramUri = program.uri + "-" + DateTime.now().toIso8601String();
     DbUserProgram userProgram = DbUserProgram(userProgramUri, program.uri);
+    await Db.setUserProgram(userProgram);
+    await Db.setCurrentUserProgramUri(userProgram.uri);
+    return;
+  }
 
-    await Db.saveUserProgram(userProgram);
-    return userProgramUri;
+  static UserProgram getCurrentUserProgram() {
+    String userProgramUri = Db.getCurrentUserProgramUriOrNull();
+    DbUserProgram dbUserProgram = Db.getUserProgram(userProgramUri);
+    LearningProgram learningProgram = ProgramServices.getCachedProgram(dbUserProgram.learningProgramUri);
+    return UserProgram(dbUserProgram.uri, learningProgram);
   }
 }

@@ -26,8 +26,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
     if (userProgramUri == null) {
       Navigator.pushReplacementNamed(context, LoginRoute.route);
     } else {
-      Navigator.pushReplacementNamed(context, HomeRoute.route,
-          arguments: HomeRouteArgs(userProgramUri));
+      Navigator.pushReplacementNamed(context, HomeRoute.route);
     }
   }
 

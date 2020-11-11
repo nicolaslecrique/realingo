@@ -20,8 +20,7 @@ class BuildingProgramRoute extends StatefulWidget {
   BuildingProgramRoute(this.args, {Key key}) : super(key: key);
 
   @override
-  _BuildingProgramRouteState createState() =>
-      _BuildingProgramRouteState(this.args);
+  _BuildingProgramRouteState createState() => _BuildingProgramRouteState(this.args);
 }
 
 class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
@@ -32,12 +31,10 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
   @override
   void initState() {
     super.initState();
-    Future<String> futureProgram = UserProgramServices.initUserProgramReturnUri(
-        this.args.originLanguage, this.args.targetLanguage);
+    Future<void> futureProgram =
+        UserProgramServices.initUserProgram(this.args.originLanguage, this.args.targetLanguage);
 
-    futureProgram.then((String userProgramUri) =>
-        Navigator.pushReplacementNamed(context, HomeRoute.route,
-            arguments: HomeRouteArgs(userProgramUri)));
+    futureProgram.then((value) => Navigator.pushReplacementNamed(context, HomeRoute.route));
   }
 
   @override

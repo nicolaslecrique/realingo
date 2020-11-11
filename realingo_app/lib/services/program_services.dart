@@ -1,3 +1,4 @@
+import 'package:realingo_app/tech_services/db.dart';
 import 'package:realingo_app/tech_services/rest_api.dart';
 
 class Language {
@@ -23,27 +24,25 @@ class LearningProgram {
 
 class ProgramServices {
   static Future<List<Language>> getAvailableTargetLanguages() async {
-    return (await RestApi.getAvailableTargetLanguages())
-        .map((l) => Language(l.uri, l.languageLabel))
-        .toList();
+    return (await RestApi.getAvailableTargetLanguages()).map((l) => Language(l.uri, l.languageLabel)).toList();
   }
 
-  static Future<List<Language>> getAvailableOriginLanguages(
-      Language targetLanguage) async {
+  static Future<List<Language>> getAvailableOriginLanguages(Language targetLanguage) async {
     return (await RestApi.getAvailableOriginLanguages(targetLanguage.uri))
         .map((l) => Language(l.uri, l.languageLabel))
         .toList();
   }
 
-  static Future<LearningProgram> getProgram(
-      Language targetLanguage, Language originLanguage) async {
-    RestLearningProgram restProgram =
-        await RestApi.getProgram(targetLanguage.uri, originLanguage.uri);
+  static Future<LearningProgram> getProgram(Language targetLanguage, Language originLanguage) async {
+    RestLearningProgram restProgram = await RestApi.getProgram(targetLanguage.uri, originLanguage.uri);
 
     return new LearningProgram(
-        restProgram.uri,
-        restProgram.itemsToLearn
-            .map((e) => ItemToLearn(e.uri, e.itemLabel))
-            .toList(growable: false));
+        restProgram.uri, restProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.itemLabel)).toList(growable: false));
+  }
+
+  static LearningProgram getCachedProgram(String uri) {
+    DbLearningProgram dbLearningProgram = Db.learningPrograms.get(uri);
+    return LearningProgram(dbLearningProgram.uri,
+        dbLearningProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.itemLabel)).toList(growable: false));
   }
 }
