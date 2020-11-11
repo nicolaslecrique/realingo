@@ -43,11 +43,7 @@ class Translator:
     tokenizer: MarianTokenizer
 
     def __init__(self, source_language: Language, target_language: Language):
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
-        else:
-            self.device = torch.device("cpu")
-
+        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
         model_name: str = to_model_name(source_language, target_language)
         back_model_name: str = to_model_name(target_language, source_language)
@@ -66,15 +62,27 @@ class Translator:
 
     def translate(self, sentences: List[str]) -> List[TranslatedSentence]:
 
-        translations: List[str] = self._translate(sentences, self.tokenizer, self.model)
-        back_translations: List[str] = self._translate(translations, self.back_tokenizer, self.back_model)
+        with torch.no_grad():
 
-        translation_confidence: List[float] = [1.0 if o == bt else 0.0 for o, bt in zip(sentences, back_translations)]
+            translations: List[str] = self._translate(sentences, self.tokenizer, self.model)
+            back_translations: List[str] = self._translate(translations, self.back_tokenizer, self.back_model)
 
-        result = [TranslatedSentence(original_sentence=s, translated_sentence=t, back_translation=b, confidence=c)
-                  for s, t, b, c in zip(sentences, translations, back_translations, translation_confidence)]
+            translation_confidence: List[float] = [1.0 if o == bt else 0.0 for o, bt in zip(sentences, back_translations)]
 
-        return result
+            result = [TranslatedSentence(original_sentence=s, translated_sentence=t, back_translation=b, confidence=c)
+                      for s, t, b, c in zip(sentences, translations, back_translations, translation_confidence)]
+
+            return result
+
+
+# TODO: to evaluate translation quality: compute sentence similarity
+# with https://huggingface.co/sentence-transformers,
+# https://huggingface.co/sentence-transformers/xlm-r-100langs-bert-base-nli-mean-tokens
+
+
+# https://huggingface.co/pvl/labse_bert
+# LaBSE is the SOTA pour sentence embeding for bitext mining, we can check the translation, or the back-translation ?
+
 
 
 sentences_ex = [

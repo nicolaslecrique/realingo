@@ -42,13 +42,19 @@ class SentenceSimilarityEvaluator:
 
 
 sentence_pairs = [
-    ("Il fait beau", "Il fait pas beau"),
-    ("Il fait beau", "Il faut beau temps"),
-    ("Il fait beau", "Il fait beau aujourd'hui."),
-    ("Il fait beau", "Il fait un beau temps aujourd'hui."),
-    ("Il fait beau", "Il est beau aujourd'hui."),
+    ("Ít nhất thì ngày Chủ nhật cũng phải cho nó ngủ một chút.", "Chủ nhật, ít nhất hãy để nó ngủ."),
+    ("Chị chỉ sợ mất nó thôi.", "Tôi chỉ sợ tôi sẽ mất anh ấy."),
+    ("Irina nên để tâm tới bài luận văn, không phải một đám cưới.", "Irina nên nghĩ về luận án của cô ấy, chứ không phải đám cưới."),
+    ("Coi chừng đó, Chú Fyodor.", "Cẩn thận đấy, chú đừng để ý đến chuyện đó."),
+    ("Chị ấy sắp lấy bằng Tiến sĩ Y khoa còn Chú vẫn chỉ là một thầy thuốc quèn.", "Cô ấy sắp có bằng tiến sĩ y khoa, và anh vẫn chỉ là một bác sĩ."),
+    ("Boris đang phải làm ở xưởng suốt ngày và suốt đêm.", "Boris làm việc ở nhà máy cả ngày lẫn đêm."),
+]
+
+sentence_pairs_eng = [
+    ("A hot dog", "A dog"),
+    ("I eat a hot dog", "I eat a sandwich"),
 ]
 
 ev = SentenceSimilarityEvaluator()
-result = ev.compute_similarity(sentence_pairs)
+result = ev.compute_similarity(sentence_pairs_eng)
 print(str(result))
