@@ -40,41 +40,67 @@ class DbUserProgram {
   DbUserProgram(this.uri, this.learningProgramUri);
 }
 
+class _GlobalVariableBoxKeys {
+  static final String currentUserProgramUri = "current_user_program_uri";
+}
+
+// associate boxName, type of data and typeAdapters
+class _Box<T> {
+  final String _name;
+  final List<TypeAdapter> _adapters;
+
+  _Box(this._name, this._adapters);
+
+  T get(String key) {
+    return Hive.box<T>(_name).get(key);
+  }
+
+  Future<void> put(String key, T value) async {
+    return await Hive.box<T>(_name).put(key, value);
+  }
+
+  void register() {
+    _adapters.forEach((element) {
+      Hive.registerAdapter(element);
+    });
+  }
+
+  Future<void> open() async {
+    return await Hive.openBox<T>(_name);
+  }
+
+  Future<void> delete() async {
+    return (await Hive.openBox<T>(_name)).deleteFromDisk();
+  }
+}
+
 /*
 Access to data in hive database
  */
 class Db {
-  static final String _boxGlobalVariablesKey = "global_variables";
-  static final String _boxUserProgramsKey = "user_programs";
-  static final String _boxLearningProgramsKey = "learning_programs";
+  static _Box<dynamic> globalVariables = _Box("global_variables", []);
+  static _Box<DbUserProgram> userPrograms = _Box("user_programs", [DbUserProgramAdapter()]);
+  static _Box<DbLearningProgram> learningPrograms =
+      _Box("learning_programs", [DbLearningProgramAdapter(), DbItemToLearnAdapter()]);
+
+  static final all = [globalVariables, userPrograms, learningPrograms];
 
   static Future<void> load() async {
     await Hive.initFlutter();
-    Hive.registerAdapter(DbItemToLearnAdapter());
-    Hive.registerAdapter(DbLearningProgramAdapter());
-    Hive.registerAdapter(DbUserProgramAdapter());
 
-    if (AppConfig.deleteHiveData == "TRUE") {
-      (await Hive.openBox<dynamic>(_boxGlobalVariablesKey)).deleteFromDisk();
-      (await Hive.openBox<dynamic>(_boxUserProgramsKey)).deleteFromDisk();
-      (await Hive.openBox<dynamic>(_boxLearningProgramsKey)).deleteFromDisk();
+    for (_Box box in all) {
+      box.register();
     }
 
-    await Hive.openBox<dynamic>(_boxGlobalVariablesKey);
-    await Hive.openBox<DbUserProgram>(_boxUserProgramsKey);
-    await Hive.openBox<DbLearningProgram>(_boxLearningProgramsKey);
-  }
+    if (AppConfig.deleteHiveData == "TRUE") {
+      for (_Box box in all) {
+        await box.delete();
+      }
+    }
 
-  static Box<dynamic> _boxGlobalVariables() {
-    return Hive.box<dynamic>(_boxGlobalVariablesKey);
-  }
-
-  static Box<DbUserProgram> _boxUserPrograms() {
-    return Hive.box<DbUserProgram>(_boxUserProgramsKey);
-  }
-
-  static Box<DbLearningProgram> _boxLearningPrograms() {
-    return Hive.box<DbLearningProgram>(_boxLearningProgramsKey);
+    for (_Box box in all) {
+      await box.open();
+    }
   }
 
   static close() {
@@ -82,18 +108,26 @@ class Db {
   }
 
   static String getCurrentUserProgramUriOrNull() {
-    return _boxGlobalVariables().get("current_user_program_uri");
+    return globalVariables.get(_GlobalVariableBoxKeys.currentUserProgramUri);
+  }
+
+  static Future<void> setCurrentUserProgramUri(String userProgramUri) async {
+    return globalVariables.put(_GlobalVariableBoxKeys.currentUserProgramUri, userProgramUri);
   }
 
   static DbUserProgram getUserProgram(String userProgramUri) {
-    return _boxUserPrograms().get(userProgramUri);
+    return userPrograms.get(userProgramUri);
   }
 
-  static Future<void> saveLearningProgram(DbLearningProgram program) async {
-    _boxLearningPrograms().put(program.uri, program);
+  static Future<void> setUserProgram(DbUserProgram userProgram) async {
+    return userPrograms.put(userProgram.uri, userProgram);
   }
 
-  static Future<void> saveUserProgram(DbUserProgram userProgram) async {
-    _boxUserPrograms().put(userProgram.uri, userProgram);
+  static DbLearningProgram getLearningProgram(String uri) {
+    return learningPrograms.get(uri);
+  }
+
+  static Future<void> setLearningProgram(DbLearningProgram program) async {
+    return learningPrograms.put(program.uri, program);
   }
 }
