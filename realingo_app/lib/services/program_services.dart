@@ -1,48 +1,34 @@
-import 'package:realingo_app/tech_services/db.dart';
-import 'package:realingo_app/tech_services/rest_api.dart';
-
-class Language {
-  final String uri;
-  final String languageLabel;
-
-  Language(this.uri, this.languageLabel);
-}
-
-class ItemToLearn {
-  final String uri;
-  final String itemLabel;
-
-  ItemToLearn(this.uri, this.itemLabel);
-}
-
-class LearningProgram {
-  final String uri;
-  final List<ItemToLearn> itemsToLearn;
-
-  LearningProgram(this.uri, this.itemsToLearn);
-}
+import 'package:realingo_app/model/program.dart';
+import 'package:realingo_app/tech_services/database/db.dart';
+import 'package:realingo_app/tech_services/rest/rest_api.dart';
+import 'package:realingo_app/tech_services/user_config.dart';
 
 class ProgramServices {
   static Future<List<Language>> getAvailableTargetLanguages() async {
-    return (await RestApi.getAvailableTargetLanguages()).map((l) => Language(l.uri, l.languageLabel)).toList();
+    return await RestApi.getAvailableTargetLanguages();
   }
 
   static Future<List<Language>> getAvailableOriginLanguages(Language targetLanguage) async {
-    return (await RestApi.getAvailableOriginLanguages(targetLanguage.uri))
-        .map((l) => Language(l.uri, l.languageLabel))
-        .toList();
+    return await RestApi.getAvailableOriginLanguages(targetLanguage.uri);
   }
 
-  static Future<LearningProgram> getProgram(Language targetLanguage, Language originLanguage) async {
-    RestLearningProgram restProgram = await RestApi.getProgram(targetLanguage.uri, originLanguage.uri);
+  static Future<UserProgram> buildUserProgram(Language targetLanguage, Language originLanguage) async {
+    final program = await RestApi.getProgram(targetLanguage.uri, originLanguage.uri);
 
-    return new LearningProgram(
-        restProgram.uri, restProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.itemLabel)).toList(growable: false));
+    final userProgram = UserProgram("${program.uri}-${DateTime.now()}", program);
+
+    await Db.insertUserProgram(userProgram);
+
+    UserConfig.setDefaultUserProgramUri(userProgram.uri);
+    return userProgram;
   }
 
-  static LearningProgram getCachedProgram(String uri) {
-    DbLearningProgram dbLearningProgram = Db.learningPrograms.get(uri);
-    return LearningProgram(dbLearningProgram.uri,
-        dbLearningProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.itemLabel)).toList(growable: false));
+  static Future<UserProgram> getDefaultUserProgramOrNull() async {
+    String uri = await UserConfig.getDefaultUserProgramUriOrNull();
+    if (uri != null) {
+      return await Db.getUserProgram(uri);
+    } else {
+      return null;
+    }
   }
 }

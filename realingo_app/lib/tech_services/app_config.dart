@@ -5,5 +5,5 @@ class AppConfig {
   // read compile-time variables defined by --dart-define
   // "const" is needed to make it work
   static const apiUrl = const String.fromEnvironment('API_URL');
-  static const deleteHiveData = const String.fromEnvironment('DELETE_HIVE');
+  static const deleteDataAtStartup = const String.fromEnvironment('DELETE_DATA_AT_STARTUP') == "TRUE" ? true : false;
 }

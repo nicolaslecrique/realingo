@@ -6,8 +6,17 @@ import 'package:realingo_app/routes/login_route.dart';
 import 'package:realingo_app/routes/select_origin_language_route.dart';
 import 'package:realingo_app/routes/select_target_language_route.dart';
 import 'package:realingo_app/routes/splash_screen_route.dart';
+import 'package:realingo_app/tech_services/app_config.dart';
+import 'package:realingo_app/tech_services/database/db_init.dart';
+import 'package:realingo_app/tech_services/user_config.dart';
 
 void main() {
+  if (AppConfig.deleteDataAtStartup) {
+    // for debug
+    deleteDb();
+    UserConfig.clear();
+  }
+
   runApp(Phoenix(child: MyApp()));
 }
 
@@ -23,16 +32,13 @@ class MyApp extends StatelessWidget {
         initialRoute: SplashScreenRoute.route,
         routes: {
           SplashScreenRoute.route: (context) => SplashScreenRoute(),
-          SelectTargetLanguageRoute.route: (context) =>
-              SelectTargetLanguageRoute(),
+          SelectTargetLanguageRoute.route: (context) => SelectTargetLanguageRoute(),
           SelectOriginLanguageRoute.route: (context) =>
               // cannot load arguments directly in widget build() because initState needs it
-              SelectOriginLanguageRoute(
-                  ModalRoute.of(context).settings.arguments),
+              SelectOriginLanguageRoute(ModalRoute.of(context).settings.arguments),
           HomeRoute.route: (context) => HomeRoute(),
           LoginRoute.route: (context) => LoginRoute(),
-          BuildingProgramRoute.route: (context) =>
-              BuildingProgramRoute(ModalRoute.of(context).settings.arguments),
+          BuildingProgramRoute.route: (context) => BuildingProgramRoute(ModalRoute.of(context).settings.arguments),
         });
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/routes/select_origin_language_route.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
@@ -9,8 +10,7 @@ class SelectTargetLanguageRoute extends StatefulWidget {
   static const route = '/select_target_language';
 
   @override
-  _SelectTargetLanguageRouteState createState() =>
-      _SelectTargetLanguageRouteState();
+  _SelectTargetLanguageRouteState createState() => _SelectTargetLanguageRouteState();
 }
 
 class _SelectTargetLanguageRouteState extends State<SelectTargetLanguageRoute> {
@@ -38,8 +38,7 @@ class _SelectTargetLanguageRouteState extends State<SelectTargetLanguageRoute> {
         buttonText: "OK",
         onButtonPressed: selectedLanguage == null
             ? null
-            : () => Navigator.pushNamed(
-                context, SelectOriginLanguageRoute.route,
+            : () => Navigator.pushNamed(context, SelectOriginLanguageRoute.route,
                 arguments: SelectOriginLanguageRouteArgs(selectedLanguage)),
       ),
     );

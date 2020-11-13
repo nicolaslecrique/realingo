@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/routes/home_route.dart';
 import 'package:realingo_app/screens/loading_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
-import 'package:realingo_app/services/user_program_services.dart';
 
 // Screen to build a new program, so everything is in local when displaying program_route (as if it comes from splash_screen)
 
@@ -31,10 +31,9 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
   @override
   void initState() {
     super.initState();
-    Future<void> futureProgram =
-        UserProgramServices.initUserProgram(this.args.originLanguage, this.args.targetLanguage);
-
-    futureProgram.then((value) => Navigator.pushReplacementNamed(context, HomeRoute.route));
+    Future<UserProgram> futureProgram =
+        ProgramServices.buildUserProgram(this.args.targetLanguage, this.args.originLanguage);
+    futureProgram.then((value) => Navigator.pushReplacementNamed(context, HomeRoute.route, arguments: value));
   }
 
   @override

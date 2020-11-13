@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/routes/building_program_route.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
@@ -18,8 +19,7 @@ class SelectOriginLanguageRoute extends StatefulWidget {
   SelectOriginLanguageRoute(this.args, {Key key}) : super(key: key);
 
   @override
-  _SelectOriginLanguageRouteState createState() =>
-      _SelectOriginLanguageRouteState(this.args.targetLanguage);
+  _SelectOriginLanguageRouteState createState() => _SelectOriginLanguageRouteState(this.args.targetLanguage);
 }
 
 class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
@@ -32,8 +32,7 @@ class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
   @override
   void initState() {
     super.initState();
-    futureLanguages =
-        ProgramServices.getAvailableOriginLanguages(targetLanguage);
+    futureLanguages = ProgramServices.getAvailableOriginLanguages(targetLanguage);
     selectedLanguage = null;
   }
 
@@ -52,8 +51,7 @@ class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
         onButtonPressed: selectedLanguage == null
             ? null
             : () => Navigator.pushNamed(context, BuildingProgramRoute.route,
-                arguments:
-                    BuildingProgramRouteArgs(selectedLanguage, targetLanguage)),
+                arguments: BuildingProgramRouteArgs(selectedLanguage, targetLanguage)),
       ),
     );
   }

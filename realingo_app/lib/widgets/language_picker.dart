@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/services/program_services.dart';
+import 'package:realingo_app/model/program.dart';
 
 class LanguagePicker extends StatelessWidget {
   final List<Language> languages;
   final Language selected;
   final void Function(Language) onSelect;
 
-  LanguagePicker(
-      {@required this.languages, this.selected, this.onSelect, Key key})
-      : super(key: key);
+  LanguagePicker({@required this.languages, this.selected, this.onSelect, Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +16,7 @@ class LanguagePicker extends StatelessWidget {
             .map((e) => Container(
                   color: e == selected ? Colors.blue : Colors.white,
                   child: ListTile(
-                    title: Text(e.languageLabel),
+                    title: Text(e.label),
                     onTap: () => onSelect(e),
                   ),
                 ))
