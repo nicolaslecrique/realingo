@@ -21,9 +21,10 @@ class Db {
 
     return await _db.transaction((Transaction txn) async {
       // 1) insert program id needed
-      var idProgram = Sqflite.firstIntValue(
-          await txn.rawQuery("SELECT id FROM ${DB.learningProgram} WHERE uri = ?", [program.uri]));
-      if (idProgram == null) {
+      List<Map<String, dynamic>> idProgramResult =
+          await txn.rawQuery("SELECT id FROM ${DB.learningProgram} WHERE uri = ?", [program.uri]);
+      int idProgram;
+      if (idProgramResult.length == 0) {
         idProgram = await txn.insert("${DB.learningProgram}", {DB.learningProgram.uri: program.uri});
         Batch batch = txn.batch();
         for (int idItem = 0; idItem < program.itemsToLearn.length; idItem++) {
@@ -37,6 +38,8 @@ class Db {
             DB.itemToLearn.uri: item.uri,
           });
         }
+      } else {
+        idProgram = idProgramResult[0][DB.learningProgram.id];
       }
       // 2) insert userProgram
       txn.insert(
@@ -44,9 +47,9 @@ class Db {
     });
   }
 
-  static Future<LearningProgram> getLearningProgram(String uri) async {
+  static Future<LearningProgram> _getLearningProgram(int id) async {
     List<Map<String, dynamic>> resultProgram =
-        await _db.query("${DB.learningProgram}", where: '${DB.learningProgram.uri} = ?', whereArgs: [uri]);
+        await _db.query("${DB.learningProgram}", where: '${DB.learningProgram.id} = ?', whereArgs: [id]);
     RowLearningProgram learningProgram = RowLearningProgram.fromDb(resultProgram[0]);
 
     final List<Map<String, dynamic>> resultItems = await _db.query("${DB.itemToLearn}",
@@ -64,7 +67,7 @@ class Db {
 
     RowUserProgram userProgram = RowUserProgram.fromDb(resultUserProgram[0]);
 
-    var learningProgram = await getLearningProgram(userProgram.uri);
+    var learningProgram = await _getLearningProgram(userProgram.learningProgramId);
 
     return UserProgram(userProgram.uri, learningProgram);
   }

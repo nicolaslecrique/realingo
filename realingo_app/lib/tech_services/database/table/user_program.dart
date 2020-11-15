@@ -18,10 +18,10 @@ class TableUserProgram {
 
   String getCreateQuery() => '''
   CREATE TABLE $this(
-    $id INTEGER PRIMARY_KEY,
+    $id INTEGER PRIMARY KEY,
     $uri TEXT NOT NULL UNIQUE,
     $learningProgramId INTEGER NOT NULL,
-    FOREIGN KEY ($learningProgramId) REFERENCES ${DB.learningProgram.id}
+    FOREIGN KEY ($learningProgramId) REFERENCES  ${DB.learningProgram}(${DB.learningProgram.id})
   )
   ''';
 }

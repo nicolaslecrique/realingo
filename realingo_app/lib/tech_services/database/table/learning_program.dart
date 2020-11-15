@@ -15,8 +15,8 @@ class TableLearningProgram {
 
   String getCreateQuery() => '''
   CREATE TABLE $this(
-    $id INTEGER PRIMARY_KEY,
-    $uri TEXT NOT NULL  UNIQUE
+    $id INTEGER PRIMARY KEY,
+    $uri TEXT NOT NULL UNIQUE
   )
   ''';
 }
