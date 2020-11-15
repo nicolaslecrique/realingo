@@ -8,15 +8,22 @@ import 'package:realingo_app/tech_services/database/table/learning_program.dart'
 import 'package:realingo_app/tech_services/database/table/user_program.dart';
 import 'package:sqflite/sqflite.dart';
 
-class Db {
-  static Database _db;
+final db = Db();
 
-  static Future<void> init() async {
-    _db = await initDb();
+class Db {
+  Database _db;
+
+  Future<void> init() async {
+    String path = await dbPath;
+    return await initWith(databaseFactory, path);
+  }
+
+  Future<void> initWith(DatabaseFactory databaseFactory, String dbPath) async {
+    _db = await initDb(databaseFactory, dbPath);
     return;
   }
 
-  static Future<void> insertUserProgram(UserProgram userProgram) async {
+  Future<void> insertUserProgram(UserProgram userProgram) async {
     LearningProgram program = userProgram.program;
 
     return await _db.transaction((Transaction txn) async {
@@ -35,9 +42,9 @@ class Db {
             DB.itemToLearn.idxInProgram: idItem,
             DB.itemToLearn.label: item.label,
             DB.itemToLearn.learningProgramId: idProgram,
-            DB.itemToLearn.uri: item.uri,
           });
         }
+        batch.commit();
       } else {
         idProgram = idProgramResult[0][DB.learningProgram.id];
       }
@@ -47,21 +54,23 @@ class Db {
     });
   }
 
-  static Future<LearningProgram> _getLearningProgram(int id) async {
+  Future<LearningProgram> _getLearningProgram(int id) async {
     List<Map<String, dynamic>> resultProgram =
         await _db.query("${DB.learningProgram}", where: '${DB.learningProgram.id} = ?', whereArgs: [id]);
     RowLearningProgram learningProgram = RowLearningProgram.fromDb(resultProgram[0]);
 
     final List<Map<String, dynamic>> resultItems = await _db.query("${DB.itemToLearn}",
-        where: '${DB.itemToLearn.id} = ?', whereArgs: [learningProgram.id], orderBy: DB.itemToLearn.idxInProgram);
+        where: '${DB.itemToLearn.learningProgramId} = ?',
+        whereArgs: [learningProgram.id],
+        orderBy: DB.itemToLearn.idxInProgram);
 
     List<ItemToLearn> items =
-        resultItems.map((e) => RowItemToLean.fromDb(e)).map((e) => ItemToLearn(e.uri, e.uri)).toList();
+        resultItems.map((e) => RowItemToLean.fromDb(e)).map((e) => ItemToLearn(e.uri, e.label)).toList();
 
     return LearningProgram(learningProgram.uri, items);
   }
 
-  static Future<UserProgram> getUserProgram(String uri) async {
+  Future<UserProgram> getUserProgram(String uri) async {
     List<Map<String, dynamic>> resultUserProgram =
         await _db.query("${DB.userProgram}", where: '${DB.userProgram.uri} = ?', whereArgs: [uri]);
 

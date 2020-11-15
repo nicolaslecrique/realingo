@@ -16,22 +16,24 @@ Future<void> _onCreate(Database db, int version) async {
   return await batch.commit();
 }
 
+Future<String> get dbPath async => join(await getDatabasesPath(), 'realingo_db.db');
+
 Future<void> deleteDb() async {
   // cf. https://flutter.dev/docs/cookbook/persistence/sqlite
   WidgetsFlutterBinding.ensureInitialized();
-
-  String dbPath = join(await getDatabasesPath(), 'realingo_db.db');
-  if (await databaseExists(dbPath)) {
-    await deleteDatabase(dbPath);
+  String path = await dbPath;
+  if (await databaseExists(path)) {
+    await deleteDatabase(path);
   }
 }
 
-Future<Database> initDb() async {
+// parametrized on databaseFactory and path for unit testing
+Future<Database> initDb(DatabaseFactory databaseFactory, String dbPath) async {
   // cf. https://flutter.dev/docs/cookbook/persistence/sqlite
   WidgetsFlutterBinding.ensureInitialized();
 
-  String dbPath = join(await getDatabasesPath(), 'realingo_db.db');
-  Database db = await openDatabase(dbPath, version: 1, onConfigure: _onConfigure, onCreate: _onCreate);
+  Database db = await databaseFactory.openDatabase(dbPath,
+      options: OpenDatabaseOptions(version: 1, onConfigure: _onConfigure, onCreate: _onCreate));
 
   return db;
 }

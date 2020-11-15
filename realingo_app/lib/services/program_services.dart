@@ -17,7 +17,7 @@ class ProgramServices {
 
     final userProgram = UserProgram("${program.uri}-${DateTime.now()}", program);
 
-    await Db.insertUserProgram(userProgram);
+    await db.insertUserProgram(userProgram);
 
     UserConfig.setDefaultUserProgramUri(userProgram.uri);
     return userProgram;
@@ -26,7 +26,7 @@ class ProgramServices {
   static Future<UserProgram> getDefaultUserProgramOrNull() async {
     String uri = await UserConfig.getDefaultUserProgramUriOrNull();
     if (uri != null) {
-      return await Db.getUserProgram(uri);
+      return await db.getUserProgram(uri);
     } else {
       return null;
     }

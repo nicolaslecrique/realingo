@@ -22,7 +22,8 @@ class _HomeRouteState extends State<HomeRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final UserProgram userProgram = ModalRoute.of(context).settings.arguments;
+    final HomeRouteArgs homeRouteArgs = ModalRoute.of(context).settings.arguments;
+    final UserProgram userProgram = homeRouteArgs.userProgram;
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<ItemToLearn> items = userProgram.program.itemsToLearn;

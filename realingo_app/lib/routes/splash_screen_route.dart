@@ -21,7 +21,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   }
 
   Future<void> loadUserDataThenRedirect() async {
-    await Db.init();
+    await db.init();
     UserProgram userProgram = await ProgramServices.getDefaultUserProgramOrNull();
 
     if (userProgram == null) {
