@@ -17,7 +17,7 @@ void main() {
     }
   }
 
-  test('simple sqflite example', () async {
+  test('insert then get user program', () async {
     Db db = Db();
     await db.initWith(databaseFactoryFfi, inMemoryDatabasePath);
 
