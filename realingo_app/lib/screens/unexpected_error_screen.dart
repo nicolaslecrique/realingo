@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 
 class UnexpectedErrorScreen extends StatelessWidget {
-  UnexpectedErrorScreen(Object error) {
+  final Object error;
+
+  UnexpectedErrorScreen(this.error) {
     debugPrint(error.toString());
   }
 
@@ -12,7 +14,7 @@ class UnexpectedErrorScreen extends StatelessWidget {
       body: Center(
           child: Column(
         children: [
-          Text("Unexpected Error"),
+          Text("Unexpected Error: " + error.toString()),
           ElevatedButton(onPressed: () => Phoenix.rebirth(context), child: Text("Restart app"))
         ],
       )),
