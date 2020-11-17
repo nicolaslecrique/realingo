@@ -1,6 +1,5 @@
 package co.globers.realingo.back.services
 
-import co.globers.realingo.back.restapi.RestLanguage
 import co.globers.realingo.back.tools.FileLoader
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString

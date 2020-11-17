@@ -52,7 +52,7 @@ class RestLearningProgram {
 Rest API wrapper
  */
 class RestApi {
-  static const String _restApiBaseUrl = AppConfig.apiUrl;
+  static const String _restApiBaseUrl = "${AppConfig.apiUrl}/api/v0";
 
   static Future<List<Language>> getAvailableOriginLanguages(String targetLanguageUri) async {
     http.Response response =
