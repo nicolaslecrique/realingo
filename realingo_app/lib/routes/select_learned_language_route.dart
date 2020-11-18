@@ -6,14 +6,14 @@ import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/widgets/future_builder_wrapper.dart';
 import 'package:realingo_app/widgets/language_picker.dart';
 
-class SelectTargetLanguageRoute extends StatefulWidget {
-  static const route = '/select_target_language';
+class SelectLearnedLanguageRoute extends StatefulWidget {
+  static const route = '/select_learned_language';
 
   @override
-  _SelectTargetLanguageRouteState createState() => _SelectTargetLanguageRouteState();
+  _SelectLearnedLanguageRouteState createState() => _SelectLearnedLanguageRouteState();
 }
 
-class _SelectTargetLanguageRouteState extends State<SelectTargetLanguageRoute> {
+class _SelectLearnedLanguageRouteState extends State<SelectLearnedLanguageRoute> {
   Future<List<Language>> futureLanguages;
   Language selectedLanguage;
 

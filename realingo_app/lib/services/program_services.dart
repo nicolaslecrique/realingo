@@ -5,15 +5,15 @@ import 'package:realingo_app/tech_services/user_config.dart';
 
 class ProgramServices {
   static Future<List<Language>> getAvailableTargetLanguages() async {
-    return await RestApi.getAvailableTargetLanguages();
+    return await RestApi.getAvailableLearnedLanguages();
   }
 
-  static Future<List<Language>> getAvailableOriginLanguages(Language targetLanguage) async {
-    return await RestApi.getAvailableOriginLanguages(targetLanguage.uri);
+  static Future<List<Language>> getAvailableOriginLanguages(Language learnedLanguage) async {
+    return await RestApi.getAvailableOriginLanguages(learnedLanguage.uri);
   }
 
-  static Future<UserProgram> buildUserProgram(Language targetLanguage, Language originLanguage) async {
-    final program = await RestApi.getProgram(targetLanguage.uri, originLanguage.uri);
+  static Future<UserProgram> buildUserProgram(Language learnedLanguage, Language originLanguage) async {
+    final program = await RestApi.getProgram(learnedLanguage.uri, originLanguage.uri);
 
     final userProgram = UserProgram("${program.uri}-${DateTime.now()}", program);
 

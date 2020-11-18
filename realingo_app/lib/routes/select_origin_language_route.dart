@@ -7,9 +7,9 @@ import 'package:realingo_app/widgets/future_builder_wrapper.dart';
 import 'package:realingo_app/widgets/language_picker.dart';
 
 class SelectOriginLanguageRouteArgs {
-  final Language targetLanguage;
+  final Language learnedLanguage;
 
-  SelectOriginLanguageRouteArgs(this.targetLanguage);
+  SelectOriginLanguageRouteArgs(this.learnedLanguage);
 }
 
 class SelectOriginLanguageRoute extends StatefulWidget {
@@ -19,20 +19,20 @@ class SelectOriginLanguageRoute extends StatefulWidget {
   SelectOriginLanguageRoute(this.args, {Key key}) : super(key: key);
 
   @override
-  _SelectOriginLanguageRouteState createState() => _SelectOriginLanguageRouteState(this.args.targetLanguage);
+  _SelectOriginLanguageRouteState createState() => _SelectOriginLanguageRouteState(this.args.learnedLanguage);
 }
 
 class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
   Future<List<Language>> futureLanguages;
   Language selectedLanguage;
-  final Language targetLanguage;
+  final Language learnedLanguage;
 
-  _SelectOriginLanguageRouteState(this.targetLanguage);
+  _SelectOriginLanguageRouteState(this.learnedLanguage);
 
   @override
   void initState() {
     super.initState();
-    futureLanguages = ProgramServices.getAvailableOriginLanguages(targetLanguage);
+    futureLanguages = ProgramServices.getAvailableOriginLanguages(learnedLanguage);
     selectedLanguage = null;
   }
 
@@ -51,7 +51,7 @@ class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
         onButtonPressed: selectedLanguage == null
             ? null
             : () => Navigator.pushNamed(context, BuildingProgramRoute.route,
-                arguments: BuildingProgramRouteArgs(selectedLanguage, targetLanguage)),
+                arguments: BuildingProgramRouteArgs(selectedLanguage, learnedLanguage)),
       ),
     );
   }

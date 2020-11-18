@@ -13,9 +13,9 @@ part 'rest_api.g.dart';
 @JsonSerializable()
 class RestLanguage {
   final String uri;
-  final String languageLabel;
+  final String label;
 
-  RestLanguage(this.uri, this.languageLabel);
+  RestLanguage(this.uri, this.label);
 
   factory RestLanguage.fromJson(Map<String, dynamic> json) => _$RestLanguageFromJson(json);
 
@@ -25,9 +25,9 @@ class RestLanguage {
 @JsonSerializable()
 class RestItemToLearn {
   final String uri;
-  final String itemLabel;
+  final String label;
 
-  RestItemToLearn(this.uri, this.itemLabel);
+  RestItemToLearn(this.uri, this.label);
 
   factory RestItemToLearn.fromJson(Map<String, dynamic> json) => _$RestItemToLearnFromJson(json);
 
@@ -38,10 +38,10 @@ class RestItemToLearn {
 class RestLearningProgram {
   final String uri;
   final String originLanguageUri;
-  final String targetLanguageUri;
+  final String learnedLanguageUri;
   final List<RestItemToLearn> itemsToLearn;
 
-  RestLearningProgram(this.uri, this.originLanguageUri, this.targetLanguageUri, this.itemsToLearn);
+  RestLearningProgram(this.uri, this.originLanguageUri, this.learnedLanguageUri, this.itemsToLearn);
 
   factory RestLearningProgram.fromJson(Map<String, dynamic> json) => _$RestLearningProgramFromJson(json);
 
@@ -54,35 +54,35 @@ Rest API wrapper
 class RestApi {
   static const String _restApiBaseUrl = "${AppConfig.apiUrl}/api/v0";
 
-  static Future<List<Language>> getAvailableOriginLanguages(String targetLanguageUri) async {
+  static Future<List<Language>> getAvailableOriginLanguages(String learnedLanguageUri) async {
     http.Response response =
-        await http.get("$_restApiBaseUrl/available_origin_languages?target_language_uri=$targetLanguageUri");
+        await http.get("$_restApiBaseUrl/available_origin_languages?learned_language_uri=$learnedLanguageUri");
 
     final languages = (json.decode(response.body) as List)
         .map((i) => RestLanguage.fromJson(i))
-        .map((e) => Language(e.uri, e.languageLabel))
+        .map((e) => Language(e.uri, e.label))
         .toList();
 
     return languages;
   }
 
-  static Future<List<Language>> getAvailableTargetLanguages() async {
-    http.Response response = await http.get("$_restApiBaseUrl/available_target_languages");
+  static Future<List<Language>> getAvailableLearnedLanguages() async {
+    http.Response response = await http.get("$_restApiBaseUrl/available_learned_languages");
 
     final languages = (json.decode(response.body) as List)
         .map((i) => RestLanguage.fromJson(i))
-        .map((e) => Language(e.uri, e.languageLabel))
+        .map((e) => Language(e.uri, e.label))
         .toList();
 
     return languages;
   }
 
-  static Future<LearningProgram> getProgram(String targetLanguageUri, String originLanguageUri) async {
-    http.Response response = await http
-        .get("$_restApiBaseUrl/program?target_language_uri=$targetLanguageUri&origin_language_uri=$originLanguageUri");
+  static Future<LearningProgram> getProgram(String learnedLanguageUri, String originLanguageUri) async {
+    http.Response response = await http.get(
+        "$_restApiBaseUrl/program?learned_language_uri=$learnedLanguageUri&origin_language_uri=$originLanguageUri");
     final restProgram = RestLearningProgram.fromJson(json.decode(response.body));
 
-    final items = restProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.itemLabel)).toList();
+    final items = restProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.label)).toList();
     return LearningProgram(restProgram.uri, items);
   }
 }

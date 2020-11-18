@@ -3,8 +3,8 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:realingo_app/routes/building_program_route.dart';
 import 'package:realingo_app/routes/home_route.dart';
 import 'package:realingo_app/routes/login_route.dart';
+import 'package:realingo_app/routes/select_learned_language_route.dart';
 import 'package:realingo_app/routes/select_origin_language_route.dart';
-import 'package:realingo_app/routes/select_target_language_route.dart';
 import 'package:realingo_app/routes/splash_screen_route.dart';
 import 'package:realingo_app/tech_services/app_config.dart';
 import 'package:realingo_app/tech_services/database/db_init.dart';
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         initialRoute: SplashScreenRoute.route,
         routes: {
           SplashScreenRoute.route: (context) => SplashScreenRoute(),
-          SelectTargetLanguageRoute.route: (context) => SelectTargetLanguageRoute(),
+          SelectLearnedLanguageRoute.route: (context) => SelectLearnedLanguageRoute(),
           SelectOriginLanguageRoute.route: (context) =>
               // cannot load arguments directly in widget build() because initState needs it
               SelectOriginLanguageRoute(ModalRoute.of(context).settings.arguments),

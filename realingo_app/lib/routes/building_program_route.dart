@@ -8,9 +8,9 @@ import 'package:realingo_app/services/program_services.dart';
 
 class BuildingProgramRouteArgs {
   final Language originLanguage;
-  final Language targetLanguage;
+  final Language learnedLanguage;
 
-  BuildingProgramRouteArgs(this.originLanguage, this.targetLanguage);
+  BuildingProgramRouteArgs(this.originLanguage, this.learnedLanguage);
 }
 
 class BuildingProgramRoute extends StatefulWidget {
@@ -32,7 +32,7 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
   void initState() {
     super.initState();
     Future<UserProgram> futureProgram =
-        ProgramServices.buildUserProgram(this.args.targetLanguage, this.args.originLanguage);
+        ProgramServices.buildUserProgram(this.args.learnedLanguage, this.args.originLanguage);
     futureProgram
         .then((value) => Navigator.pushReplacementNamed(context, HomeRoute.route, arguments: HomeRouteArgs(value)));
   }

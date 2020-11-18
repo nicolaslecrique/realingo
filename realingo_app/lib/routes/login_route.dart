@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/routes/select_target_language_route.dart';
+import 'package:realingo_app/routes/select_learned_language_route.dart';
 
 class LoginRoute extends StatelessWidget {
   static const route = '/login';
@@ -10,8 +10,7 @@ class LoginRoute extends StatelessWidget {
       child: Center(
         child: ElevatedButton(
           child: Text("Start"),
-          onPressed: () =>
-              {Navigator.pushNamed(context, SelectTargetLanguageRoute.route)},
+          onPressed: () => {Navigator.pushNamed(context, SelectLearnedLanguageRoute.route)},
         ),
       ),
     );
