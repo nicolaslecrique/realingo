@@ -4,6 +4,7 @@ import 'package:realingo_app/routes/building_program_route.dart';
 import 'package:realingo_app/routes/home_route.dart';
 import 'package:realingo_app/routes/login_route.dart';
 import 'package:realingo_app/routes/select_learned_language_route.dart';
+import 'package:realingo_app/routes/select_level_route.dart';
 import 'package:realingo_app/routes/select_origin_language_route.dart';
 import 'package:realingo_app/routes/splash_screen_route.dart';
 import 'package:realingo_app/tech_services/app_config.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
               SelectOriginLanguageRoute(ModalRoute.of(context).settings.arguments),
           HomeRoute.route: (context) => HomeRoute(),
           LoginRoute.route: (context) => LoginRoute(),
+          SelectLevelRoute.route: (context) => SelectLevelRoute(),
           BuildingProgramRoute.route: (context) => BuildingProgramRoute(ModalRoute.of(context).settings.arguments),
         });
   }

@@ -12,16 +12,25 @@ class ProgramServices {
     return await RestApi.getAvailableOriginLanguages(learnedLanguage.uri);
   }
 
-  static Future<UserLearningProgram> buildUserProgram(Language learnedLanguage, Language originLanguage) async {
-    final program = await RestApi.getProgram(learnedLanguage.uri, originLanguage.uri);
+  static Future<LearningProgram> getProgram(Language learnedLanguage, Language originLanguage) async {
+    return await RestApi.getProgram(learnedLanguage.uri, originLanguage.uri);
+  }
 
+  static Future<UserLearningProgram> buildUserProgram(LearningProgram program, ItemToLearn firstItemToLearn) async {
     final now = DateTime.now().toString();
 
-    final userProgram = UserLearningProgram("${program.uri}-$now", program.uri,
-        program.itemsToLearn.map((e) => UserItemToLearn("${e.uri}-$now", e, UserItemToLearnStatus.None)).toList());
+    List<UserItemToLearn> userItems = List<UserItemToLearn>();
+    UserItemToLearnStatus status = UserItemToLearnStatus.KnownAtStart;
+    for (int i = 0; i < program.itemsToLearn.length; i++) {
+      ItemToLearn current = program.itemsToLearn[i];
+      if (current == firstItemToLearn) {
+        status = UserItemToLearnStatus.NotLearned;
+      }
+      userItems.add(UserItemToLearn("${current.uri}-$now", current, status));
+    }
 
+    final userProgram = UserLearningProgram("${program.uri}-$now", program.uri, userItems);
     await db.insertUserLearningProgram(userProgram);
-
     UserConfig.setDefaultUserProgramUri(userProgram.uri);
     return userProgram;
   }

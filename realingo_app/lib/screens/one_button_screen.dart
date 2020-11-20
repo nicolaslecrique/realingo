@@ -7,7 +7,7 @@ class OneButtonScreen extends StatelessWidget {
   final Widget child;
 
   OneButtonScreen(
-      {this.child, this.title, this.buttonText, this.onButtonPressed});
+      {@required this.child, @required this.title, @required this.buttonText, @required this.onButtonPressed});
 
   @override
   Widget build(BuildContext context) {

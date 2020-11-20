@@ -24,7 +24,8 @@ void main() {
     await db.initWith(databaseFactoryFfi, inMemoryDatabasePath);
 
     UserLearningProgram expected = UserLearningProgram("test_uri_user_program", "test_uri_server_program", [
-      UserItemToLearn("uri_item_1", ItemToLearn("label_1", "test_itemToLearnServerUri_1"), UserItemToLearnStatus.None),
+      UserItemToLearn(
+          "uri_item_1", ItemToLearn("label_1", "test_itemToLearnServerUri_1"), UserItemToLearnStatus.NotLearned),
       UserItemToLearn(
           "uri_item_2", ItemToLearn("label_2", "test_itemToLearnServerUri_2"), UserItemToLearnStatus.KnownAtStart),
       UserItemToLearn(

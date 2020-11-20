@@ -24,8 +24,8 @@ class Db {
 
   UserItemToLearnStatus _userItemToLearnStatusFromDbString(String dbString) {
     switch (dbString) {
-      case "None":
-        return UserItemToLearnStatus.None;
+      case "NotLearned":
+        return UserItemToLearnStatus.NotLearned;
       case "KnownAtStart":
         return UserItemToLearnStatus.KnownAtStart;
       default:
@@ -35,8 +35,8 @@ class Db {
 
   String _userItemToLearnStatusToDbString(UserItemToLearnStatus status) {
     switch (status) {
-      case UserItemToLearnStatus.None:
-        return "None";
+      case UserItemToLearnStatus.NotLearned:
+        return "NotLearned";
       case UserItemToLearnStatus.KnownAtStart:
         return "KnownAtStart";
       default:

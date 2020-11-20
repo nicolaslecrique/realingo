@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/routes/home_route.dart';
+import 'package:realingo_app/routes/select_level_route.dart';
 import 'package:realingo_app/screens/loading_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
 
@@ -31,10 +31,10 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
   @override
   void initState() {
     super.initState();
-    Future<UserLearningProgram> futureProgram =
-        ProgramServices.buildUserProgram(this.args.learnedLanguage, this.args.originLanguage);
-    futureProgram
-        .then((value) => Navigator.pushReplacementNamed(context, HomeRoute.route, arguments: HomeRouteArgs(value)));
+    Future<LearningProgram> futureProgram =
+        ProgramServices.getProgram(this.args.learnedLanguage, this.args.originLanguage);
+    futureProgram.then((value) =>
+        Navigator.pushReplacementNamed(context, SelectLevelRoute.route, arguments: SelectLevelRouteArgs(value)));
   }
 
   @override

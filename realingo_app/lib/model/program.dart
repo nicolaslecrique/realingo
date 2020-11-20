@@ -5,7 +5,7 @@ class Language {
   Language(this.uri, this.label);
 }
 
-enum UserItemToLearnStatus { None, KnownAtStart }
+enum UserItemToLearnStatus { KnownAtStart, NotLearned }
 
 class ItemToLearn {
   final String uri;
