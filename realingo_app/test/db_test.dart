@@ -7,13 +7,15 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 void main() {
   sqfliteFfiInit();
 
-  void expectUserProgram(UserProgram actual, UserProgram matcher) {
+  void expectUserProgram(UserLearningProgram actual, UserLearningProgram matcher) {
     expect(actual.uri, matcher.uri);
-    expect(actual.program.uri, matcher.program.uri);
-    expect(actual.program.itemsToLearn.length, matcher.program.itemsToLearn.length);
-    for (int i = 0; i < matcher.program.itemsToLearn.length; i++) {
-      expect(actual.program.itemsToLearn[i].uri, matcher.program.itemsToLearn[i].uri);
-      expect(actual.program.itemsToLearn[i].label, matcher.program.itemsToLearn[i].label);
+    expect(actual.learningProgramServerUri, matcher.learningProgramServerUri);
+    expect(actual.itemsToLearn.length, matcher.itemsToLearn.length);
+    for (int i = 0; i < matcher.itemsToLearn.length; i++) {
+      expect(actual.itemsToLearn[i].uri, matcher.itemsToLearn[i].uri);
+      expect(actual.itemsToLearn[i].itemToLearn.label, matcher.itemsToLearn[i].itemToLearn.label);
+      expect(actual.itemsToLearn[i].itemToLearn.uri, matcher.itemsToLearn[i].itemToLearn.uri);
+      expect(actual.itemsToLearn[i].status, matcher.itemsToLearn[i].status);
     }
   }
 
@@ -21,16 +23,16 @@ void main() {
     Db db = Db();
     await db.initWith(databaseFactoryFfi, inMemoryDatabasePath);
 
-    UserProgram expected = UserProgram(
-        "test_uri_user_program",
-        LearningProgram("test_uri_program", [
-          ItemToLearn("uri_item_1", "label_1"),
-          ItemToLearn("uri_item_2", "label_2"),
-          ItemToLearn("uri_item_3", "label_3"),
-        ]));
+    UserLearningProgram expected = UserLearningProgram("test_uri_user_program", "test_uri_server_program", [
+      UserItemToLearn("uri_item_1", ItemToLearn("label_1", "test_itemToLearnServerUri_1"), UserItemToLearnStatus.None),
+      UserItemToLearn(
+          "uri_item_2", ItemToLearn("label_2", "test_itemToLearnServerUri_2"), UserItemToLearnStatus.KnownAtStart),
+      UserItemToLearn(
+          "uri_item_3", ItemToLearn("label_3", "test_itemToLearnServerUri_3"), UserItemToLearnStatus.KnownAtStart),
+    ]);
 
-    await db.insertUserProgram(expected);
-    UserProgram result = await db.getUserProgram(expected.uri);
+    await db.insertUserLearningProgram(expected);
+    UserLearningProgram result = await db.getUserLearningProgram(expected.uri);
 
     expectUserProgram(result, expected);
   });

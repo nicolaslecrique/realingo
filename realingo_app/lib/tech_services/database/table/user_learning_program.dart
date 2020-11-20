@@ -1,39 +1,36 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import '../schema.dart';
-
 // command to run generation watch: ../../../../tools/flutter/flutter/bin/flutter pub run build_runner watch
 // or to not watch but ust build one shot:  ../../../../tools/flutter/flutter/bin/flutter pub run build_runner build
-part 'user_program.g.dart';
+part 'user_learning_program.g.dart';
 
-class TableUserProgram {
+class TableUserLearningProgram {
   final String id = "id";
   final String uri = "uri";
-  final String learningProgramId = "learning_program_id";
+  final String learningProgramServerUri = "learning_program_server_uri";
 
   @override
   String toString() {
-    return "user_program";
+    return "user_learning_program";
   }
 
   String getCreateQuery() => '''
   CREATE TABLE $this(
     $id INTEGER PRIMARY KEY,
     $uri TEXT NOT NULL UNIQUE,
-    $learningProgramId INTEGER NOT NULL,
-    FOREIGN KEY ($learningProgramId) REFERENCES  ${DB.learningProgram}(${DB.learningProgram.id})
+    $learningProgramServerUri TEXT NOT NULL
   )
   ''';
 }
 
 @JsonSerializable(createToJson: false)
-class RowUserProgram {
+class RowUserLearningProgram {
   final int id;
   final String uri;
-  @JsonKey(name: "learning_program_id")
-  final int learningProgramId;
+  @JsonKey(name: "learning_program_server_uri")
+  final String learningProgramServerUri;
 
-  RowUserProgram(this.id, this.uri, this.learningProgramId);
+  RowUserLearningProgram(this.id, this.uri, this.learningProgramServerUri);
 
-  factory RowUserProgram.fromDb(Map<String, dynamic> json) => _$RowUserProgramFromJson(json);
+  factory RowUserLearningProgram.fromDb(Map<String, dynamic> json) => _$RowUserLearningProgramFromJson(json);
 }

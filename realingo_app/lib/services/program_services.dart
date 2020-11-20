@@ -12,21 +12,24 @@ class ProgramServices {
     return await RestApi.getAvailableOriginLanguages(learnedLanguage.uri);
   }
 
-  static Future<UserProgram> buildUserProgram(Language learnedLanguage, Language originLanguage) async {
+  static Future<UserLearningProgram> buildUserProgram(Language learnedLanguage, Language originLanguage) async {
     final program = await RestApi.getProgram(learnedLanguage.uri, originLanguage.uri);
 
-    final userProgram = UserProgram("${program.uri}-${DateTime.now()}", program);
+    final now = DateTime.now().toString();
 
-    await db.insertUserProgram(userProgram);
+    final userProgram = UserLearningProgram("${program.uri}-$now", program.uri,
+        program.itemsToLearn.map((e) => UserItemToLearn("${e.uri}-$now", e, UserItemToLearnStatus.None)).toList());
+
+    await db.insertUserLearningProgram(userProgram);
 
     UserConfig.setDefaultUserProgramUri(userProgram.uri);
     return userProgram;
   }
 
-  static Future<UserProgram> getDefaultUserProgramOrNull() async {
+  static Future<UserLearningProgram> getDefaultUserProgramOrNull() async {
     String uri = await UserConfig.getDefaultUserProgramUriOrNull();
     if (uri != null) {
-      return await db.getUserProgram(uri);
+      return await db.getUserLearningProgram(uri);
     } else {
       return null;
     }

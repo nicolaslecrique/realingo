@@ -1,15 +1,16 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user_program.dart';
+part of 'user_learning_program.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-RowUserProgram _$RowUserProgramFromJson(Map<String, dynamic> json) {
-  return RowUserProgram(
+RowUserLearningProgram _$RowUserLearningProgramFromJson(
+    Map<String, dynamic> json) {
+  return RowUserLearningProgram(
     json['id'] as int,
     json['uri'] as String,
-    json['learning_program_id'] as int,
+    json['learning_program_server_uri'] as String,
   );
 }

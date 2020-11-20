@@ -29,7 +29,7 @@ data class RestItemToLearn(
 data class RestLearningProgram(
         val uri: String,
         val originLanguageUri: String,
-        val targetLanguageUri: String,
+        val learnedLanguageUri: String,
         val itemsToLearn: List<RestItemToLearn>
 )
 
@@ -37,14 +37,14 @@ val availableOriginLanguages: List<RestLanguage> = listOf(
         toRestLanguage(Language.French)
 )
 
-val availableTargetLanguages: List<RestLanguage> = listOf(
+val availableLearnedLanguages: List<RestLanguage> = listOf(
         toRestLanguage(Language.Vietnamese),
         toRestLanguage(Language.English),
         toRestLanguage(Language.French),
         toRestLanguage(Language.Spanish)
 )
 
-fun toRestLanguage(language: Language): RestLanguage = RestLanguage(language.languageUri, language.languageLabel)
+fun toRestLanguage(language: Language): RestLanguage = RestLanguage(language.uri, language.label)
 
 // variable to suppress on this deprecate
 @Suppress("DEPRECATION")
@@ -61,20 +61,20 @@ class RestApi {
 
     @GetMapping("/api/v0/available_learned_languages", produces = [jsonUtf8Header])
     suspend fun getAvailableLearnedLanguages(): List<RestLanguage> {
-        return availableTargetLanguages
+        return availableLearnedLanguages
     }
 
     // dart client use latin1 format if utf-8 not explicitly specified by the server
     // https://github.com/dart-lang/http/issues/175
     @GetMapping("/api/v0/program", produces = [jsonUtf8Header])
     suspend fun getProgram(
-            @RequestParam(value = "learned_Language_uri") learnedLanguageUri: String,
+            @RequestParam(value = "learned_language_uri") learnedLanguageUri: String,
             @RequestParam(value = "origin_language_uri") originLanguageUri: String): RestLearningProgram {
 
         val originLanguage = Language.fromUri(originLanguageUri)
-        val targetLanguage = Language.fromUri(learnedLanguageUri)
+        val learnedLanguage = Language.fromUri(learnedLanguageUri)
 
-        val program = loadProgram(originLanguage, targetLanguage)
+        val program = loadProgram(originLanguage, learnedLanguage)
 
         val programUri = generateUri("${learnedLanguageUri}-from-${originLanguageUri}-1")
 

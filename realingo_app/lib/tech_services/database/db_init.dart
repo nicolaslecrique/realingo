@@ -10,9 +10,8 @@ Future<void> _onConfigure(Database db) async {
 
 Future<void> _onCreate(Database db, int version) async {
   Batch batch = db.batch();
-  batch.execute(DB.learningProgram.getCreateQuery());
-  batch.execute(DB.itemToLearn.getCreateQuery());
-  batch.execute(DB.userProgram.getCreateQuery());
+  batch.execute(DB.userLearningProgram.getCreateQuery());
+  batch.execute(DB.userItemToLearn.getCreateQuery());
   return await batch.commit();
 }
 

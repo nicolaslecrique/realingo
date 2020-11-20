@@ -2,8 +2,8 @@ package co.globers.realingo.back.services
 
 enum class Language(
         val shortCode: String,
-        val languageUri: String,
-        val languageLabel: String
+        val uri: String,
+        val label: String
 ) {
     Vietnamese("vn", "vietnamese", "Vietnamese"),
     English("en", "english", "English"),
@@ -12,7 +12,7 @@ enum class Language(
 
     companion object {
         fun fromUri(uri: String): Language {
-            return values().find { it.languageUri == uri }!!
+            return values().find { it.uri == uri }!!
         }
     }
 }

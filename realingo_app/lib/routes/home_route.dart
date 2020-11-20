@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:realingo_app/model/program.dart';
 
 class HomeRouteArgs {
-  final UserProgram userProgram;
+  final UserLearningProgram userProgram;
 
   HomeRouteArgs(this.userProgram);
 }
@@ -23,15 +23,15 @@ class _HomeRouteState extends State<HomeRoute> {
   @override
   Widget build(BuildContext context) {
     final HomeRouteArgs homeRouteArgs = ModalRoute.of(context).settings.arguments;
-    final UserProgram userProgram = homeRouteArgs.userProgram;
+    final UserLearningProgram userProgram = homeRouteArgs.userProgram;
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
-    final List<ItemToLearn> items = userProgram.program.itemsToLearn;
+    final List<UserItemToLearn> items = userProgram.itemsToLearn;
     return Scaffold(
         body: ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
-              return ListTile(title: Text(items[index].label));
+              return ListTile(title: Text(items[index].itemToLearn.label));
             }));
   }
 }

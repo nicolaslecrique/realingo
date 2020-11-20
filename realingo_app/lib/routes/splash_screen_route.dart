@@ -22,7 +22,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
 
   Future<void> loadUserDataThenRedirect() async {
     await db.init();
-    UserProgram userProgram = await ProgramServices.getDefaultUserProgramOrNull();
+    UserLearningProgram userProgram = await ProgramServices.getDefaultUserProgramOrNull();
 
     if (userProgram == null) {
       Navigator.pushReplacementNamed(context, LoginRoute.route);

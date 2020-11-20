@@ -31,7 +31,7 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
   @override
   void initState() {
     super.initState();
-    Future<UserProgram> futureProgram =
+    Future<UserLearningProgram> futureProgram =
         ProgramServices.buildUserProgram(this.args.learnedLanguage, this.args.originLanguage);
     futureProgram
         .then((value) => Navigator.pushReplacementNamed(context, HomeRoute.route, arguments: HomeRouteArgs(value)));

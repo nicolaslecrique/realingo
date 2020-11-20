@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/tech_services/database/db_init.dart';
 import 'package:realingo_app/tech_services/database/schema.dart';
-import 'package:realingo_app/tech_services/database/table/item_to_learn.dart';
-import 'package:realingo_app/tech_services/database/table/learning_program.dart';
-import 'package:realingo_app/tech_services/database/table/user_program.dart';
+import 'package:realingo_app/tech_services/database/table/user_item_to_learn.dart';
+import 'package:realingo_app/tech_services/database/table/user_learning_program.dart';
 import 'package:sqflite/sqflite.dart';
 
 final db = Db();
@@ -23,61 +22,69 @@ class Db {
     return;
   }
 
-  Future<void> insertUserProgram(UserProgram userProgram) async {
-    LearningProgram program = userProgram.program;
+  UserItemToLearnStatus _userItemToLearnStatusFromDbString(String dbString) {
+    switch (dbString) {
+      case "None":
+        return UserItemToLearnStatus.None;
+      case "KnownAtStart":
+        return UserItemToLearnStatus.KnownAtStart;
+      default:
+        throw Exception("$dbString cannot be converted to UserItemToLearnStatus");
+    }
+  }
 
+  String _userItemToLearnStatusToDbString(UserItemToLearnStatus status) {
+    switch (status) {
+      case UserItemToLearnStatus.None:
+        return "None";
+      case UserItemToLearnStatus.KnownAtStart:
+        return "KnownAtStart";
+      default:
+        throw Exception("$status cannot be converted from UserItemToLearnStatus to string");
+    }
+  }
+
+  Future<void> insertUserLearningProgram(UserLearningProgram userProgram) async {
     return await _db.transaction((Transaction txn) async {
-      // 1) insert program id needed
-      List<Map<String, dynamic>> idProgramResult =
-          await txn.rawQuery("SELECT id FROM ${DB.learningProgram} WHERE uri = ?", [program.uri]);
-      int idProgram;
-      if (idProgramResult.length == 0) {
-        idProgram = await txn.insert("${DB.learningProgram}", {DB.learningProgram.uri: program.uri});
-        Batch batch = txn.batch();
-        for (int idItem = 0; idItem < program.itemsToLearn.length; idItem++) {
-          ItemToLearn item = program.itemsToLearn[idItem];
+      int idProgram = await txn.insert("${DB.userLearningProgram}", {
+        DB.userLearningProgram.uri: userProgram.uri,
+        DB.userLearningProgram.learningProgramServerUri: userProgram.learningProgramServerUri,
+      });
 
-          batch.insert("${DB.itemToLearn}", {
-            DB.itemToLearn.uri: item.uri,
-            DB.itemToLearn.idxInProgram: idItem,
-            DB.itemToLearn.label: item.label,
-            DB.itemToLearn.learningProgramId: idProgram,
-          });
-        }
-        batch.commit();
-      } else {
-        idProgram = idProgramResult[0][DB.learningProgram.id];
+      Batch batch = txn.batch();
+      for (int idItem = 0; idItem < userProgram.itemsToLearn.length; idItem++) {
+        UserItemToLearn item = userProgram.itemsToLearn[idItem];
+
+        batch.insert("${DB.userItemToLearn}", {
+          DB.userItemToLearn.uri: item.uri,
+          DB.userItemToLearn.label: item.itemToLearn.label,
+          DB.userItemToLearn.idxInProgram: idItem,
+          DB.userItemToLearn.status: _userItemToLearnStatusToDbString(item.status),
+          DB.userItemToLearn.itemToLearnServerUri: item.itemToLearn.uri,
+          DB.userItemToLearn.userLearningProgramId: idProgram,
+        });
       }
-      // 2) insert userProgram
-      txn.insert(
-          "${DB.userProgram}", {DB.userProgram.uri: userProgram.uri, DB.userProgram.learningProgramId: idProgram});
+      batch.commit();
     });
   }
 
-  Future<LearningProgram> _getLearningProgram(int id) async {
-    List<Map<String, dynamic>> resultProgram =
-        await _db.query("${DB.learningProgram}", where: '${DB.learningProgram.id} = ?', whereArgs: [id]);
-    RowLearningProgram learningProgram = RowLearningProgram.fromDb(resultProgram[0]);
-
-    final List<Map<String, dynamic>> resultItems = await _db.query("${DB.itemToLearn}",
-        where: '${DB.itemToLearn.learningProgramId} = ?',
-        whereArgs: [learningProgram.id],
-        orderBy: DB.itemToLearn.idxInProgram);
-
-    List<ItemToLearn> items =
-        resultItems.map((e) => RowItemToLean.fromDb(e)).map((e) => ItemToLearn(e.uri, e.label)).toList();
-
-    return LearningProgram(learningProgram.uri, items);
-  }
-
-  Future<UserProgram> getUserProgram(String uri) async {
+  Future<UserLearningProgram> getUserLearningProgram(String uri) async {
     List<Map<String, dynamic>> resultUserProgram =
-        await _db.query("${DB.userProgram}", where: '${DB.userProgram.uri} = ?', whereArgs: [uri]);
+        await _db.query("${DB.userLearningProgram}", where: '${DB.userLearningProgram.uri} = ?', whereArgs: [uri]);
 
-    RowUserProgram userProgram = RowUserProgram.fromDb(resultUserProgram[0]);
+    RowUserLearningProgram userProgram = RowUserLearningProgram.fromDb(resultUserProgram[0]);
 
-    var learningProgram = await _getLearningProgram(userProgram.learningProgramId);
+    final List<Map<String, dynamic>> resultItems = await _db.query("${DB.userItemToLearn}",
+        where: '${DB.userItemToLearn.userLearningProgramId} = ?',
+        whereArgs: [userProgram.id],
+        orderBy: DB.userItemToLearn.idxInProgram);
 
-    return UserProgram(userProgram.uri, learningProgram);
+    List<UserItemToLearn> items = resultItems
+        .map((e) => RowUserItemToLearn.fromDb(e))
+        .map((e) => UserItemToLearn(
+            e.uri, ItemToLearn(e.itemToLearnServerUri, e.label), _userItemToLearnStatusFromDbString(e.status)))
+        .toList();
+
+    return UserLearningProgram(userProgram.uri, userProgram.learningProgramServerUri, items);
   }
 }
