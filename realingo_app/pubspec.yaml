@@ -49,6 +49,9 @@ dependencies:
   # store local user profs
   shared_preferences: ^0.5.12+4
 
+  # utils
+  collection: ^1.14.13
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

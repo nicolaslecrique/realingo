@@ -1,8 +1,10 @@
 import 'dart:async';
 
-import 'package:realingo_app/model/program.dart';
+import 'package:collection/collection.dart';
+import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/tech_services/database/db_init.dart';
 import 'package:realingo_app/tech_services/database/schema.dart';
+import 'package:realingo_app/tech_services/database/table/user_item_sentence.dart';
 import 'package:realingo_app/tech_services/database/table/user_item_to_learn.dart';
 import 'package:realingo_app/tech_services/database/table/user_learning_program.dart';
 import 'package:sqflite/sqflite.dart';
@@ -48,23 +50,33 @@ class Db {
     return await _db.transaction((Transaction txn) async {
       int idProgram = await txn.insert("${DB.userLearningProgram}", {
         DB.userLearningProgram.uri: userProgram.uri,
-        DB.userLearningProgram.learningProgramServerUri: userProgram.learningProgramServerUri,
+        DB.userLearningProgram.learningProgramServerUri: userProgram.serverUri,
       });
 
-      Batch batch = txn.batch();
-      for (int idItem = 0; idItem < userProgram.itemsToLearn.length; idItem++) {
-        UserItemToLearn item = userProgram.itemsToLearn[idItem];
+      for (int idxItem = 0; idxItem < userProgram.itemsToLearn.length; idxItem++) {
+        UserItemToLearn item = userProgram.itemsToLearn[idxItem];
 
-        batch.insert("${DB.userItemToLearn}", {
+        int idItemDb = await txn.insert("${DB.userItemToLearn}", {
           DB.userItemToLearn.uri: item.uri,
-          DB.userItemToLearn.label: item.itemToLearn.label,
-          DB.userItemToLearn.idxInProgram: idItem,
+          DB.userItemToLearn.label: item.label,
+          DB.userItemToLearn.idxInProgram: idxItem,
           DB.userItemToLearn.status: _userItemToLearnStatusToDbString(item.status),
-          DB.userItemToLearn.itemToLearnServerUri: item.itemToLearn.uri,
+          DB.userItemToLearn.itemToLearnServerUri: item.serverUri,
           DB.userItemToLearn.userLearningProgramId: idProgram,
         });
+
+        Batch batch = txn.batch();
+        for (UserItemToLearnSentence sentence in item.sentences) {
+          batch.insert("${DB.userItemSentence}", {
+            DB.userItemSentence.uri: sentence.uri,
+            DB.userItemSentence.sentence: sentence.sentence,
+            DB.userItemSentence.translation: sentence.translation,
+            DB.userItemSentence.itemSentenceServerUri: sentence.serverUri,
+            DB.userItemSentence.userItemToLearnId: idItemDb,
+          });
+        }
+        batch.commit();
       }
-      batch.commit();
     });
   }
 
@@ -79,10 +91,24 @@ class Db {
         whereArgs: [userProgram.id],
         orderBy: DB.userItemToLearn.idxInProgram);
 
+    final List<Map<String, dynamic>> resultSentences =
+        await _db.rawQuery(DB.userItemSentence.getSelectQueryFromProgram(userProgram.id));
+
+    final List<RowUserItemSentence> sentences = resultSentences.map((e) => RowUserItemSentence.fromDb(e)).toList();
+
+    Map<int, List<RowUserItemSentence>> sentencesByItemId =
+        groupBy(sentences, (RowUserItemSentence s) => s.userItemToLearnId);
+
     List<UserItemToLearn> items = resultItems
         .map((e) => RowUserItemToLearn.fromDb(e))
         .map((e) => UserItemToLearn(
-            e.uri, ItemToLearn(e.itemToLearnServerUri, e.label), _userItemToLearnStatusFromDbString(e.status)))
+            e.uri,
+            e.itemToLearnServerUri,
+            e.label,
+            sentencesByItemId[e.id]
+                .map((s) => UserItemToLearnSentence(s.uri, s.itemSentenceServerUri, s.sentence, s.translation))
+                .toList(),
+            _userItemToLearnStatusFromDbString(e.status)))
         .toList();
 
     return UserLearningProgram(userProgram.uri, userProgram.learningProgramServerUri, items);

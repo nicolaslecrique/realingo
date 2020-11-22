@@ -13,24 +13,24 @@ RestLanguage _$RestLanguageFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$RestLanguageToJson(RestLanguage instance) =>
-    <String, dynamic>{
-      'uri': instance.uri,
-      'label': instance.label,
-    };
+RestSentence _$RestSentenceFromJson(Map<String, dynamic> json) {
+  return RestSentence(
+    json['uri'] as String,
+    json['sentence'] as String,
+    json['translation'] as String,
+  );
+}
 
 RestItemToLearn _$RestItemToLearnFromJson(Map<String, dynamic> json) {
   return RestItemToLearn(
     json['uri'] as String,
     json['label'] as String,
+    (json['sentences'] as List)
+        ?.map((e) =>
+            e == null ? null : RestSentence.fromJson(e as Map<String, dynamic>))
+        ?.toList(),
   );
 }
-
-Map<String, dynamic> _$RestItemToLearnToJson(RestItemToLearn instance) =>
-    <String, dynamic>{
-      'uri': instance.uri,
-      'label': instance.label,
-    };
 
 RestLearningProgram _$RestLearningProgramFromJson(Map<String, dynamic> json) {
   return RestLearningProgram(
@@ -44,12 +44,3 @@ RestLearningProgram _$RestLearningProgramFromJson(Map<String, dynamic> json) {
         ?.toList(),
   );
 }
-
-Map<String, dynamic> _$RestLearningProgramToJson(
-        RestLearningProgram instance) =>
-    <String, dynamic>{
-      'uri': instance.uri,
-      'originLanguageUri': instance.originLanguageUri,
-      'learnedLanguageUri': instance.learnedLanguageUri,
-      'itemsToLearn': instance.itemsToLearn,
-    };

@@ -1,4 +1,5 @@
 import 'package:realingo_app/model/program.dart';
+import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/tech_services/database/db.dart';
 import 'package:realingo_app/tech_services/rest/rest_api.dart';
 import 'package:realingo_app/tech_services/user_config.dart';
@@ -26,7 +27,12 @@ class ProgramServices {
       if (current == firstItemToLearn) {
         status = UserItemToLearnStatus.NotLearned;
       }
-      userItems.add(UserItemToLearn("${current.uri}-$now", current, status));
+      userItems.add(UserItemToLearn(
+          "${current.uri}-$now",
+          current.uri,
+          current.label,
+          current.sentences.map((s) => UserItemToLearnSentence("${s.uri}-$now", s.sentence, s.translation, s.uri)),
+          status));
     }
 
     final userProgram = UserLearningProgram("${program.uri}-$now", program.uri, userItems);

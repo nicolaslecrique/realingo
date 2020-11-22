@@ -10,7 +10,7 @@ import 'package:realingo_app/tech_services/app_config.dart';
 // https://flutter.dev/docs/development/data-and-backend/json#serializing-json-using-code-generation-libraries
 part 'rest_api.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class RestLanguage {
   final String uri;
   final String label;
@@ -18,23 +18,31 @@ class RestLanguage {
   RestLanguage(this.uri, this.label);
 
   factory RestLanguage.fromJson(Map<String, dynamic> json) => _$RestLanguageFromJson(json);
-
-  Map<String, dynamic> toJson() => _$RestLanguageToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
+class RestSentence {
+  final String uri;
+  final String sentence;
+  final String translation;
+
+  RestSentence(this.uri, this.sentence, this.translation);
+
+  factory RestSentence.fromJson(Map<String, dynamic> json) => _$RestSentenceFromJson(json);
+}
+
+@JsonSerializable(createToJson: false)
 class RestItemToLearn {
   final String uri;
   final String label;
+  final List<RestSentence> sentences;
 
-  RestItemToLearn(this.uri, this.label);
+  RestItemToLearn(this.uri, this.label, this.sentences);
 
   factory RestItemToLearn.fromJson(Map<String, dynamic> json) => _$RestItemToLearnFromJson(json);
-
-  Map<String, dynamic> toJson() => _$RestItemToLearnToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class RestLearningProgram {
   final String uri;
   final String originLanguageUri;
@@ -44,8 +52,6 @@ class RestLearningProgram {
   RestLearningProgram(this.uri, this.originLanguageUri, this.learnedLanguageUri, this.itemsToLearn);
 
   factory RestLearningProgram.fromJson(Map<String, dynamic> json) => _$RestLearningProgramFromJson(json);
-
-  Map<String, dynamic> toJson() => _$RestLearningProgramToJson(this);
 }
 
 /*
@@ -82,7 +88,10 @@ class RestApi {
         "$_restApiBaseUrl/program?learned_language_uri=$learnedLanguageUri&origin_language_uri=$originLanguageUri");
     final restProgram = RestLearningProgram.fromJson(json.decode(response.body));
 
-    final items = restProgram.itemsToLearn.map((e) => ItemToLearn(e.uri, e.label)).toList();
+    final items = restProgram.itemsToLearn
+        .map((e) =>
+            ItemToLearn(e.uri, e.label, e.sentences.map((s) => ItemToLearnSentence(s.uri, s.sentence, s.translation))))
+        .toList();
     return LearningProgram(restProgram.uri, items);
   }
 }
