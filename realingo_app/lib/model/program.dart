@@ -5,13 +5,20 @@ class Language {
   Language(this.uri, this.label);
 }
 
-enum UserItemToLearnStatus { KnownAtStart, NotLearned }
+class ItemToLearnSentence {
+  final String uri;
+  final String sentence;
+  final String translation;
+
+  ItemToLearnSentence(this.uri, this.sentence, this.translation);
+}
 
 class ItemToLearn {
   final String uri;
   final String label;
+  final List<ItemToLearnSentence> sentences;
 
-  ItemToLearn(this.uri, this.label);
+  ItemToLearn(this.uri, this.label, this.sentences);
 }
 
 class LearningProgram {
@@ -19,21 +26,4 @@ class LearningProgram {
   final List<ItemToLearn> itemsToLearn;
 
   LearningProgram(this.uri, this.itemsToLearn);
-}
-
-class UserItemToLearn {
-  final String uri;
-  final UserItemToLearnStatus status;
-
-  final ItemToLearn itemToLearn;
-
-  UserItemToLearn(this.uri, this.itemToLearn, this.status);
-}
-
-class UserLearningProgram {
-  final String uri;
-  final String learningProgramServerUri;
-  final List<UserItemToLearn> itemsToLearn;
-
-  UserLearningProgram(this.uri, this.learningProgramServerUri, this.itemsToLearn);
 }

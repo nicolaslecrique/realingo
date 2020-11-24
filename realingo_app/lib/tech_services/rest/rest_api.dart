@@ -89,8 +89,8 @@ class RestApi {
     final restProgram = RestLearningProgram.fromJson(json.decode(response.body));
 
     final items = restProgram.itemsToLearn
-        .map((e) =>
-            ItemToLearn(e.uri, e.label, e.sentences.map((s) => ItemToLearnSentence(s.uri, s.sentence, s.translation))))
+        .map((e) => ItemToLearn(
+            e.uri, e.label, e.sentences.map((s) => ItemToLearnSentence(s.uri, s.sentence, s.translation)).toList()))
         .toList();
     return LearningProgram(restProgram.uri, items);
   }

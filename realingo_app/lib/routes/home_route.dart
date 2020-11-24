@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/model/program.dart';
+import 'package:realingo_app/model/user_program.dart';
 
 class HomeRouteArgs {
   final UserLearningProgram userProgram;
@@ -31,7 +31,11 @@ class _HomeRouteState extends State<HomeRoute> {
         body: ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
-              return ListTile(title: Text(items[index].itemToLearn.label));
+              var item = items[index];
+              return ListTile(
+                title: Text(item.label),
+                tileColor: item.status == UserItemToLearnStatus.KnownAtStart ? Colors.grey : Colors.green,
+              );
             }));
   }
 }

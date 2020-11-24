@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/model/program.dart';
+import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/home_route.dart';
 import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/tech_services/database/db.dart';

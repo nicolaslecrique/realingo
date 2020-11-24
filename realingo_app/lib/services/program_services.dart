@@ -20,6 +20,8 @@ class ProgramServices {
   static Future<UserLearningProgram> buildUserProgram(LearningProgram program, ItemToLearn firstItemToLearn) async {
     final now = DateTime.now().toString();
 
+    String userProgramUri = "${program.uri}-$now";
+
     List<UserItemToLearn> userItems = List<UserItemToLearn>();
     UserItemToLearnStatus status = UserItemToLearnStatus.KnownAtStart;
     for (int i = 0; i < program.itemsToLearn.length; i++) {
@@ -28,14 +30,16 @@ class ProgramServices {
         status = UserItemToLearnStatus.NotLearned;
       }
       userItems.add(UserItemToLearn(
-          "${current.uri}-$now",
+          "${current.uri}-$userProgramUri",
           current.uri,
           current.label,
-          current.sentences.map((s) => UserItemToLearnSentence("${s.uri}-$now", s.sentence, s.translation, s.uri)),
+          current.sentences
+              .map((s) => UserItemToLearnSentence("${s.uri}-$userProgramUri", s.sentence, s.translation, s.uri))
+              .toList(),
           status));
     }
 
-    final userProgram = UserLearningProgram("${program.uri}-$now", program.uri, userItems);
+    final userProgram = UserLearningProgram(userProgramUri, program.uri, userItems);
     await db.insertUserLearningProgram(userProgram);
     UserConfig.setDefaultUserProgramUri(userProgram.uri);
     return userProgram;
