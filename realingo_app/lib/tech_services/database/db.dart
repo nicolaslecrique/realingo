@@ -53,10 +53,12 @@ class Db {
         DB.userLearningProgram.learningProgramServerUri: userProgram.serverUri,
       });
 
+      Batch batchItems = txn.batch();
+
       for (int idxItem = 0; idxItem < userProgram.itemsToLearn.length; idxItem++) {
         UserItemToLearn item = userProgram.itemsToLearn[idxItem];
 
-        int idItemDb = await txn.insert("${DB.userItemToLearn}", {
+        batchItems.insert("${DB.userItemToLearn}", {
           DB.userItemToLearn.uri: item.uri,
           DB.userItemToLearn.label: item.label,
           DB.userItemToLearn.idxInProgram: idxItem,
@@ -64,19 +66,26 @@ class Db {
           DB.userItemToLearn.itemToLearnServerUri: item.serverUri,
           DB.userItemToLearn.userLearningProgramId: idProgram,
         });
+      }
+      // itemIds is not a list<int> be behaves like it is
+      final itemIds = await batchItems.commit();
 
-        Batch batch = txn.batch();
+      Batch batchSentence = txn.batch();
+
+      for (int idxItem = 0; idxItem < userProgram.itemsToLearn.length; idxItem++) {
+        UserItemToLearn item = userProgram.itemsToLearn[idxItem];
+
         for (UserItemToLearnSentence sentence in item.sentences) {
-          batch.insert("${DB.userItemSentence}", {
+          batchSentence.insert("${DB.userItemSentence}", {
             DB.userItemSentence.uri: sentence.uri,
             DB.userItemSentence.sentence: sentence.sentence,
             DB.userItemSentence.translation: sentence.translation,
             DB.userItemSentence.itemSentenceServerUri: sentence.serverUri,
-            DB.userItemSentence.userItemToLearnId: idItemDb,
+            DB.userItemSentence.userItemToLearnId: itemIds[idxItem],
           });
         }
-        batch.commit();
       }
+      batchSentence.commit();
     });
   }
 
@@ -86,10 +95,7 @@ class Db {
 
     RowUserLearningProgram userProgram = RowUserLearningProgram.fromDb(resultUserProgram[0]);
 
-    final List<Map<String, dynamic>> resultItems = await _db.query("${DB.userItemToLearn}",
-        where: '${DB.userItemToLearn.userLearningProgramId} = ?',
-        whereArgs: [userProgram.id],
-        orderBy: DB.userItemToLearn.idxInProgram);
+    List<RowUserItemToLearn> rowItems = await _selectRowItemsFromProgramIdx(userProgram.id);
 
     final List<Map<String, dynamic>> resultSentences =
         await _db.rawQuery(DB.userItemSentence.getSelectQueryFromProgram(userProgram.id));
@@ -99,8 +105,7 @@ class Db {
     Map<int, List<RowUserItemSentence>> sentencesByItemId =
         groupBy(sentences, (RowUserItemSentence s) => s.userItemToLearnId);
 
-    List<UserItemToLearn> items = resultItems
-        .map((e) => RowUserItemToLearn.fromDb(e))
+    List<UserItemToLearn> items = rowItems
         .map((e) => UserItemToLearn(
             e.uri,
             e.itemToLearnServerUri,
@@ -112,5 +117,15 @@ class Db {
         .toList();
 
     return UserLearningProgram(userProgram.uri, userProgram.learningProgramServerUri, items);
+  }
+
+  Future<List<RowUserItemToLearn>> _selectRowItemsFromProgramIdx(int idProgram) async {
+    final List<Map<String, dynamic>> resultItems = await _db.query("${DB.userItemToLearn}",
+        where: '${DB.userItemToLearn.userLearningProgramId} = ?',
+        whereArgs: [idProgram],
+        orderBy: DB.userItemToLearn.idxInProgram);
+
+    final List<RowUserItemToLearn> rowItems = resultItems.map((e) => RowUserItemToLearn.fromDb(e)).toList();
+    return rowItems;
   }
 }
