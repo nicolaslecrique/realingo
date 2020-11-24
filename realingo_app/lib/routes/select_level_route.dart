@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/screens/loading_screen.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
 
@@ -20,7 +21,8 @@ class SelectLevelRoute extends StatefulWidget {
 }
 
 class _SelectLevelRouteState extends State<SelectLevelRoute> {
-  ItemToLearn _selectedFirstWordToLearn = null;
+  ItemToLearn _selectedFirstWordToLearn;
+  bool _savingProgram = false;
 
   _onItemSelected(ItemToLearn item) {
     setState(() {
@@ -28,8 +30,22 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
     });
   }
 
+  void _onOk(LearningProgram learningProgram) async {
+    setState(() {
+      _savingProgram = true;
+    });
+
+    UserLearningProgram userProgram =
+        await ProgramServices.buildUserProgram(learningProgram, _selectedFirstWordToLearn);
+    Navigator.pushReplacementNamed(context, HomeRoute.route, arguments: HomeRouteArgs(userProgram));
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_savingProgram) {
+      return LoadingScreen();
+    }
+
     final SelectLevelRouteArgs args = ModalRoute.of(context).settings.arguments;
     final List<ItemToLearn> items = args.learningProgram.itemsToLearn;
 
@@ -47,13 +63,7 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
             }),
       ),
       buttonText: "Ok",
-      onButtonPressed: _selectedFirstWordToLearn == null
-          ? null
-          : () async {
-              UserLearningProgram userProgram =
-                  await ProgramServices.buildUserProgram(args.learningProgram, _selectedFirstWordToLearn);
-              Navigator.pushReplacementNamed(context, HomeRoute.route, arguments: HomeRouteArgs(userProgram));
-            },
+      onButtonPressed: _selectedFirstWordToLearn == null ? null : () async => _onOk(args.learningProgram),
     );
   }
 }
