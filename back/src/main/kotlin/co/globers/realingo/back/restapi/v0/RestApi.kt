@@ -87,7 +87,9 @@ class RestApi {
                     RestItemToLearn(
                             itemUri,
                             it.itemString,
-                            it.sentences.map { s -> RestSentence(generateUri(s.sentence, itemUri), s.sentence, s.translation) }
+                            it.sentences
+                                    .distinct()
+                                    .map { s -> RestSentence(generateUri(s.sentence, itemUri), s.sentence, s.translation) }
                     ) }
         )
     }
