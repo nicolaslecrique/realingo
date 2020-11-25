@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/screens/standard_screen.dart';
 
@@ -19,18 +20,43 @@ class SelectWordInLessonRoute extends StatefulWidget {
 class _SelectWordInLessonRouteState extends State<SelectWordInLessonRoute> {
   @override
   Widget build(BuildContext context) {
+    final SelectWordInLessonRouteArgs args = ModalRoute.of(context).settings.arguments;
+    final List<UserItemToLearn> items = args.userLearningProgram.itemsToLearn;
+    UserItemToLearn itemToLearn = items.firstWhere((UserItemToLearn e) => e.status == UserItemToLearnStatus.NotLearned);
+
     return StandardScreen(
       title: "Learn this word ?",
-      contentChild: Text("todo"),
+      contentChild: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(itemToLearn.label),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: itemToLearn.sentences.length,
+              itemBuilder: (BuildContext context, int index) => ListTile(
+                title: Text(itemToLearn.sentences[index].sentence),
+                subtitle: Text(itemToLearn.sentences[index].translation),
+              ),
+            ),
+          )
+        ],
+      ),
       bottomChild: Row(
         children: [
-          ElevatedButton(
-            child: Text("Skip"),
-            onPressed: null,
+          Expanded(
+            child: ElevatedButton(
+              child: Text("Skip"),
+              onPressed: null,
+            ),
           ),
-          ElevatedButton(
-            child: Text("learn"),
-            onPressed: null,
+          SizedBox(width: StandardSizes.medium),
+          Expanded(
+            child: ElevatedButton(
+              child: Text("learn"),
+              onPressed: null,
+            ),
           )
         ],
       ),
