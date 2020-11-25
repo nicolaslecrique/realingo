@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/design/constants.dart';
 
 class StandardScreen extends StatelessWidget {
   final String title;
@@ -15,7 +16,7 @@ class StandardScreen extends StatelessWidget {
           automaticallyImplyLeading: true,
         ),
         body: Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: const EdgeInsets.all(StandardSizes.medium),
             child: Column(
               children: <Widget>[
                 Expanded(child: this.contentChild),
