@@ -37,7 +37,7 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
 
     UserLearningProgram userProgram =
         await ProgramServices.buildUserProgram(learningProgram, _selectedFirstWordToLearn);
-    Navigator.pushReplacementNamed(context, HomeRoute.route, arguments: HomeRouteArgs(userProgram));
+    Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false, arguments: HomeRouteArgs(userProgram));
   }
 
   @override
