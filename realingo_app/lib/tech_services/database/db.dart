@@ -85,7 +85,7 @@ class Db {
           });
         }
       }
-      batchSentence.commit();
+      await batchSentence.commit(noResult: true);
     });
   }
 
