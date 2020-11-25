@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:realingo_app/routes/home_route.dart';
+import 'package:realingo_app/routes/lesson/select_word_in_lesson_route.dart';
 import 'package:realingo_app/routes/new_program/building_program_route.dart';
 import 'package:realingo_app/routes/new_program/select_learned_language_route.dart';
 import 'package:realingo_app/routes/new_program/select_level_route.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
           HomeRoute.route: (context) => HomeRoute(),
           LoginRoute.route: (context) => LoginRoute(),
           SelectLevelRoute.route: (context) => SelectLevelRoute(),
+          SelectWordInLessonRoute.route: (context) => SelectWordInLessonRoute(),
           BuildingProgramRoute.route: (context) => BuildingProgramRoute(ModalRoute.of(context).settings.arguments),
         });
   }
