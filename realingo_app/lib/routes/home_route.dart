@@ -28,14 +28,20 @@ class _HomeRouteState extends State<HomeRoute> {
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<UserItemToLearn> items = userProgram.itemsToLearn;
     return Scaffold(
-        body: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              var item = items[index];
-              return ListTile(
-                title: Text(item.label),
-                tileColor: item.status == UserItemToLearnStatus.KnownAtStart ? Colors.grey : Colors.green,
-              );
-            }));
+      body: ListView.builder(
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            var item = items[index];
+            return ListTile(
+              title: Text(item.label),
+              tileColor: item.status == UserItemToLearnStatus.KnownAtStart ? Colors.grey : Colors.green,
+            );
+          }),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: null,
+        label: Text("Start lesson"),
+        icon: Icon(Icons.arrow_forward_ios),
+      ),
+    );
   }
 }
