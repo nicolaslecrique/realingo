@@ -51,17 +51,15 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
 
     return OneButtonScreen(
       title: "Select the first word you don't know",
-      child: Expanded(
-        child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(items[index].label),
-                tileColor: items[index] == _selectedFirstWordToLearn ? Colors.blue : null,
-                onTap: () => _onItemSelected(items[index]),
-              );
-            }),
-      ),
+      child: ListView.builder(
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(items[index].label),
+              tileColor: items[index] == _selectedFirstWordToLearn ? Colors.blue : null,
+              onTap: () => _onItemSelected(items[index]),
+            );
+          }),
       buttonText: "Ok",
       onButtonPressed: _selectedFirstWordToLearn == null ? null : () async => _onOk(args.learningProgram),
     );

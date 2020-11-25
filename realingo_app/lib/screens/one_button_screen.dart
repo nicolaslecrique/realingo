@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/screens/standard_screen.dart';
 
 class OneButtonScreen extends StatelessWidget {
   final VoidCallback onButtonPressed;
@@ -7,28 +8,18 @@ class OneButtonScreen extends StatelessWidget {
   final Widget child;
 
   OneButtonScreen(
-      {@required this.child, @required this.title, @required this.buttonText, @required this.onButtonPressed});
+      {Key key, @required this.child, @required this.title, @required this.buttonText, @required this.onButtonPressed})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(this.title),
-          automaticallyImplyLeading: true,
-        ),
-        body: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              children: <Widget>[
-                this.child,
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    child: Text("OK"),
-                    onPressed: this.onButtonPressed,
-                  ),
-                )
-              ],
-            )));
+    return StandardScreen(
+      title: title,
+      contentChild: child,
+      bottomChild: ElevatedButton(
+        child: Text(this.buttonText),
+        onPressed: this.onButtonPressed,
+      ),
+    );
   }
 }
