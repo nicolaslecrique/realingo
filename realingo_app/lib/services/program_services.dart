@@ -34,7 +34,7 @@ class ProgramServices {
           current.uri,
           current.label,
           current.sentences
-              .map((s) => UserItemToLearnSentence("${s.uri}-$userProgramUri", s.sentence, s.translation, s.uri))
+              .map((s) => UserItemToLearnSentence(s.uri, "${s.uri}-$userProgramUri", s.sentence, s.translation))
               .toList(),
           status));
     }
