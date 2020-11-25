@@ -5,7 +5,7 @@ import 'package:realingo_app/screens/loading_screen.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
 
-import 'home_route.dart';
+import '../home_route.dart';
 
 class SelectLevelRouteArgs {
   final LearningProgram learningProgram;

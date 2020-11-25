@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/routes/building_program_route.dart';
+import 'package:realingo_app/routes/new_program/building_program_route.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/widgets/future_builder_wrapper.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/routes/select_learned_language_route.dart';
+import 'package:realingo_app/routes/new_program/select_learned_language_route.dart';
 
 class LoginRoute extends StatelessWidget {
   static const route = '/login';
