@@ -11,6 +11,43 @@ import 'package:sqflite/sqflite.dart';
 
 final db = Db();
 
+class UserItemToLearnStatusDb {
+  static const String NotLearned = "NotLearned";
+  static const String SkippedAtStart = "SkippedAtStart";
+  static const String Skipped = "Skipped";
+  static const String Learned = "Learned";
+
+  static UserItemToLearnStatus fromDbString(String dbString) {
+    switch (dbString) {
+      case NotLearned:
+        return UserItemToLearnStatus.NotLearned;
+      case SkippedAtStart:
+        return UserItemToLearnStatus.SkippedAtStart;
+      case Skipped:
+        return UserItemToLearnStatus.Skipped;
+      case Learned:
+        return UserItemToLearnStatus.Learned;
+      default:
+        throw Exception("$dbString cannot be converted to UserItemToLearnStatus");
+    }
+  }
+
+  static String toDbString(UserItemToLearnStatus status) {
+    switch (status) {
+      case UserItemToLearnStatus.NotLearned:
+        return NotLearned;
+      case UserItemToLearnStatus.SkippedAtStart:
+        return SkippedAtStart;
+      case UserItemToLearnStatus.Skipped:
+        return Skipped;
+      case UserItemToLearnStatus.Learned:
+        return Learned;
+      default:
+        throw Exception("$status cannot be converted from UserItemToLearnStatus to string");
+    }
+  }
+}
+
 class Db {
   Database _db;
 
@@ -22,28 +59,6 @@ class Db {
   Future<void> initWith(DatabaseFactory databaseFactory, String dbPath) async {
     _db = await initDb(databaseFactory, dbPath);
     return;
-  }
-
-  UserItemToLearnStatus _userItemToLearnStatusFromDbString(String dbString) {
-    switch (dbString) {
-      case "NotLearned":
-        return UserItemToLearnStatus.NotLearned;
-      case "KnownAtStart":
-        return UserItemToLearnStatus.KnownAtStart;
-      default:
-        throw Exception("$dbString cannot be converted to UserItemToLearnStatus");
-    }
-  }
-
-  String _userItemToLearnStatusToDbString(UserItemToLearnStatus status) {
-    switch (status) {
-      case UserItemToLearnStatus.NotLearned:
-        return "NotLearned";
-      case UserItemToLearnStatus.KnownAtStart:
-        return "KnownAtStart";
-      default:
-        throw Exception("$status cannot be converted from UserItemToLearnStatus to string");
-    }
   }
 
   Future<void> insertUserLearningProgram(UserLearningProgram userProgram) async {
@@ -62,7 +77,7 @@ class Db {
           DB.userItemToLearn.uri: item.uri,
           DB.userItemToLearn.label: item.label,
           DB.userItemToLearn.idxInProgram: idxItem,
-          DB.userItemToLearn.status: _userItemToLearnStatusToDbString(item.status),
+          DB.userItemToLearn.status: UserItemToLearnStatusDb.toDbString(item.status),
           DB.userItemToLearn.itemToLearnServerUri: item.serverUri,
           DB.userItemToLearn.userLearningProgramId: idProgram,
         });
@@ -113,7 +128,7 @@ class Db {
             sentencesByItemId[e.id]
                 .map((s) => UserItemToLearnSentence(s.uri, s.itemSentenceServerUri, s.sentence, s.translation))
                 .toList(),
-            _userItemToLearnStatusFromDbString(e.status)))
+            UserItemToLearnStatusDb.fromDbString(e.status)))
         .toList();
 
     return UserLearningProgram(userProgram.uri, userProgram.learningProgramServerUri, items);

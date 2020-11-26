@@ -1,4 +1,4 @@
-enum UserItemToLearnStatus { KnownAtStart, Learned, NotLearned }
+enum UserItemToLearnStatus { SkippedAtStart, Learned, Skipped, NotLearned }
 
 class UserItemToLearnSentence {
   final String uri;

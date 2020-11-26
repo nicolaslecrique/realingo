@@ -36,7 +36,7 @@ class _HomeRouteState extends State<HomeRoute> {
             var item = items[index];
             return ListTile(
               title: Text(item.label),
-              tileColor: item.status == UserItemToLearnStatus.KnownAtStart ? Colors.grey : Colors.green,
+              tileColor: item.status == UserItemToLearnStatus.SkippedAtStart ? Colors.grey : Colors.green,
             );
           }),
       floatingActionButton: FloatingActionButton.extended(

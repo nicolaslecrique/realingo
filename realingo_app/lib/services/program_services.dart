@@ -23,7 +23,7 @@ class ProgramServices {
     String userProgramUri = "${program.uri}-$now";
 
     List<UserItemToLearn> userItems = List<UserItemToLearn>();
-    UserItemToLearnStatus status = UserItemToLearnStatus.KnownAtStart;
+    UserItemToLearnStatus status = UserItemToLearnStatus.SkippedAtStart;
     for (int i = 0; i < program.itemsToLearn.length; i++) {
       ItemToLearn current = program.itemsToLearn[i];
       if (current == firstItemToLearn) {
