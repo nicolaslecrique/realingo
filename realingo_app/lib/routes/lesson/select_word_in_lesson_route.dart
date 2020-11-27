@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/routes/lesson/select_sentences_for_word_route.dart';
 import 'package:realingo_app/screens/standard_screen.dart';
+
+enum ItemSkippedOrSelected { Skipped, Selected }
+
+class ConsideredItem {
+  final int indexInUserProgram;
+  final ItemSkippedOrSelected choice;
+  final List<int> indexesOfSelectedSentences; // null before we select sentences or if choice is skipped
+
+  ConsideredItem(this.indexInUserProgram, this.choice, this.indexesOfSelectedSentences);
+}
 
 class SelectWordInLessonRouteArgs {
   final UserLearningProgram userLearningProgram;
-  final List<int> selectedItemIdxForLesson;
+  final List<ConsideredItem> itemsForLesson;
 
-  SelectWordInLessonRouteArgs(this.userLearningProgram, this.selectedItemIdxForLesson);
+  SelectWordInLessonRouteArgs(this.userLearningProgram, this.itemsForLesson);
 }
 
 class SelectWordInLessonRoute extends StatefulWidget {
@@ -18,11 +29,37 @@ class SelectWordInLessonRoute extends StatefulWidget {
 }
 
 class _SelectWordInLessonRouteState extends State<SelectWordInLessonRoute> {
+  int _currentIndex;
+  SelectWordInLessonRouteArgs _args;
+
+  void _onChoice(ItemSkippedOrSelected choice) {
+    List<ConsideredItem> newList =
+        List.unmodifiable(List.from(_args.itemsForLesson)..add(ConsideredItem(_currentIndex, choice, null)));
+    if (choice == ItemSkippedOrSelected.Selected) {
+      Navigator.pushNamed(context, SelectSentencesForWordRoute.route,
+          arguments: SelectSentencesForWordRouteArgs(_args.userLearningProgram, newList));
+    } else {
+      if (_currentIndex == _args.itemsForLesson.length - 1) {
+        // TODO NICO: start lesson
+      } else {
+        Navigator.pushNamed(context, SelectWordInLessonRoute.route,
+            arguments: SelectWordInLessonRouteArgs(_args.userLearningProgram, newList));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final SelectWordInLessonRouteArgs args = ModalRoute.of(context).settings.arguments;
-    final List<UserItemToLearn> items = args.userLearningProgram.itemsToLearn;
-    UserItemToLearn itemToLearn = items.firstWhere((UserItemToLearn e) => e.status == UserItemToLearnStatus.NotLearned);
+    _args = ModalRoute.of(context).settings.arguments;
+    final program = _args.userLearningProgram;
+
+    if (_args.itemsForLesson.isEmpty) {
+      _currentIndex =
+          program.itemsToLearn.indexWhere((UserItemToLearn e) => e.status == UserItemToLearnStatus.NotLearned);
+    } else {
+      _currentIndex = _args.itemsForLesson.last.indexInUserProgram + 1;
+    }
+    UserItemToLearn itemToLearn = program.itemsToLearn[_currentIndex];
 
     return StandardScreen(
       title: "Learn this word ?",
@@ -48,14 +85,14 @@ class _SelectWordInLessonRouteState extends State<SelectWordInLessonRoute> {
           Expanded(
             child: ElevatedButton(
               child: Text("Skip"),
-              onPressed: null,
+              onPressed: () => _onChoice(ItemSkippedOrSelected.Skipped),
             ),
           ),
           SizedBox(width: StandardSizes.medium),
           Expanded(
             child: ElevatedButton(
               child: Text("learn"),
-              onPressed: null,
+              onPressed: () => _onChoice(ItemSkippedOrSelected.Selected),
             ),
           )
         ],

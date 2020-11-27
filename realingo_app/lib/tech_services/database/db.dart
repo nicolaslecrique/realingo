@@ -115,7 +115,8 @@ class Db {
     final List<Map<String, dynamic>> resultSentences =
         await _db.rawQuery(DB.userItemSentence.getSelectQueryFromProgram(userProgram.id));
 
-    final List<RowUserItemSentence> sentences = resultSentences.map((e) => RowUserItemSentence.fromDb(e)).toList();
+    final List<RowUserItemSentence> sentences =
+        resultSentences.map((e) => RowUserItemSentence.fromDb(e)).toList(growable: false);
 
     Map<int, List<RowUserItemSentence>> sentencesByItemId =
         groupBy(sentences, (RowUserItemSentence s) => s.userItemToLearnId);
@@ -127,9 +128,9 @@ class Db {
             e.label,
             sentencesByItemId[e.id]
                 .map((s) => UserItemToLearnSentence(s.uri, s.itemSentenceServerUri, s.sentence, s.translation))
-                .toList(),
+                .toList(growable: false),
             UserItemToLearnStatusDb.fromDbString(e.status)))
-        .toList();
+        .toList(growable: false);
 
     return UserLearningProgram(userProgram.uri, userProgram.learningProgramServerUri, items);
   }
@@ -140,7 +141,8 @@ class Db {
         whereArgs: [idProgram],
         orderBy: DB.userItemToLearn.idxInProgram);
 
-    final List<RowUserItemToLearn> rowItems = resultItems.map((e) => RowUserItemToLearn.fromDb(e)).toList();
+    final List<RowUserItemToLearn> rowItems =
+        resultItems.map((e) => RowUserItemToLearn.fromDb(e)).toList(growable: false);
     return rowItems;
   }
 }
