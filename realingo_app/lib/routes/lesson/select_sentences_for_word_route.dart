@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:realingo_app/model/lesson.dart';
 import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/routes/lesson/lesson_route.dart';
 import 'package:realingo_app/routes/lesson/select_word_in_lesson_route.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
 
@@ -37,6 +38,19 @@ class _SelectSentencesForWordRouteState extends State<SelectSentencesForWordRout
 
     if (modifiedItems.length == Lesson.NbItemsByLesson) {
       // start lesson
+      List<LessonItem> lessonItems = [];
+      for (int sentenceIndex = 0; sentenceIndex < Lesson.NbSentencesByLessonItem; sentenceIndex++) {
+        for (ConsideredItem item in modifiedItems) {
+          if (sentenceIndex < item.indexesOfSelectedSentences.length) {
+            lessonItems.add(LessonItem(
+                _args.userLearningProgram.itemsToLearn[item.indexInUserProgram],
+                _args.userLearningProgram.itemsToLearn[item.indexInUserProgram]
+                    .sentences[item.indexesOfSelectedSentences[sentenceIndex]]));
+          }
+        }
+      }
+      LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
+      Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
     } else {
       SelectWordInLessonRouteArgs newArgs = SelectWordInLessonRouteArgs(_args.userLearningProgram, modifiedItems);
       Navigator.pushNamed(context, SelectWordInLessonRoute.route, arguments: newArgs);

@@ -56,7 +56,7 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
           itemBuilder: (context, index) {
             return ListTile(
               title: Text(items[index].label),
-              tileColor: items[index] == _selectedFirstWordToLearn ? Colors.blue : null,
+              selected: items[index] == _selectedFirstWordToLearn,
               onTap: () => _onItemSelected(items[index]),
             );
           }),
