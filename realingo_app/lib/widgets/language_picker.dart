@@ -12,12 +12,10 @@ class LanguagePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: languages
-          .map((e) => Container(
-                color: e == selected ? Colors.blue : null,
-                child: ListTile(
-                  title: Text(e.label),
-                  onTap: () => onSelect(e),
-                ),
+          .map((e) => ListTile(
+                selected: e == selected,
+                title: Text(e.label),
+                onTap: () => onSelect(e),
               ))
           .toList(),
     );
