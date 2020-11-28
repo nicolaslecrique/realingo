@@ -20,7 +20,7 @@ class ConsideredItem {
   ConsideredItem(this.indexInUserProgram, this.choice, this.indexesOfSelectedSentences);
 }
 
-class LessonServices {
+class LessonController {
   static const NbItemsByLesson = 3;
   static const NbSentencesByLessonItem = 3;
 

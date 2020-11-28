@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/services/lesson_services.dart';
+import 'package:realingo_app/routes/lesson/lesson_controller.dart';
 
 class LessonRouteArgs {
   final List<LessonItem> lessonItems;

@@ -5,7 +5,8 @@ import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/lesson_route.dart';
 import 'package:realingo_app/routes/lesson/select_word_in_lesson_route.dart';
 import 'package:realingo_app/screens/one_button_screen.dart';
-import 'package:realingo_app/services/lesson_services.dart';
+
+import 'lesson_controller.dart';
 
 class SelectSentencesForWordRouteArgs {
   final UserLearningProgram userLearningProgram;
@@ -15,7 +16,7 @@ class SelectSentencesForWordRouteArgs {
 }
 
 class SelectSentencesForWordRoute extends StatefulWidget {
-  static const route = '/select_sentences_fro_word';
+  static const route = '/select_sentences_for_word';
 
   @override
   _SelectSentencesForWordRouteState createState() => _SelectSentencesForWordRouteState();
@@ -36,10 +37,10 @@ class _SelectSentencesForWordRouteState extends State<SelectSentencesForWordRout
       ..removeLast()
       ..add(itemWithSentences));
 
-    if (newItemsList.length == LessonServices.NbItemsByLesson) {
+    if (newItemsList.length == LessonController.NbItemsByLesson) {
       // start lesson
 
-      List<LessonItem> lessonItems = LessonServices.buildLesson(_args.userLearningProgram, newItemsList);
+      List<LessonItem> lessonItems = LessonController.buildLesson(_args.userLearningProgram, newItemsList);
       LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
       Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
     } else {
@@ -64,7 +65,7 @@ class _SelectSentencesForWordRouteState extends State<SelectSentencesForWordRout
     ConsideredItem consideredItem = _args.itemsForLesson.last;
 
     UserItemToLearn itemToLearn = _args.userLearningProgram.itemsToLearn[consideredItem.indexInUserProgram];
-    nbSentencesToLearn = min(itemToLearn.sentences.length, LessonServices.NbSentencesByLessonItem);
+    nbSentencesToLearn = min(itemToLearn.sentences.length, LessonController.NbSentencesByLessonItem);
 
     return OneButtonScreen(
         title: "Choose 3 sentences to learn",

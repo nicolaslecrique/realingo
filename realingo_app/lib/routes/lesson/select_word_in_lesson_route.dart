@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/routes/lesson/lesson_controller.dart';
 import 'package:realingo_app/routes/lesson/select_sentences_for_word_route.dart';
 import 'package:realingo_app/screens/standard_screen.dart';
-import 'package:realingo_app/services/lesson_services.dart';
+
+import 'lesson_route.dart';
 
 class SelectWordInLessonRouteArgs {
   final UserLearningProgram userLearningProgram;
@@ -31,7 +33,9 @@ class _SelectWordInLessonRouteState extends State<SelectWordInLessonRoute> {
           arguments: SelectSentencesForWordRouteArgs(_args.userLearningProgram, newList));
     } else {
       if (_currentIndex == _args.itemsForLesson.length - 1) {
-        // TODO NICO: start lesson
+        var lessonItems = LessonController.buildLesson(_args.userLearningProgram, newList);
+        LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
+        Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
       } else {
         Navigator.pushNamed(context, SelectWordInLessonRoute.route,
             arguments: SelectWordInLessonRouteArgs(_args.userLearningProgram, newList));
