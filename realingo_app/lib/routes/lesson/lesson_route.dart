@@ -1,15 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/model/user_program.dart';
-
-enum LessonItemStatus { NotPlayed, Success, Failure }
-
-class LessonItem {
-  final UserItemToLearn userItemToLearn;
-  final UserItemToLearnSentence sentence;
-  LessonItemStatus status = LessonItemStatus.NotPlayed;
-
-  LessonItem(this.userItemToLearn, this.sentence);
-}
+import 'package:realingo_app/services/lesson_services.dart';
 
 class LessonRouteArgs {
   final List<LessonItem> lessonItems;
@@ -38,8 +28,8 @@ class _LessonRouteState extends State<LessonRoute> {
 
     var currentItem = _lessonItems[_currentItemIndex];
 
-    return Container(
-      child: Column(
+    return Scaffold(
+      body: Column(
         children: [
           LinearProgressIndicator(
             value: progressRatio,

@@ -3,16 +3,7 @@ import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/select_sentences_for_word_route.dart';
 import 'package:realingo_app/screens/standard_screen.dart';
-
-enum ItemSkippedOrSelected { Skipped, Selected }
-
-class ConsideredItem {
-  final int indexInUserProgram;
-  final ItemSkippedOrSelected choice;
-  final List<int> indexesOfSelectedSentences; // null before we select sentences or if choice is skipped
-
-  ConsideredItem(this.indexInUserProgram, this.choice, this.indexesOfSelectedSentences);
-}
+import 'package:realingo_app/services/lesson_services.dart';
 
 class SelectWordInLessonRouteArgs {
   final UserLearningProgram userLearningProgram;
