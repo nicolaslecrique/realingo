@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/lesson_controller.dart';
 
 class LessonRouteArgs {
@@ -29,15 +30,37 @@ class _LessonRouteState extends State<LessonRoute> {
     var currentItem = _lessonItems[_currentItemIndex];
 
     return Scaffold(
-      body: Column(
-        children: [
-          LinearProgressIndicator(
-            value: progressRatio,
-          ),
-          Text(currentItem.sentence.translation),
-          Text(currentItem.sentence.sentence),
-          ElevatedButton(child: Icon(Icons.mic), onPressed: () => null)
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(StandardSizes.medium),
+        child: Column(
+          children: [
+            LinearProgressIndicator(
+              value: progressRatio,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
+              child: Text("Translate the sentence"),
+            ),
+            Expanded(
+                child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text(currentItem.sentence.translation),
+                Text(""),
+              ],
+            )),
+            SizedBox(
+                width: double.infinity,
+                child: Row(
+                  children: [
+                    OutlineButton.icon(icon: Icon(Icons.add_circle), label: Text("Hint"), onPressed: () => null),
+                    SizedBox(width: StandardSizes.medium),
+                    Expanded(
+                        child: ElevatedButton.icon(icon: Icon(Icons.mic), label: Text("Reply"), onPressed: () => null)),
+                  ],
+                ))
+          ],
+        ),
       ),
     );
   }
