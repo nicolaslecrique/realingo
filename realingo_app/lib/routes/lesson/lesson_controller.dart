@@ -27,7 +27,7 @@ class LessonController {
   static List<LessonItem> buildLesson(UserLearningProgram program, List<ConsideredItem> modifiedItems) {
     List<LessonItem> lessonItems = [];
 
-    List<ConsideredItem> selectedItems =
+    Iterable<ConsideredItem> selectedItems =
         modifiedItems.where((element) => element.choice == ItemSkippedOrSelected.Selected);
     for (int sentenceIndex = 0; sentenceIndex < NbSentencesByLessonItem; sentenceIndex++) {
       for (ConsideredItem item in selectedItems) {
