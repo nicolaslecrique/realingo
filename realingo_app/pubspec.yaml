@@ -52,6 +52,8 @@ dependencies:
   # utils
   collection: ^1.14.13
 
+  speech_to_text: ^3.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

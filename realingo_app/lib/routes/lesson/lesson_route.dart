@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/lesson_controller.dart';
+import 'package:realingo_app/services/voice_service.dart';
 
 class LessonRouteArgs {
   final List<LessonItem> lessonItems;
@@ -18,6 +19,35 @@ class LessonRoute extends StatefulWidget {
 class _LessonRouteState extends State<LessonRoute> {
   List<LessonItem> _lessonItems;
   int _currentItemIndex = 0;
+
+  VoiceService _voiceService;
+  VoiceServiceStatus _voiceServiceStatus;
+  String _lastResult = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _voiceService = VoiceService(_onVoiceStatusChanged, _onResult, null);
+    _voiceService.init();
+  }
+
+  void _onVoiceStatusChanged(VoiceServiceStatus voiceServiceStatus) {
+    setState(() {
+      _voiceServiceStatus = voiceServiceStatus;
+    });
+  }
+
+  void _onResult(String result) {
+    setState(() {
+      _lastResult = result;
+    });
+  }
+
+  void _startMicButtonPress() {
+    if (_voiceServiceStatus == VoiceServiceStatus.Ready) {
+      _voiceService.startListening();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +71,10 @@ class _LessonRouteState extends State<LessonRoute> {
               padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
               child: Text("Translate the sentence"),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
+              child: Text(_lastResult),
+            ),
             Expanded(
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -56,9 +90,11 @@ class _LessonRouteState extends State<LessonRoute> {
                     OutlineButton.icon(icon: Icon(Icons.add_circle), label: Text("Hint"), onPressed: () => null),
                     SizedBox(width: StandardSizes.medium),
                     Expanded(
-                        child: ElevatedButton.icon(icon: Icon(Icons.mic), label: Text("Reply"), onPressed: () => null)),
+                        child: ElevatedButton.icon(
+                            icon: Icon(Icons.mic), label: Text("Reply"), onPressed: _startMicButtonPress)),
                   ],
-                ))
+                )),
+            Text(_voiceServiceStatus.toString()) // TODO NICO for debug, to remove
           ],
         ),
       ),
