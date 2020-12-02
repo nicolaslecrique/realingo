@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/model/user_program.dart';
 
-import 'lesson/select_word_in_lesson_route.dart';
+import 'lesson/select_word_and_sentences_route.dart';
 
 class HomeRouteArgs {
   final UserLearningProgram userProgram;
@@ -40,8 +40,8 @@ class _HomeRouteState extends State<HomeRoute> {
             );
           }),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, SelectWordInLessonRoute.route,
-            arguments: SelectWordInLessonRouteArgs(userProgram, [])),
+        onPressed: () => Navigator.pushNamed(context, SelectWordAndSentencesRoute.route,
+            arguments: SelectWordAndSentencesRouteArgs(userProgram, [])),
         label: Text("Start lesson"),
         icon: Icon(Icons.arrow_forward_ios),
       ),
