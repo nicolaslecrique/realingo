@@ -27,8 +27,15 @@ class _LessonRouteState extends State<LessonRoute> {
   @override
   void initState() {
     super.initState();
-    _voiceService = VoiceService(_onVoiceStatusChanged, _onResult, null);
-    _voiceService.init();
+    _voiceService = VoiceService.get();
+    _voiceService.register(_onVoiceStatusChanged, _onResult);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _voiceService.unregister();
+    _voiceService.stopListening();
   }
 
   void _onVoiceStatusChanged(VoiceServiceStatus voiceServiceStatus) {
@@ -43,10 +50,8 @@ class _LessonRouteState extends State<LessonRoute> {
     });
   }
 
-  void _startMicButtonPress() {
-    if (_voiceServiceStatus == VoiceServiceStatus.Ready) {
-      _voiceService.startListening();
-    }
+  Future<void> _startMicButtonPress() async {
+    await _voiceService.startListening();
   }
 
   @override
@@ -91,10 +96,14 @@ class _LessonRouteState extends State<LessonRoute> {
                     SizedBox(width: StandardSizes.medium),
                     Expanded(
                         child: ElevatedButton.icon(
-                            icon: Icon(Icons.mic), label: Text("Reply"), onPressed: _startMicButtonPress)),
+                            icon: Icon(Icons.mic),
+                            label: Text("Reply"),
+                            onPressed: _voiceServiceStatus == VoiceServiceStatus.Ready ? _startMicButtonPress : null)),
                   ],
                 )),
-            Text(_voiceServiceStatus.toString()) // TODO NICO for debug, to remove
+            Row(
+              children: [Text(_voiceServiceStatus.toString())],
+            ) // TODO NICO for debug, to remove
           ],
         ),
       ),

@@ -1,4 +1,3 @@
-import 'package:realingo_app/model/program.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -7,57 +6,86 @@ import 'package:speech_to_text/speech_to_text.dart';
 enum VoiceServiceStatus { Initializing, Ready, Starting, Listening, Stopping, Error }
 
 class VoiceService {
-  final stt.SpeechToText _speech;
-  final void Function(VoiceServiceStatus status) _onStatusChanged;
-  final void Function(String result) _onResult;
-  String _localId;
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  void Function(VoiceServiceStatus status) _onStatusChangedCallback;
+  void Function(String result) _onResultCallback;
+  VoiceServiceStatus _status = VoiceServiceStatus.Initializing;
+  static VoiceService _instance;
 
-  VoiceService(this._onStatusChanged, this._onResult, Language language) : _speech = stt.SpeechToText();
+  // we make a singleton because _speech.initialize should be called only once
+  VoiceService._constructor();
 
-  Future<void> init() async {
-    _onStatusChanged(VoiceServiceStatus.Initializing);
-
-    _speech
-        .initialize(onStatus: _statusListener, onError: _errorListener)
-        .then((isOk) => isOk ? _onStatusChanged(VoiceServiceStatus.Ready) : _onStatusChanged(VoiceServiceStatus.Error));
+  factory VoiceService.get() {
+    if (_instance == null) {
+      _instance = VoiceService._constructor();
+      _instance._speech.initialize(onStatus: _instance._statusListener, onError: _instance._errorListener).then(
+          (isOk) => isOk
+              ? _instance._onStatusChanged(VoiceServiceStatus.Ready)
+              : _instance._onStatusChanged(VoiceServiceStatus.Error));
+    }
+    return _instance;
   }
 
+  void register(void onStatusChangedCallback(VoiceServiceStatus status), void onResultCallback(String result)) {
+    _onStatusChangedCallback = onStatusChangedCallback;
+    _onResultCallback = onResultCallback;
+    _onStatusChangedCallback(_status);
+  }
+
+  void unregister() {
+    _onStatusChangedCallback = null;
+    _onResultCallback = null;
+  }
+
+  void _onStatusChanged(VoiceServiceStatus status) {
+    _status = status;
+    if (_onStatusChangedCallback != null) {
+      _onStatusChangedCallback(_status);
+    }
+  }
+
+  void _onResult(String result) {
+    if (_onResultCallback != null) {
+      _onResultCallback(result);
+    }
+  }
+
+  /*
   Future<String> _getLocalId(Language language) async {
     List<stt.LocaleName> list = await _speech.locales();
     return "viet";
-  }
+  }*/
 
+  // only called from error to "listen" function, so it's only a recognize error (i.e. : no one spoke)
   void _errorListener(SpeechRecognitionError errorNotification) {
-    _onStatusChanged(VoiceServiceStatus.Error);
+    print(errorNotification.toString());
+    _onResult("");
   }
 
   void _statusListener(String status) {
+    //print("_statusListener:" + status);
     if (status == "listening") {
       _onStatusChanged(VoiceServiceStatus.Listening);
     } else if (status == "notListening") {
       _onStatusChanged(VoiceServiceStatus.Ready);
     }
-
-    print(status);
   }
 
   startListening() {
     _onStatusChanged(VoiceServiceStatus.Starting);
-
     //_getLocalId(null);
 
     _speech.listen(
         onResult: (SpeechRecognitionResult result) => {if (result.finalResult) _onResult(result.recognizedWords)},
-        listenFor: Duration(seconds: 20),
+        listenFor: Duration(seconds: 10),
         localeId: "vi-VN",
         onSoundLevelChange: (double level) => null,
         cancelOnError: true,
         listenMode: ListenMode.deviceDefault);
   }
 
-  // return result
   void stopListening() {
     _onStatusChanged(VoiceServiceStatus.Stopping);
-    _speech.stop();
+    _speech.stop().then((value) => _onStatusChanged(VoiceServiceStatus.Ready));
   }
 }
