@@ -105,10 +105,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
       ),
       bottomChild: Row(
         children: [
-          OutlineButton(
-            child: Text("Skip"),
-            onPressed: _onItemSkipped,
-          ),
+          IconButton(icon: Icon(Icons.delete_forever), onPressed: _onItemSkipped, tooltip: "Skip word"),
           SizedBox(width: StandardSizes.medium),
           Expanded(
             child: ElevatedButton(
