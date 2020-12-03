@@ -77,7 +77,7 @@ class VoiceService {
 
     _speech.listen(
         onResult: (SpeechRecognitionResult result) => {if (result.finalResult) _onResult(result.recognizedWords)},
-        listenFor: Duration(seconds: 10),
+        listenFor: Duration(seconds: 20),
         localeId: "vi-VN",
         onSoundLevelChange: (double level) => null,
         cancelOnError: true,

@@ -50,8 +50,12 @@ class _LessonRouteState extends State<LessonRoute> {
     });
   }
 
-  Future<void> _startMicButtonPress() async {
-    await _voiceService.startListening();
+  void _startMicButtonPress() {
+    _voiceService.startListening();
+  }
+
+  void _stopMicButtonPress() {
+    _voiceService.stopListening();
   }
 
   @override
@@ -98,7 +102,11 @@ class _LessonRouteState extends State<LessonRoute> {
                         child: ElevatedButton.icon(
                             icon: Icon(Icons.mic),
                             label: Text("Reply"),
-                            onPressed: _voiceServiceStatus == VoiceServiceStatus.Ready ? _startMicButtonPress : null)),
+                            onPressed: _voiceServiceStatus == VoiceServiceStatus.Ready
+                                ? _startMicButtonPress
+                                : _voiceServiceStatus == VoiceServiceStatus.Listening
+                                    ? _stopMicButtonPress
+                                    : null)),
                   ],
                 )),
             Row(
