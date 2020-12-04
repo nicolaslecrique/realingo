@@ -26,7 +26,8 @@ class VoiceService {
     return _instance;
   }
 
-  void register(void onStatusChangedCallback(VoiceServiceStatus status), void onResultCallback(String result)) {
+  void register(
+      void Function(VoiceServiceStatus status) onStatusChangedCallback, void Function(String result) onResultCallback) {
     _onStatusChangedCallback = onStatusChangedCallback;
     _onResultCallback = onResultCallback;
     _onStatusChangedCallback(_status);
@@ -59,26 +60,26 @@ class VoiceService {
   // only called from error to "listen" function, so it's only a recognize error (i.e. : no one spoke)
   void _errorListener(SpeechRecognitionError errorNotification) {
     print(errorNotification.toString());
-    _onResult("");
+    _onResult('');
   }
 
   void _statusListener(String status) {
     //print("_statusListener:" + status);
-    if (status == "listening") {
+    if (status == 'listening') {
       _onStatusChanged(VoiceServiceStatus.Listening);
-    } else if (status == "notListening") {
+    } else if (status == 'notListening') {
       _onStatusChanged(VoiceServiceStatus.Ready);
     }
   }
 
-  startListening() {
+  void startListening() {
     _onStatusChanged(VoiceServiceStatus.Starting);
     //_getLocalId(null);
 
     _speech.listen(
         onResult: (SpeechRecognitionResult result) => {if (result.finalResult) _onResult(result.recognizedWords)},
         listenFor: Duration(seconds: 20),
-        localeId: "vi-VN",
+        localeId: 'vi-VN',
         onSoundLevelChange: (double level) => null,
         cancelOnError: true,
         listenMode: ListenMode.deviceDefault);

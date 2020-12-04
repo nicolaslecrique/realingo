@@ -12,10 +12,10 @@ import 'package:sqflite/sqflite.dart';
 final db = Db();
 
 class UserItemToLearnStatusDb {
-  static const String NotLearned = "NotLearned";
-  static const String SkippedAtStart = "SkippedAtStart";
-  static const String Skipped = "Skipped";
-  static const String Learned = "Learned";
+  static const String NotLearned = 'NotLearned';
+  static const String SkippedAtStart = 'SkippedAtStart';
+  static const String Skipped = 'Skipped';
+  static const String Learned = 'Learned';
 
   static UserItemToLearnStatus fromDbString(String dbString) {
     switch (dbString) {
@@ -28,7 +28,7 @@ class UserItemToLearnStatusDb {
       case Learned:
         return UserItemToLearnStatus.Learned;
       default:
-        throw Exception("$dbString cannot be converted to UserItemToLearnStatus");
+        throw Exception('$dbString cannot be converted to UserItemToLearnStatus');
     }
   }
 
@@ -43,7 +43,7 @@ class UserItemToLearnStatusDb {
       case UserItemToLearnStatus.Learned:
         return Learned;
       default:
-        throw Exception("$status cannot be converted from UserItemToLearnStatus to string");
+        throw Exception('$status cannot be converted from UserItemToLearnStatus to string');
     }
   }
 }
@@ -63,7 +63,7 @@ class Db {
 
   Future<void> insertUserLearningProgram(UserLearningProgram userProgram) async {
     return await _db.transaction((Transaction txn) async {
-      int idProgram = await txn.insert("${DB.userLearningProgram}", {
+      int idProgram = await txn.insert('${DB.userLearningProgram}', <String, dynamic>{
         DB.userLearningProgram.uri: userProgram.uri,
         DB.userLearningProgram.learningProgramServerUri: userProgram.serverUri,
       });
@@ -73,7 +73,7 @@ class Db {
       for (int idxItem = 0; idxItem < userProgram.itemsToLearn.length; idxItem++) {
         UserItemToLearn item = userProgram.itemsToLearn[idxItem];
 
-        batchItems.insert("${DB.userItemToLearn}", {
+        batchItems.insert('${DB.userItemToLearn}', <String, dynamic>{
           DB.userItemToLearn.uri: item.uri,
           DB.userItemToLearn.label: item.label,
           DB.userItemToLearn.idxInProgram: idxItem,
@@ -91,7 +91,7 @@ class Db {
         UserItemToLearn item = userProgram.itemsToLearn[idxItem];
 
         for (UserItemToLearnSentence sentence in item.sentences) {
-          batchSentence.insert("${DB.userItemSentence}", {
+          batchSentence.insert('${DB.userItemSentence}', <String, dynamic>{
             DB.userItemSentence.uri: sentence.uri,
             DB.userItemSentence.sentence: sentence.sentence,
             DB.userItemSentence.translation: sentence.translation,
@@ -105,8 +105,8 @@ class Db {
   }
 
   Future<UserLearningProgram> getUserLearningProgram(String uri) async {
-    List<Map<String, dynamic>> resultUserProgram =
-        await _db.query("${DB.userLearningProgram}", where: '${DB.userLearningProgram.uri} = ?', whereArgs: [uri]);
+    List<Map<String, dynamic>> resultUserProgram = await _db
+        .query('${DB.userLearningProgram}', where: '${DB.userLearningProgram.uri} = ?', whereArgs: <dynamic>[uri]);
 
     RowUserLearningProgram userProgram = RowUserLearningProgram.fromDb(resultUserProgram[0]);
 
@@ -136,9 +136,9 @@ class Db {
   }
 
   Future<List<RowUserItemToLearn>> _selectRowItemsFromProgramIdx(int idProgram) async {
-    final List<Map<String, dynamic>> resultItems = await _db.query("${DB.userItemToLearn}",
+    final List<Map<String, dynamic>> resultItems = await _db.query('${DB.userItemToLearn}',
         where: '${DB.userItemToLearn.userLearningProgramId} = ?',
-        whereArgs: [idProgram],
+        whereArgs: <dynamic>[idProgram],
         orderBy: DB.userItemToLearn.idxInProgram);
 
     final List<RowUserItemToLearn> rowItems =

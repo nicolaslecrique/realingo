@@ -58,6 +58,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  pedantic: ^1.9.2
+
   # to generate source code, used by json_serializable
   build_runner: ^1.10.4
   # to serialize / unserialize data from rest API

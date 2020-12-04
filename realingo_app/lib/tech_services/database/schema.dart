@@ -3,7 +3,7 @@ import 'package:realingo_app/tech_services/database/table/user_item_to_learn.dar
 import 'package:realingo_app/tech_services/database/table/user_learning_program.dart';
 
 class DB {
-  static final TableUserItemToLearn userItemToLearn = TableUserItemToLearn();
-  static final TableUserLearningProgram userLearningProgram = TableUserLearningProgram();
-  static final TableUserItemSentence userItemSentence = TableUserItemSentence();
+  static const TableUserItemToLearn userItemToLearn = TableUserItemToLearn();
+  static const TableUserLearningProgram userLearningProgram = TableUserLearningProgram();
+  static const TableUserItemSentence userItemSentence = TableUserItemSentence();
 }

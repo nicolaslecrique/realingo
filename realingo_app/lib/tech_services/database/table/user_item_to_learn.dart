@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../schema.dart';
@@ -6,18 +7,21 @@ import '../schema.dart';
 // or to not watch but ust build one shot:  ../../../../tools/flutter/flutter/bin/flutter pub run build_runner build
 part 'user_item_to_learn.g.dart';
 
+@immutable
 class TableUserItemToLearn {
-  final String id = "id";
-  final String uri = "uri";
-  final String label = "label";
-  final String idxInProgram = "idx_in_program";
-  final String status = "status";
-  final String itemToLearnServerUri = "item_to_learn_server_uri";
-  final String userLearningProgramId = "user_learning_program_id";
+  final String id = 'id';
+  final String uri = 'uri';
+  final String label = 'label';
+  final String idxInProgram = 'idx_in_program';
+  final String status = 'status';
+  final String itemToLearnServerUri = 'item_to_learn_server_uri';
+  final String userLearningProgramId = 'user_learning_program_id';
+
+  const TableUserItemToLearn();
 
   @override
   String toString() {
-    return "user_item_to_learn";
+    return 'user_item_to_learn';
   }
 
   String getCreateQuery() => '''
@@ -39,14 +43,14 @@ class RowUserItemToLearn {
   final int id;
   final String uri;
   final String label;
-  @JsonKey(name: "idx_in_program")
+  @JsonKey(name: 'idx_in_program')
   final int idxInProgram;
   final String status;
 
-  @JsonKey(name: "item_to_learn_server_uri")
+  @JsonKey(name: 'item_to_learn_server_uri')
   final String itemToLearnServerUri;
 
-  @JsonKey(name: "user_learning_program_id")
+  @JsonKey(name: 'user_learning_program_id')
   final int userLearningProgramId;
 
   RowUserItemToLearn(this.id, this.uri, this.label, this.idxInProgram, this.status, this.itemToLearnServerUri,

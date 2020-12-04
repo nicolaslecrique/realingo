@@ -8,15 +8,18 @@ import 'package:realingo_app/screens/standard_screen.dart';
 
 import 'lesson_route.dart';
 
+@immutable
 class SelectWordAndSentencesRouteArgs {
   final UserLearningProgram userLearningProgram;
   final List<ConsideredItem> itemsForLesson;
 
-  SelectWordAndSentencesRouteArgs(this.userLearningProgram, this.itemsForLesson);
+  const SelectWordAndSentencesRouteArgs(this.userLearningProgram, this.itemsForLesson);
 }
 
 class SelectWordAndSentencesRoute extends StatefulWidget {
   static const route = '/select_word_and_sentences';
+
+  const SelectWordAndSentencesRoute();
 
   @override
   _SelectWordAndSentencesRouteState createState() => _SelectWordAndSentencesRouteState();
@@ -29,8 +32,8 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
   List<int> indexSelectedSentences = [];
 
   void _onItemSkipped() {
-    List<ConsideredItem> newList = List.unmodifiable(
-        List.from(_args.itemsForLesson)..add(ConsideredItem(_currentIndex, ItemSkippedOrSelected.Skipped, null)));
+    List<ConsideredItem> newList = List.unmodifiable(List<ConsideredItem>.from(_args.itemsForLesson)
+      ..add(ConsideredItem(_currentIndex, ItemSkippedOrSelected.Skipped, null)));
     if (_currentIndex == _args.itemsForLesson.length - 1) {
       var lessonItems = LessonController.buildLesson(_args.userLearningProgram, newList);
       LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
@@ -44,7 +47,8 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
   void _onItemSelected() {
     ConsideredItem itemWithSentences =
         ConsideredItem(_currentIndex, ItemSkippedOrSelected.Selected, List.unmodifiable(indexSelectedSentences));
-    List<ConsideredItem> newItemsList = List.unmodifiable(List.from(_args.itemsForLesson)..add(itemWithSentences));
+    List<ConsideredItem> newItemsList =
+        List.unmodifiable(List<ConsideredItem>.from(_args.itemsForLesson)..add(itemWithSentences));
 
     if (newItemsList.length == LessonController.NbItemsByLesson || _currentIndex == _args.itemsForLesson.length - 1) {
       // start lesson
@@ -70,7 +74,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
 
   @override
   Widget build(BuildContext context) {
-    _args = ModalRoute.of(context).settings.arguments;
+    _args = ModalRoute.of(context).settings.arguments as SelectWordAndSentencesRouteArgs;
     final program = _args.userLearningProgram;
 
     if (_args.itemsForLesson.isEmpty) {
@@ -83,7 +87,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
     nbSentencesToLearn = min(itemToLearn.sentences.length, LessonController.NbSentencesByLessonItem);
 
     return StandardScreen(
-      title: "Select 3 sentences to learn this word",
+      title: 'Select 3 sentences to learn this word',
       contentChild: Column(
         children: [
           Padding(
@@ -105,11 +109,11 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
       ),
       bottomChild: Row(
         children: [
-          IconButton(icon: Icon(Icons.delete_forever), onPressed: _onItemSkipped, tooltip: "Skip word"),
+          IconButton(icon: Icon(Icons.delete_forever), onPressed: _onItemSkipped, tooltip: 'Skip word'),
           SizedBox(width: StandardSizes.medium),
           Expanded(
             child: ElevatedButton(
-              child: Text("Learn"),
+              child: Text('Learn'),
               onPressed: indexSelectedSentences.length < nbSentencesToLearn ? null : _onItemSelected,
             ),
           )

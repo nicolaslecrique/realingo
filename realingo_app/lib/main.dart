@@ -34,17 +34,18 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: SplashScreenRoute.route,
         routes: {
-          SplashScreenRoute.route: (context) => SplashScreenRoute(),
-          SelectLearnedLanguageRoute.route: (context) => SelectLearnedLanguageRoute(),
-          SelectOriginLanguageRoute.route: (context) =>
+          SplashScreenRoute.route: (BuildContext context) => const SplashScreenRoute(),
+          SelectLearnedLanguageRoute.route: (BuildContext context) => const SelectLearnedLanguageRoute(),
+          SelectOriginLanguageRoute.route: (BuildContext context) =>
               // cannot load arguments directly in widget build() because initState needs it
-              SelectOriginLanguageRoute(ModalRoute.of(context).settings.arguments),
-          HomeRoute.route: (context) => HomeRoute(),
-          LoginRoute.route: (context) => LoginRoute(),
-          SelectLevelRoute.route: (context) => SelectLevelRoute(),
-          LessonRoute.route: (context) => LessonRoute(),
-          SelectWordAndSentencesRoute.route: (context) => SelectWordAndSentencesRoute(),
-          BuildingProgramRoute.route: (context) => BuildingProgramRoute(ModalRoute.of(context).settings.arguments),
+              SelectOriginLanguageRoute(ModalRoute.of(context).settings.arguments as SelectOriginLanguageRouteArgs),
+          HomeRoute.route: (BuildContext context) => const HomeRoute(),
+          LoginRoute.route: (BuildContext context) => const LoginRoute(),
+          SelectLevelRoute.route: (BuildContext context) => const SelectLevelRoute(),
+          LessonRoute.route: (BuildContext context) => const LessonRoute(),
+          SelectWordAndSentencesRoute.route: (BuildContext context) => const SelectWordAndSentencesRoute(),
+          BuildingProgramRoute.route: (BuildContext context) =>
+              BuildingProgramRoute(ModalRoute.of(context).settings.arguments as BuildingProgramRouteArgs),
         });
   }
 }

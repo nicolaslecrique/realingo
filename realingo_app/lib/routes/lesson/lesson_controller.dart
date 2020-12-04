@@ -1,23 +1,25 @@
+import 'package:flutter/cupertino.dart';
 import 'package:realingo_app/model/user_program.dart';
 
 enum LessonItemStatus { NotPlayed, Success, Failure }
 
+@immutable
 class LessonItem {
   final UserItemToLearn userItemToLearn;
   final UserItemToLearnSentence sentence;
-  LessonItemStatus status = LessonItemStatus.NotPlayed;
 
-  LessonItem(this.userItemToLearn, this.sentence);
+  const LessonItem(this.userItemToLearn, this.sentence);
 }
 
 enum ItemSkippedOrSelected { Skipped, Selected }
 
+@immutable
 class ConsideredItem {
   final int indexInUserProgram;
   final ItemSkippedOrSelected choice;
   final List<int> indexesOfSelectedSentences; // null before we select sentences or if choice is skipped
 
-  ConsideredItem(this.indexInUserProgram, this.choice, this.indexesOfSelectedSentences);
+  const ConsideredItem(this.indexInUserProgram, this.choice, this.indexesOfSelectedSentences);
 }
 
 class LessonController {

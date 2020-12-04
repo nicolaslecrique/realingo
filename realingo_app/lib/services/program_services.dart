@@ -20,9 +20,9 @@ class ProgramServices {
   static Future<UserLearningProgram> buildUserProgram(LearningProgram program, ItemToLearn firstItemToLearn) async {
     final now = DateTime.now().toString();
 
-    String userProgramUri = "${program.uri}-$now";
+    String userProgramUri = '${program.uri}-$now';
 
-    List<UserItemToLearn> userItems = List<UserItemToLearn>();
+    List<UserItemToLearn> userItems = <UserItemToLearn>[];
     UserItemToLearnStatus status = UserItemToLearnStatus.SkippedAtStart;
     for (int i = 0; i < program.itemsToLearn.length; i++) {
       ItemToLearn current = program.itemsToLearn[i];
@@ -30,18 +30,18 @@ class ProgramServices {
         status = UserItemToLearnStatus.NotLearned;
       }
       userItems.add(UserItemToLearn(
-          "${current.uri}-$userProgramUri",
+          '${current.uri}-$userProgramUri',
           current.uri,
           current.label,
           current.sentences
-              .map((s) => UserItemToLearnSentence(s.uri, "${s.uri}-$userProgramUri", s.sentence, s.translation))
+              .map((s) => UserItemToLearnSentence(s.uri, '${s.uri}-$userProgramUri', s.sentence, s.translation))
               .toList(),
           status));
     }
 
     final userProgram = UserLearningProgram(userProgramUri, program.uri, userItems);
     await db.insertUserLearningProgram(userProgram);
-    UserConfig.setDefaultUserProgramUri(userProgram.uri);
+    await UserConfig.setDefaultUserProgramUri(userProgram.uri);
     return userProgram;
   }
 

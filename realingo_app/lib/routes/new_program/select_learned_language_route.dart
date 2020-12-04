@@ -6,8 +6,11 @@ import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/widgets/future_builder_wrapper.dart';
 import 'package:realingo_app/widgets/language_picker.dart';
 
+@immutable
 class SelectLearnedLanguageRoute extends StatefulWidget {
   static const route = '/select_learned_language';
+
+  const SelectLearnedLanguageRoute();
 
   @override
   _SelectLearnedLanguageRouteState createState() => _SelectLearnedLanguageRouteState();
@@ -28,14 +31,14 @@ class _SelectLearnedLanguageRouteState extends State<SelectLearnedLanguageRoute>
   Widget build(BuildContext context) {
     return FutureBuilderWrapper(
       future: futureLanguages,
-      childBuilder: (languages) => OneButtonScreen(
+      childBuilder: (List<Language> languages) => OneButtonScreen(
         child: LanguagePicker(
           languages: languages,
           selected: selectedLanguage,
           onSelect: (e) => setState(() => selectedLanguage = e),
         ),
-        title: "Courses",
-        buttonText: "OK",
+        title: 'Courses',
+        buttonText: 'OK',
         onButtonPressed: selectedLanguage == null
             ? null
             : () => Navigator.pushNamed(context, SelectOriginLanguageRoute.route,

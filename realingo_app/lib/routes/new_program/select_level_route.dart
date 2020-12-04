@@ -16,6 +16,8 @@ class SelectLevelRouteArgs {
 class SelectLevelRoute extends StatefulWidget {
   static const route = '/select_level';
 
+  const SelectLevelRoute();
+
   @override
   _SelectLevelRouteState createState() => _SelectLevelRouteState();
 }
@@ -24,20 +26,21 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
   ItemToLearn _selectedFirstWordToLearn;
   bool _savingProgram = false;
 
-  _onItemSelected(ItemToLearn item) {
+  void _onItemSelected(ItemToLearn item) {
     setState(() {
       _selectedFirstWordToLearn = item;
     });
   }
 
-  void _onOk(LearningProgram learningProgram) async {
+  Future<void> _onOk(LearningProgram learningProgram) async {
     setState(() {
       _savingProgram = true;
     });
 
     UserLearningProgram userProgram =
         await ProgramServices.buildUserProgram(learningProgram, _selectedFirstWordToLearn);
-    Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false, arguments: HomeRouteArgs(userProgram));
+    await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false,
+        arguments: HomeRouteArgs(userProgram));
   }
 
   @override
@@ -46,8 +49,8 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
       return LoadingScreen();
     }
 
-    final SelectLevelRouteArgs args = ModalRoute.of(context).settings.arguments;
-    final List<ItemToLearn> items = args.learningProgram.itemsToLearn;
+    final args = ModalRoute.of(context).settings.arguments as SelectLevelRouteArgs;
+    final items = args.learningProgram.itemsToLearn;
 
     return OneButtonScreen(
       title: "Select the first word you don't know",
@@ -60,7 +63,7 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
               onTap: () => _onItemSelected(items[index]),
             );
           }),
-      buttonText: "Ok",
+      buttonText: 'Ok',
       onButtonPressed: _selectedFirstWordToLearn == null ? null : () async => _onOk(args.learningProgram),
     );
   }

@@ -6,8 +6,11 @@ import 'package:realingo_app/tech_services/database/db.dart';
 
 import 'login_route.dart';
 
+@immutable
 class SplashScreenRoute extends StatefulWidget {
   static const route = '/splash_screen';
+
+  const SplashScreenRoute();
 
   @override
   _SplashScreenRouteState createState() => _SplashScreenRouteState();
@@ -25,16 +28,17 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
     UserLearningProgram userProgram = await ProgramServices.getDefaultUserProgramOrNull();
 
     if (userProgram == null) {
-      Navigator.pushNamed(context, LoginRoute.route);
+      await Navigator.pushNamed(context, LoginRoute.route);
     } else {
-      Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false, arguments: HomeRouteArgs(userProgram));
+      await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false,
+          arguments: HomeRouteArgs(userProgram));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text("Splash Screen")),
+      body: Center(child: Text('Splash Screen')),
     );
   }
 }

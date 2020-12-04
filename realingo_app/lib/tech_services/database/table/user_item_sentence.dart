@@ -7,16 +7,18 @@ import '../schema.dart';
 part 'user_item_sentence.g.dart';
 
 class TableUserItemSentence {
-  final String id = "id";
-  final String uri = "uri";
-  final String sentence = "sentence";
-  final String translation = "translation";
-  final String itemSentenceServerUri = "item_sentence_server_uri";
-  final String userItemToLearnId = "user_item_to_learn_id";
+  final String id = 'id';
+  final String uri = 'uri';
+  final String sentence = 'sentence';
+  final String translation = 'translation';
+  final String itemSentenceServerUri = 'item_sentence_server_uri';
+  final String userItemToLearnId = 'user_item_to_learn_id';
+
+  const TableUserItemSentence();
 
   @override
   String toString() {
-    return "user_item_sentence";
+    return 'user_item_sentence';
   }
 
   String getCreateQuery() => '''
@@ -50,9 +52,9 @@ class RowUserItemSentence {
   final String sentence;
   final String translation;
 
-  @JsonKey(name: "item_sentence_server_uri")
+  @JsonKey(name: 'item_sentence_server_uri')
   final String itemSentenceServerUri;
-  @JsonKey(name: "user_item_to_learn_id")
+  @JsonKey(name: 'user_item_to_learn_id')
   final int userItemToLearnId;
 
   RowUserItemSentence(

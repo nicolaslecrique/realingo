@@ -38,25 +38,25 @@ void main() {
     Db db = Db();
     await db.initWith(databaseFactoryFfi, inMemoryDatabasePath);
 
-    UserLearningProgram expected = UserLearningProgram("test_uri_user_program", "test_uri_server_program", [
+    UserLearningProgram expected = const UserLearningProgram('test_uri_user_program', 'test_uri_server_program', [
       UserItemToLearn(
-          "uri_item_1",
-          "uri_item_1_server",
-          "label_1",
+          'uri_item_1',
+          'uri_item_1_server',
+          'label_1',
           [
-            UserItemToLearnSentence("item_1_sentence_1_uri", "item_1_sentence_1_uri_serv", "item_1_sentence_1_sen",
-                "item_1_sentence_1_tra"),
-            UserItemToLearnSentence("item_1_sentence_2_uri", "item_1_sentence_2_uri_serv", "item_1_sentence_2_sen",
-                "item_1_sentence_2_tra"),
+            UserItemToLearnSentence('item_1_sentence_1_uri', 'item_1_sentence_1_uri_serv', 'item_1_sentence_1_sen',
+                'item_1_sentence_1_tra'),
+            UserItemToLearnSentence('item_1_sentence_2_uri', 'item_1_sentence_2_uri_serv', 'item_1_sentence_2_sen',
+                'item_1_sentence_2_tra'),
           ],
           UserItemToLearnStatus.NotLearned),
       UserItemToLearn(
-          "uri_item_2",
-          "uri_item_2_server",
-          "label_2",
+          'uri_item_2',
+          'uri_item_2_server',
+          'label_2',
           [
-            UserItemToLearnSentence("item_2_sentence_1_uri", "item_2_sentence_1_uri_serv", "item_2_sentence_1_sen",
-                "item_2_sentence_1_tra"),
+            UserItemToLearnSentence('item_2_sentence_1_uri', 'item_2_sentence_1_uri_serv', 'item_2_sentence_1_sen',
+                'item_2_sentence_1_tra'),
           ],
           UserItemToLearnStatus.NotLearned),
     ]);

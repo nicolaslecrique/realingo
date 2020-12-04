@@ -1,29 +1,35 @@
+import 'package:flutter/cupertino.dart';
+
+@immutable
 class Language {
   final String uri;
   final String label;
 
-  Language(this.uri, this.label);
+  const Language(this.uri, this.label);
 }
 
+@immutable
 class ItemToLearnSentence {
   final String uri;
   final String sentence;
   final String translation;
 
-  ItemToLearnSentence(this.uri, this.sentence, this.translation);
+  const ItemToLearnSentence(this.uri, this.sentence, this.translation);
 }
 
+@immutable
 class ItemToLearn {
   final String uri;
   final String label;
   final List<ItemToLearnSentence> sentences;
 
-  ItemToLearn(this.uri, this.label, this.sentences);
+  const ItemToLearn(this.uri, this.label, this.sentences);
 }
 
+@immutable
 class LearningProgram {
   final String uri;
   final List<ItemToLearn> itemsToLearn;
 
-  LearningProgram(this.uri, this.itemsToLearn);
+  const LearningProgram(this.uri, this.itemsToLearn);
 }

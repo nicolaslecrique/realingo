@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/design/constants.dart';
 
+@immutable
 class StandardScreen extends StatelessWidget {
   final String title;
   final Widget contentChild;
@@ -12,14 +13,14 @@ class StandardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(this.title),
+          title: Text(title),
           automaticallyImplyLeading: true,
         ),
         body: Padding(
             padding: const EdgeInsets.all(StandardSizes.medium),
             child: Column(
               children: <Widget>[
-                Expanded(child: this.contentChild),
+                Expanded(child: contentChild),
                 SizedBox(
                   width: double.infinity,
                   child: bottomChild,

@@ -3,14 +3,17 @@ import 'package:realingo_app/model/user_program.dart';
 
 import 'lesson/select_word_and_sentences_route.dart';
 
+@immutable
 class HomeRouteArgs {
   final UserLearningProgram userProgram;
 
-  HomeRouteArgs(this.userProgram);
+  const HomeRouteArgs(this.userProgram);
 }
 
 class HomeRoute extends StatefulWidget {
   static const route = '/home';
+
+  const HomeRoute();
 
   @override
   _HomeRouteState createState() => _HomeRouteState();
@@ -24,7 +27,7 @@ class _HomeRouteState extends State<HomeRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final HomeRouteArgs homeRouteArgs = ModalRoute.of(context).settings.arguments;
+    final HomeRouteArgs homeRouteArgs = ModalRoute.of(context).settings.arguments as HomeRouteArgs;
     final UserLearningProgram userProgram = homeRouteArgs.userProgram;
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
@@ -41,8 +44,8 @@ class _HomeRouteState extends State<HomeRoute> {
           }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, SelectWordAndSentencesRoute.route,
-            arguments: SelectWordAndSentencesRouteArgs(userProgram, [])),
-        label: Text("Start lesson"),
+            arguments: SelectWordAndSentencesRouteArgs(userProgram, const [])),
+        label: Text('Start lesson'),
         icon: Icon(Icons.arrow_forward_ios),
       ),
     );
