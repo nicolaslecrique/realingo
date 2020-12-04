@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:realingo_app/common_screens/standard_screen.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
-import 'package:realingo_app/routes/lesson/model/lesson_controller.dart';
+import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 
 import 'lesson_route.dart';
 
@@ -35,7 +35,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
     List<ConsideredItem> newList = List.unmodifiable(List<ConsideredItem>.from(_args.itemsForLesson)
       ..add(ConsideredItem(_currentIndex, ItemSkippedOrSelected.Skipped, null)));
     if (_currentIndex == _args.itemsForLesson.length - 1) {
-      var lessonItems = LessonController.buildLesson(_args.userLearningProgram, newList);
+      var lessonItems = LessonBuilder.buildLesson(_args.userLearningProgram, newList);
       LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
       Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
     } else {
@@ -50,9 +50,9 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
     List<ConsideredItem> newItemsList =
         List.unmodifiable(List<ConsideredItem>.from(_args.itemsForLesson)..add(itemWithSentences));
 
-    if (newItemsList.length == LessonController.NbItemsByLesson || _currentIndex == _args.itemsForLesson.length - 1) {
+    if (newItemsList.length == LessonBuilder.NbItemsByLesson || _currentIndex == _args.itemsForLesson.length - 1) {
       // start lesson
-      List<LessonItem> lessonItems = LessonController.buildLesson(_args.userLearningProgram, newItemsList);
+      List<LessonItem> lessonItems = LessonBuilder.buildLesson(_args.userLearningProgram, newItemsList);
       LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
       Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
     } else {
@@ -84,7 +84,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
       _currentIndex = _args.itemsForLesson.last.indexInUserProgram + 1;
     }
     UserItemToLearn itemToLearn = program.itemsToLearn[_currentIndex];
-    nbSentencesToLearn = min(itemToLearn.sentences.length, LessonController.NbSentencesByLessonItem);
+    nbSentencesToLearn = min(itemToLearn.sentences.length, LessonBuilder.NbSentencesByLessonItem);
 
     return StandardScreen(
       title: 'Select 3 sentences to learn this word',

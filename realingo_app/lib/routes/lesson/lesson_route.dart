@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/design/constants.dart';
-import 'package:realingo_app/routes/lesson/model/lesson_controller.dart';
+import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/services/voice_service.dart';
 
 @immutable

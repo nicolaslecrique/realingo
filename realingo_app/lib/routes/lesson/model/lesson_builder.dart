@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:realingo_app/model/user_program.dart';
 
-enum LessonItemStatus { NotPlayed, Success, Failure }
-
 @immutable
 class LessonItem {
   final UserItemToLearn userItemToLearn;
@@ -22,7 +20,7 @@ class ConsideredItem {
   const ConsideredItem(this.indexInUserProgram, this.choice, this.indexesOfSelectedSentences);
 }
 
-class LessonController {
+class LessonBuilder {
   static const NbItemsByLesson = 3;
   static const NbSentencesByLessonItem = 3;
 

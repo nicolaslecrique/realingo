@@ -58,6 +58,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # lint
   pedantic: ^1.9.2
 
   # to generate source code, used by json_serializable
@@ -67,6 +68,9 @@ dev_dependencies:
 
   # to test sqlite code
   sqflite_common_ffi: ^1.1.1
+
+  # distance between strings (levenshtein..)
+  edit_distance: ^0.4.1
 
   # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
