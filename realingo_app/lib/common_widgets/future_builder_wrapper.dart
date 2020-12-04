@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/screens/loading_screen.dart';
-import 'package:realingo_app/screens/unexpected_error_screen.dart';
+import 'package:realingo_app/common_screens/loading_screen.dart';
+import 'package:realingo_app/common_screens/unexpected_error_screen.dart';
 
 @immutable
 class FutureBuilderWrapper<T> extends StatelessWidget {

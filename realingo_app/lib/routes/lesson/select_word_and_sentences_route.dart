@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:realingo_app/common_screens/standard_screen.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
-import 'package:realingo_app/routes/lesson/lesson_controller.dart';
-import 'package:realingo_app/screens/standard_screen.dart';
+import 'package:realingo_app/routes/lesson/model/lesson_controller.dart';
 
 import 'lesson_route.dart';
 

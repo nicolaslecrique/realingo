@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/screens/standard_screen.dart';
+import 'package:realingo_app/common_screens/standard_screen.dart';
 
 @immutable
 class OneButtonScreen extends StatelessWidget {

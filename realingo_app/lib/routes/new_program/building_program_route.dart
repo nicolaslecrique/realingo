@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/common_screens/loading_screen.dart';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/routes/new_program/select_level_route.dart';
-import 'package:realingo_app/screens/loading_screen.dart';
 import 'package:realingo_app/services/program_services.dart';
 
 // Screen to build a new program, so everything is in local when displaying program_route (as if it comes from splash_screen)
