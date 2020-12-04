@@ -10,6 +10,8 @@ linter:
     prefer_const_constructors_in_immutables: true
 
 analyzer:
+  exclude:
+    - 'lib/**.g.dart'
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
