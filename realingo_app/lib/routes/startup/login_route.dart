@@ -4,7 +4,7 @@ import 'package:realingo_app/routes/new_program/select_learned_language_route.da
 class LoginRoute extends StatelessWidget {
   static const route = '/login';
 
-  const LoginRoute();
+  const LoginRoute({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

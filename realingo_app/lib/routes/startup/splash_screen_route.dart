@@ -10,7 +10,7 @@ import 'login_route.dart';
 class SplashScreenRoute extends StatefulWidget {
   static const route = '/splash_screen';
 
-  const SplashScreenRoute();
+  const SplashScreenRoute({Key key}) : super(key: key);
 
   @override
   _SplashScreenRouteState createState() => _SplashScreenRouteState();

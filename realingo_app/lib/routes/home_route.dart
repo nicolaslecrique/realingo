@@ -13,7 +13,7 @@ class HomeRouteArgs {
 class HomeRoute extends StatefulWidget {
   static const route = '/home';
 
-  const HomeRoute();
+  const HomeRoute({Key key}) : super(key: key);
 
   @override
   _HomeRouteState createState() => _HomeRouteState();

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/common_screens/loading_screen.dart';
 import 'package:realingo_app/common_screens/one_button_screen.dart';
+import 'package:realingo_app/model/program.dart';
+import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/services/program_services.dart';
 
 import '../home_route.dart';
@@ -16,7 +16,7 @@ class SelectLevelRouteArgs {
 class SelectLevelRoute extends StatefulWidget {
   static const route = '/select_level';
 
-  const SelectLevelRoute();
+  const SelectLevelRoute({Key key}) : super(key: key);
 
   @override
   _SelectLevelRouteState createState() => _SelectLevelRouteState();

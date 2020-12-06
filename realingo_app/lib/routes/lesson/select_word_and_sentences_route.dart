@@ -19,7 +19,7 @@ class SelectWordAndSentencesRouteArgs {
 class SelectWordAndSentencesRoute extends StatefulWidget {
   static const route = '/select_word_and_sentences';
 
-  const SelectWordAndSentencesRoute();
+  const SelectWordAndSentencesRoute({Key key}) : super(key: key);
 
   @override
   _SelectWordAndSentencesRouteState createState() => _SelectWordAndSentencesRouteState();
