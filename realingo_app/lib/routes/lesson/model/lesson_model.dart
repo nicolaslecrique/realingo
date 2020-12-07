@@ -20,7 +20,7 @@ class LessonModel extends ChangeNotifier {
   String _voiceResult = '';
 
   // getter helper
-  double get _ratioCompleted => (_currentLessonItemIndex as double) / _lessonItems.length;
+  double get _ratioCompleted => _currentLessonItemIndex.toDouble() / _lessonItems.length;
   LessonItem get _currentItem => _lessonItems[_currentLessonItemIndex];
 
   LessonModel(this._lessonItems) {
@@ -32,6 +32,7 @@ class LessonModel extends ChangeNotifier {
   LessonState get state => _state;
 
   void startListening() {
+    debugPrint('lesson_model:startListening');
     if (_state is WaitForAnswer) {
       _voiceService.startListening();
     } else {
@@ -40,6 +41,7 @@ class LessonModel extends ChangeNotifier {
   }
 
   void stopListening() {
+    debugPrint('lesson_model:startListening');
     if (_state is ListeningAnswer) {
       _voiceService.stopListening();
     } else {
@@ -65,7 +67,12 @@ class LessonModel extends ChangeNotifier {
     _recomputeState(false);
   }
 
-  LessonState _recomputeState(bool nextLesson) {
+  void _recomputeState(bool nextLesson) {
+    _state = _getNewState(nextLesson);
+    notifyListeners();
+  }
+
+  LessonState _getNewState(bool nextLesson) {
     if (nextLesson) {
       if (_currentLessonItemIndex == _lessonItems.length - 1) {
         _voiceService.unregister();
@@ -73,7 +80,7 @@ class LessonModel extends ChangeNotifier {
       } else {
         _currentLessonItemIndex++;
         _voiceResult = '';
-        return _recomputeState(false);
+        return _getNewState(false);
       }
     }
 

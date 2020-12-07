@@ -16,7 +16,14 @@ class MicButton extends StatelessWidget {
           return ElevatedButton.icon(icon: Icon(Icons.mic), label: Text('Reply'), onPressed: lesson.startListening);
         }
         if (state is ListeningAnswer) {
-          return ElevatedButton.icon(icon: Icon(Icons.mic), label: Text('End'), onPressed: lesson.stopListening);
+          return ElevatedButton.icon(
+            icon: Icon(Icons.mic),
+            label: Text('End'),
+            onPressed: lesson.stopListening,
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.error),
+            ),
+          );
         }
         throw Exception('MicButton should not be displayed with state $state');
       },

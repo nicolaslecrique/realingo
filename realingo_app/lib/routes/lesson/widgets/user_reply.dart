@@ -10,7 +10,16 @@ class UserReply extends StatelessWidget {
       builder: (BuildContext context, LessonModel lesson, Widget child) {
         LessonState state = lesson.state;
 
-        return Text('lesson.state.');
+        String answer;
+        if (state is WaitForAnswer) {
+          answer = state.previousAnswer?.answer ?? '';
+        } else if (state is CorrectAnswer) {
+          answer = state.answer.answer;
+        } else {
+          answer = '';
+        }
+
+        return Text(answer);
       },
     );
   }

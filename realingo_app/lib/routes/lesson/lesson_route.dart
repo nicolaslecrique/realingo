@@ -33,11 +33,13 @@ class _LessonRouteState extends State<LessonRoute> {
         create: (context) => LessonModel(args.lessonItems),
         child: Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
           LessonState state = lesson.state;
-
-          return IndexedStack(
-            index: 0,
-            children: [LessonItemScreen(), LoadingScreen(), EndLessonScreen()],
-          );
+          if (state is WaitForVoiceServiceReady) {
+            return LoadingScreen();
+          } else if (state is EndOfLesson) {
+            return EndLessonScreen();
+          } else {
+            return LessonItemScreen();
+          }
         }));
   }
 }

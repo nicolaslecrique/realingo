@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 
 class LessonProgressBar extends StatelessWidget {
+  final double ratioCompleted;
+
+  const LessonProgressBar({Key key, this.ratioCompleted}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<LessonModel>(
-      builder: (BuildContext context, LessonModel lesson, Widget child) => LinearProgressIndicator(
-        value: lesson.state.ratioCompleted,
-      ),
-    );
+    return LinearProgressIndicator(value: ratioCompleted);
   }
 }
