@@ -2,18 +2,34 @@ import 'package:flutter/foundation.dart';
 
 import 'lesson_builder.dart';
 
-@immutable
-abstract class LessonState {
-  final double ratioCompleted;
+enum LessonStatus { WaitForVoiceServiceReady, OnLessonItem, Completed }
 
-  const LessonState(this.ratioCompleted);
+@immutable
+class LessonState {
+  final double ratioCompleted;
+  final LessonItemState currentItemOrNull;
+  final LessonStatus status;
+
+  const LessonState(this.ratioCompleted, this.currentItemOrNull, this.status);
+}
+
+enum LessonItemStatus {
+  ReadyForAnswer,
+  WaitForListeningAvailable,
+  ListeningAnswer,
+  WaitForAnswerResult,
+  CorrectAnswer,
+  CorrectAnswerNoHint
 }
 
 @immutable
-abstract class LessonStateOnItem extends LessonState {
+class LessonItemState {
   final LessonItem lessonItem;
+  final Hint hint;
+  final AnswerResult lastAnswer;
+  final LessonItemStatus status;
 
-  const LessonStateOnItem(double ratioCompleted, this.lessonItem) : super(ratioCompleted);
+  const LessonItemState(this.lessonItem, this.hint, this.lastAnswer, this.status);
 }
 
 @immutable
@@ -24,42 +40,9 @@ class AnswerResult {
 }
 
 @immutable
-class WaitForVoiceServiceReady extends LessonState {
-  const WaitForVoiceServiceReady(double ratioCompleted) : super(ratioCompleted);
-}
+class Hint {
+  final String hintDisplayed;
+  final int nbHintProvided;
 
-@immutable
-class WaitForAnswer extends LessonStateOnItem {
-  final AnswerResult previousAnswer;
-
-  const WaitForAnswer(double ratioCompleted, LessonItem lessonItem, this.previousAnswer)
-      : super(ratioCompleted, lessonItem);
-}
-
-@immutable
-class WaitForListeningAvailable extends LessonStateOnItem {
-  const WaitForListeningAvailable(double ratioCompleted, LessonItem lessonItem) : super(ratioCompleted, lessonItem);
-}
-
-@immutable
-class ListeningAnswer extends LessonStateOnItem {
-  const ListeningAnswer(double ratioCompleted, LessonItem lessonItem) : super(ratioCompleted, lessonItem);
-}
-
-// user has given a reply, we wait to know if it's success or not
-@immutable
-class WaitForAnswerResult extends LessonStateOnItem {
-  const WaitForAnswerResult(double ratioCompleted, LessonItem lessonItem) : super(ratioCompleted, lessonItem);
-}
-
-@immutable
-class CorrectAnswer extends LessonStateOnItem {
-  final AnswerResult answer;
-
-  const CorrectAnswer(double ratioCompleted, LessonItem lessonItem, this.answer) : super(ratioCompleted, lessonItem);
-}
-
-@immutable
-class EndOfLesson extends LessonState {
-  const EndOfLesson() : super(1.0);
+  const Hint(this.hintDisplayed, this.nbHintProvided);
 }

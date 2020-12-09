@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realingo_app/design/constants.dart';
 
 class LessonProgressBar extends StatelessWidget {
   final double ratioCompleted;
@@ -7,6 +8,6 @@ class LessonProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LinearProgressIndicator(value: ratioCompleted);
+    return LinearProgressIndicator(value: ratioCompleted, minHeight: StandardSizes.small);
   }
 }

@@ -3,49 +3,52 @@ import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_states.dart';
-import 'package:realingo_app/routes/lesson/widgets/user_reply.dart';
 
+import 'lesson_item_bottom_bar.dart';
 import 'lesson_progress_bar.dart';
-import 'mic_button.dart';
 
 class LessonItemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
-      LessonStateOnItem state = lesson.state as LessonStateOnItem;
-      debugPrint('lesson state changed to ${lesson.state}');
+      LessonState state = lesson.state;
+      debugPrint('lesson state changed to ${lesson.state.status}/${lesson.state.currentItemOrNull?.status}');
 
       return Scaffold(
           body: Padding(
               padding: const EdgeInsets.all(StandardSizes.medium),
               child: Column(
                 children: [
+                  SizedBox(width: double.infinity, height: StandardSizes.small),
                   LessonProgressBar(ratioCompleted: state.ratioCompleted),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
-                    child: Text('Translate the sentence'),
+                    padding: const EdgeInsets.symmetric(vertical: StandardSizes.small),
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Translate the sentence', style: Theme.of(context).textTheme.headline5)),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
-                    child: Text(state.lessonItem.sentence.translation),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(state.currentItemOrNull.lessonItem.sentence.translation,
+                          style: Theme.of(context).textTheme.headline6),
+                    ),
                   ),
                   Expanded(
                       child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      UserReply(),
+                      Text(state.currentItemOrNull?.hint?.hintDisplayed ?? '',
+                          style: Theme.of(context).textTheme.headline6),
                     ],
                   )),
-                  SizedBox(
-                      width: double.infinity,
-                      child: Row(
-                        children: [
-                          OutlineButton.icon(
-                              icon: Icon(Icons.lightbulb_outline), label: Text('Hint'), onPressed: () => null),
-                          SizedBox(width: StandardSizes.medium),
-                          Expanded(child: MicButton()),
-                        ],
-                      )),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(state.currentItemOrNull?.lastAnswer?.answer ?? '',
+                        style: Theme.of(context).textTheme.bodyText2),
+                  ),
+                  LessonItemBottomBar(),
                 ],
               )));
     });

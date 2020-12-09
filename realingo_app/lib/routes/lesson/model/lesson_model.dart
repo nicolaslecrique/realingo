@@ -1,3 +1,6 @@
+import 'dart:collection';
+
+import 'package:collection/collection.dart';
 import 'package:edit_distance/edit_distance.dart';
 import 'package:flutter/foundation.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
@@ -14,94 +17,128 @@ class LessonModel extends ChangeNotifier {
   static final RegExp _normalizeStrRegex = RegExp(r'[^\w\s]+');
 
   // internal current state
-  int _currentLessonItemIndex = 0;
   LessonState _state;
   VoiceServiceStatus _voiceStatus; // initialized by _voiceService.register
   String _voiceResult = '';
+  Queue<LessonItem> _remainingItems;
 
-  // getter helper
-  double get _ratioCompleted => _currentLessonItemIndex.toDouble() / _lessonItems.length;
-  LessonItem get _currentItem => _lessonItems[_currentLessonItemIndex];
+  LessonItem get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
+  LessonState get state => _state;
+  double get ratioCompleted => (_lessonItems.length - _remainingItems.length).toDouble() / _lessonItems.length;
 
   LessonModel(this._lessonItems) {
-    _state = WaitForAnswer(0.0, _lessonItems[_currentLessonItemIndex], null);
+    _remainingItems = QueueList<LessonItem>.from(_lessonItems);
+    _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     _voiceService = VoiceService.get();
     _voiceService.register(_onVoiceStatusChanged, _onVoiceResult);
   }
 
-  LessonState get state => _state;
+  void _checkStatus(List<LessonItemStatus> expectedStatus) {
+    if (_state.status != LessonStatus.OnLessonItem || !expectedStatus.contains(_state.currentItemOrNull.status)) {
+      throw Exception('expected status $expectedStatus, but was ${_state.currentItemOrNull?.status}');
+    }
+  }
 
   void startListening() {
     debugPrint('lesson_model:startListening');
-    if (_state is WaitForAnswer) {
-      _voiceService.startListening();
-    } else {
-      throw Exception('startListening should only be called if state is not WaitForAnswer, but was ${_state}');
-    }
+    _checkStatus([LessonItemStatus.ReadyForAnswer]);
+    _voiceService.startListening();
   }
 
   void stopListening() {
-    debugPrint('lesson_model:startListening');
-    if (_state is ListeningAnswer) {
-      _voiceService.stopListening();
-    } else {
-      throw Exception('stopListening should only be called if state is not ListeningAnswer, but was ${_state}');
-    }
+    debugPrint('lesson_model:stopListening');
+    _checkStatus([LessonItemStatus.ListeningAnswer]);
+    _voiceService.stopListening();
   }
 
   void nextLessonItem() {
-    if (_state is CorrectAnswer) {
-      _recomputeState(true);
+    _checkStatus([LessonItemStatus.CorrectAnswer, LessonItemStatus.CorrectAnswerNoHint]);
+
+    if (_state.currentItemOrNull.status == LessonItemStatus.CorrectAnswerNoHint) {
+      _remainingItems.removeFirst();
+      if (_remainingItems.isEmpty) {
+        _voiceService.unregister();
+      }
     } else {
-      throw Exception('nextLessonItem should only be called if state is not CorrectAnswer, but was ${_state}');
+      _remainingItems.addLast(_remainingItems.removeFirst());
     }
+    _voiceResult = '';
+    _recomputeState(nextItem: true);
+  }
+
+  void askForHint() {
+    _checkStatus([LessonItemStatus.ReadyForAnswer]);
+    _recomputeState(nextHint: true);
   }
 
   void _onVoiceResult(String result) {
     _voiceResult = result;
-    _recomputeState(false);
+    _recomputeState();
   }
 
   void _onVoiceStatusChanged(VoiceServiceStatus status) {
     _voiceStatus = status;
-    _recomputeState(false);
+    _recomputeState();
   }
 
-  void _recomputeState(bool nextLesson) {
-    _state = _getNewState(nextLesson);
+  void _recomputeState({bool nextItem: false, bool nextHint: false}) {
+    _state = _getNewState(nextItem, nextHint);
     notifyListeners();
   }
 
-  LessonState _getNewState(bool nextLesson) {
-    if (nextLesson) {
-      if (_currentLessonItemIndex == _lessonItems.length - 1) {
-        _voiceService.unregister();
-        return EndOfLesson();
+  LessonState _getNewState(bool nextItem, bool nextHint) {
+    if (nextItem) {
+      if (_remainingItems.isEmpty) {
+        return LessonState(1.0, null, LessonStatus.Completed);
       } else {
-        _currentLessonItemIndex++;
-        _voiceResult = '';
-        return _getNewState(false);
+        // new item
+        return LessonState(
+            ratioCompleted,
+            LessonItemState(_currentItemOrNull, _getFirstHint(_currentItemOrNull.sentence.sentence), AnswerResult(''),
+                LessonItemStatus.ReadyForAnswer),
+            LessonStatus.OnLessonItem);
+      }
+    } else if (_voiceStatus == VoiceServiceStatus.Initializing) {
+      return LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
+    } else {
+      Hint currentHint = _state.currentItemOrNull != null
+          ? _state.currentItemOrNull.hint
+          : _getFirstHint(_currentItemOrNull.sentence.sentence);
+      LessonItemState newItemState = _getItemNewState(nextHint, currentHint);
+      return LessonState(ratioCompleted, newItemState, LessonStatus.OnLessonItem);
+    }
+  }
+
+  LessonItemState _getItemNewState(bool nextHint, Hint currentHint) {
+    if (_isVoiceResultCorrect(_currentItemOrNull.sentence.sentence, _voiceResult)) {
+      if (currentHint.nbHintProvided == 0) {
+        return LessonItemState(
+            _currentItemOrNull, currentHint, AnswerResult(_voiceResult), LessonItemStatus.CorrectAnswerNoHint);
+      } else {
+        return LessonItemState(
+            _currentItemOrNull, currentHint, AnswerResult(_voiceResult), LessonItemStatus.CorrectAnswer);
       }
     }
+    if (nextHint) {
+      return LessonItemState(_currentItemOrNull, _getNextHint(currentHint, _currentItemOrNull.sentence.sentence),
+          AnswerResult(_voiceResult), LessonItemStatus.ReadyForAnswer);
+    }
 
-    if (_isVoiceResultCorrect()) {
-      return CorrectAnswer(_ratioCompleted, _currentItem, AnswerResult(_voiceResult));
-    } else {
-      switch (_voiceStatus) {
-        case VoiceServiceStatus.Initializing:
-          return WaitForVoiceServiceReady(_ratioCompleted);
-        case VoiceServiceStatus.Ready:
-          return WaitForAnswer(_ratioCompleted, _currentItem, AnswerResult(_voiceResult));
-        case VoiceServiceStatus.Starting:
-          return WaitForListeningAvailable(_ratioCompleted, _currentItem);
-        case VoiceServiceStatus.Listening:
-          return ListeningAnswer(_ratioCompleted, _currentItem);
-        case VoiceServiceStatus.Stopping:
-          return WaitForAnswerResult(_ratioCompleted, _currentItem);
-        default:
-          throw Exception(
-              '_recomputeState: unexpected combination of voice service status $_voiceStatus and voice result $_voiceResult');
-      }
+    return LessonItemState(_currentItemOrNull, currentHint, AnswerResult(_voiceResult), _getItemStatus(_voiceStatus));
+  }
+
+  static LessonItemStatus _getItemStatus(VoiceServiceStatus status) {
+    switch (status) {
+      case VoiceServiceStatus.Ready:
+        return LessonItemStatus.ReadyForAnswer;
+      case VoiceServiceStatus.Starting:
+        return LessonItemStatus.WaitForListeningAvailable;
+      case VoiceServiceStatus.Listening:
+        return LessonItemStatus.ListeningAnswer;
+      case VoiceServiceStatus.Stopping:
+        return LessonItemStatus.WaitForAnswerResult;
+      default:
+        throw Exception('_recomputeState: unexpected voice service status $status');
     }
   }
 
@@ -110,10 +147,18 @@ class LessonModel extends ChangeNotifier {
     return original.toLowerCase().trim().replaceAll(_normalizeStrRegex, '');
   }
 
-  bool _isVoiceResultCorrect() {
-    final expected = _normalizeString(_lessonItems[_currentLessonItemIndex].sentence.sentence);
-    final normalizedResult = _normalizeString(_voiceResult);
+  static bool _isVoiceResultCorrect(String expectedSentence, String voiceResult) {
+    final expected = _normalizeString(expectedSentence);
+    final normalizedResult = _normalizeString(voiceResult);
     final dist = _distance.normalizedDistance(normalizedResult, expected);
     return dist < _maxDistance;
+  }
+
+  static Hint _getNextHint(Hint previousHint, String sentence) {
+    return Hint(sentence, previousHint.nbHintProvided + 1);
+  }
+
+  static Hint _getFirstHint(String sentence) {
+    return Hint('_____', 0);
   }
 }

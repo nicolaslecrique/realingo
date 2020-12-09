@@ -8,14 +8,15 @@ class MicButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<LessonModel>(
       builder: (BuildContext context, LessonModel lesson, Widget child) {
-        LessonState state = lesson.state;
-        if (state is WaitForListeningAvailable || state is WaitForAnswerResult) {
+        LessonItemState state = lesson.state.currentItemOrNull;
+        LessonItemStatus status = state.status;
+        if (status == LessonItemStatus.WaitForListeningAvailable || status == LessonItemStatus.WaitForAnswerResult) {
           return ElevatedButton.icon(icon: Icon(Icons.mic), label: Text('...'), onPressed: null);
         }
-        if (state is WaitForAnswer) {
+        if (status == LessonItemStatus.ReadyForAnswer) {
           return ElevatedButton.icon(icon: Icon(Icons.mic), label: Text('Reply'), onPressed: lesson.startListening);
         }
-        if (state is ListeningAnswer) {
+        if (status == LessonItemStatus.ListeningAnswer) {
           return ElevatedButton.icon(
             icon: Icon(Icons.mic),
             label: Text('End'),
@@ -25,7 +26,7 @@ class MicButton extends StatelessWidget {
             ),
           );
         }
-        throw Exception('MicButton should not be displayed with state $state');
+        throw Exception('MicButton should not be displayed with state $status');
       },
     );
   }
