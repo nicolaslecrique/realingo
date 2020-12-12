@@ -8,6 +8,6 @@ class LessonProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LinearProgressIndicator(value: ratioCompleted, minHeight: StandardSizes.small);
+    return LinearProgressIndicator(value: ratioCompleted, minHeight: StandardSizes.medium);
   }
 }

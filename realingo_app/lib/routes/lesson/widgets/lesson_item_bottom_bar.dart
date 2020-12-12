@@ -14,13 +14,13 @@ class LessonItemBottomBar extends StatelessWidget {
       if (status == LessonItemStatus.CorrectAnswer || status == LessonItemStatus.CorrectAnswerNoHint) {
         return SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(onPressed: lesson.nextLessonItem, icon: Icon(Icons.check), label: Text('Next')));
+            child: IconButton(onPressed: lesson.nextLessonItem, icon: Icon(Icons.check), tooltip: 'Next'));
       } else {
         return Row(
           children: [
-            OutlineButton.icon(icon: Icon(Icons.lightbulb_outline), label: Text('Hint'), onPressed: lesson.askForHint),
+            IconButton(icon: Icon(Icons.lightbulb_outline), onPressed: lesson.askForHint, tooltip: 'Hint'),
             SizedBox(width: StandardSizes.medium),
-            Expanded(child: MicButton()),
+            Expanded(child: MicButton())
           ],
         );
       }

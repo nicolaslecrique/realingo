@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_states.dart';
+import 'package:realingo_app/routes/lesson/widgets/lesson_item_top_bar.dart';
 
 import 'lesson_item_bottom_bar.dart';
-import 'lesson_progress_bar.dart';
 
 class LessonItemScreen extends StatelessWidget {
   @override
@@ -19,10 +19,10 @@ class LessonItemScreen extends StatelessWidget {
               padding: const EdgeInsets.all(StandardSizes.medium),
               child: Column(
                 children: [
-                  SizedBox(width: double.infinity, height: StandardSizes.small),
-                  LessonProgressBar(ratioCompleted: state.ratioCompleted),
+                  SizedBox(width: double.infinity, height: StandardSizes.medium),
+                  LessonItemTopBar(),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: StandardSizes.small),
+                    padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
                     child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text('Translate the sentence', style: Theme.of(context).textTheme.headline5)),
