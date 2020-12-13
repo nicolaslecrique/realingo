@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
-import 'package:realingo_app/routes/lesson/model/lesson_states.dart';
+import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
 
 import 'mic_button.dart';
 

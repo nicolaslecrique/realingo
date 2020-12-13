@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/services/voice_service.dart';
 
-import 'lesson_states.dart';
+import 'lesson_state.dart';
 
 class LessonModel extends ChangeNotifier {
   // immutable fields
