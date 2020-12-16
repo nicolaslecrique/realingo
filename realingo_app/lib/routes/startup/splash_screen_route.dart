@@ -27,7 +27,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
     UserLearningProgram userProgram = await ProgramServices.getDefaultUserProgramOrNull();
 
     if (userProgram == null) {
-      await Navigator.pushNamed(context, SelectLearnedLanguageRoute.route);
+      await Navigator.pushNamedAndRemoveUntil(context, SelectLearnedLanguageRoute.route, (r) => false);
     } else {
       await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false,
           arguments: HomeRouteArgs(userProgram));
