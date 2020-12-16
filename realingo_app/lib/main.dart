@@ -7,7 +7,6 @@ import 'package:realingo_app/routes/new_program/building_program_route.dart';
 import 'package:realingo_app/routes/new_program/select_learned_language_route.dart';
 import 'package:realingo_app/routes/new_program/select_level_route.dart';
 import 'package:realingo_app/routes/new_program/select_origin_language_route.dart';
-import 'package:realingo_app/routes/startup/login_route.dart';
 import 'package:realingo_app/routes/startup/splash_screen_route.dart';
 import 'package:realingo_app/tech_services/app_config.dart';
 import 'package:realingo_app/tech_services/database/db_init.dart';

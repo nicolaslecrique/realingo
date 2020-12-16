@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:realingo_app/common_screens/loading_screen.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
-import 'package:realingo_app/routes/lesson/model/lesson_states.dart';
+import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
 import 'package:realingo_app/routes/lesson/widgets/end_lesson_screen.dart';
 import 'package:realingo_app/routes/lesson/widgets/lesson_item_screen.dart';
 
