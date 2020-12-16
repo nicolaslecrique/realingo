@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:realingo_app/common_screens/standard_screen.dart';
-import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 
@@ -30,19 +29,6 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
   SelectWordAndSentencesRouteArgs _args;
   int nbSentencesToLearn;
   List<int> indexSelectedSentences = [];
-
-  void _onItemSkipped() {
-    List<ConsideredItem> newList = List.unmodifiable(List<ConsideredItem>.from(_args.itemsForLesson)
-      ..add(ConsideredItem(_currentIndex, ItemSkippedOrSelected.Skipped, null)));
-    if (_currentIndex == _args.itemsForLesson.length - 1) {
-      var lessonItems = LessonBuilder.buildLesson(_args.userLearningProgram, newList);
-      LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
-      Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
-    } else {
-      Navigator.pushNamed(context, SelectWordAndSentencesRoute.route,
-          arguments: SelectWordAndSentencesRouteArgs(_args.userLearningProgram, newList));
-    }
-  }
 
   void _onItemSelected() {
     ConsideredItem itemWithSentences =
@@ -107,17 +93,9 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
           )
         ],
       ),
-      bottomChild: Row(
-        children: [
-          IconButton(icon: Icon(Icons.delete_forever), onPressed: _onItemSkipped, tooltip: 'Skip word'),
-          SizedBox(width: StandardSizes.medium),
-          Expanded(
-            child: ElevatedButton(
-              child: Text('Learn'),
-              onPressed: indexSelectedSentences.length < nbSentencesToLearn ? null : _onItemSelected,
-            ),
-          )
-        ],
+      bottomChild: ElevatedButton(
+        child: Text('Learn'),
+        onPressed: indexSelectedSentences.length < nbSentencesToLearn ? null : _onItemSelected,
       ),
     );
   }
