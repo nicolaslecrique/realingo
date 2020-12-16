@@ -14,7 +14,7 @@ class LessonItemBottomBar extends StatelessWidget {
       if (status == LessonItemStatus.CorrectAnswer || status == LessonItemStatus.CorrectAnswerNoHint) {
         return SizedBox(
             width: double.infinity,
-            child: IconButton(onPressed: lesson.nextLessonItem, icon: Icon(Icons.check), tooltip: 'Next'));
+            child: ElevatedButton.icon(onPressed: lesson.nextLessonItem, icon: Icon(Icons.check), label: Text('Next')));
       } else {
         return Row(
           children: [
