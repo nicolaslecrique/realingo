@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/home_route.dart';
+import 'package:realingo_app/routes/new_program/select_learned_language_route.dart';
 import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/tech_services/database/db.dart';
-
-import 'login_route.dart';
 
 @immutable
 class SplashScreenRoute extends StatefulWidget {
@@ -28,7 +27,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
     UserLearningProgram userProgram = await ProgramServices.getDefaultUserProgramOrNull();
 
     if (userProgram == null) {
-      await Navigator.pushNamed(context, LoginRoute.route);
+      await Navigator.pushNamed(context, SelectLearnedLanguageRoute.route);
     } else {
       await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false,
           arguments: HomeRouteArgs(userProgram));
