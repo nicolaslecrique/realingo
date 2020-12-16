@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
-import 'package:realingo_app/routes/lesson/widgets/lesson_item_top_bar.dart';
+import 'package:realingo_app/routes/lesson/widgets/lesson_progress_bar.dart';
 
 import 'lesson_item_bottom_bar.dart';
 
@@ -20,7 +20,7 @@ class LessonItemScreen extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(width: double.infinity, height: StandardSizes.medium),
-                  LessonItemTopBar(),
+                  LessonProgressBar(ratioCompleted: state.ratioCompleted),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
                     child: Align(
