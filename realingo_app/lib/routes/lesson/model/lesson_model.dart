@@ -12,7 +12,7 @@ class LessonModel extends ChangeNotifier {
   // immutable fields
   final List<LessonItem> _lessonItems;
   static final Levenshtein _distance = Levenshtein();
-  static const double _maxDistance = 0.1;
+  static const double _maxDistance = 0.25;
   VoiceService _voiceService;
   static final RegExp _normalizeStrRegex = RegExp(r'[^\w\s]+');
 
