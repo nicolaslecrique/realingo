@@ -37,7 +37,7 @@ class _SelectLearnedLanguageRouteState extends State<SelectLearnedLanguageRoute>
           selected: selectedLanguage,
           onSelect: (e) => setState(() => selectedLanguage = e),
         ),
-        title: 'Courses',
+        title: 'I want to learn...',
         buttonText: 'OK',
         onButtonPressed: selectedLanguage == null
             ? null
