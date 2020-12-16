@@ -40,7 +40,6 @@ class MyApp extends StatelessWidget {
               // cannot load arguments directly in widget build() because initState needs it
               SelectOriginLanguageRoute(ModalRoute.of(context).settings.arguments as SelectOriginLanguageRouteArgs),
           HomeRoute.route: (BuildContext context) => const HomeRoute(),
-          LoginRoute.route: (BuildContext context) => const LoginRoute(),
           SelectLevelRoute.route: (BuildContext context) => const SelectLevelRoute(),
           LessonRoute.route: (BuildContext context) => const LessonRoute(),
           SelectWordAndSentencesRoute.route: (BuildContext context) => const SelectWordAndSentencesRoute(),
