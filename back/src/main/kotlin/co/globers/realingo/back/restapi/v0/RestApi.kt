@@ -17,7 +17,8 @@ data class RestLanguage(
 data class RestSentence(
         val uri: String,
         val sentence: String,
-        val translation: String
+        val translation: String,
+        val hint: String
 )
 
 data class RestItemToLearn(
@@ -38,10 +39,7 @@ val availableOriginLanguages: List<RestLanguage> = listOf(
 )
 
 val availableLearnedLanguages: List<RestLanguage> = listOf(
-        toRestLanguage(Language.Vietnamese),
-        toRestLanguage(Language.English),
-        toRestLanguage(Language.French),
-        toRestLanguage(Language.Spanish)
+        toRestLanguage(Language.Vietnamese)
 )
 
 fun toRestLanguage(language: Language): RestLanguage = RestLanguage(language.uri, language.label)
@@ -88,8 +86,7 @@ class RestApi {
                             itemUri,
                             it.itemString,
                             it.sentences
-                                    .distinct()
-                                    .map { s -> RestSentence(generateUri(s.sentence, itemUri), s.sentence, s.translation) }
+                                    .map { s -> RestSentence(generateUri(s.sentence, itemUri), s.sentence, s.translation, s.hint) }
                     ) }
         )
     }

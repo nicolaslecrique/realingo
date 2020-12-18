@@ -11,9 +11,7 @@ private const val MAX_URI_SIZE = 80
 
 
 fun generateUri(strToClean: String, strToHashToEnsureUniqueness: String = "") : String {
-    return cleanString(strToClean)+ "-" +
-            hashString(strToClean +
-                    strToHashToEnsureUniqueness).substring(0, NB_HEXA_CHAR_DISAMBIGUATION)
+    return cleanString(strToClean)+ "-" + hashString(strToClean + strToHashToEnsureUniqueness).substring(0, NB_HEXA_CHAR_DISAMBIGUATION)
 }
 
 
