@@ -1,56 +1,47 @@
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
+fun sortWordBySentenceEnabledCount(sentencesDataset: List<SentenceWithTranslation>, nbWords: Int) :  List<String> {
 
-data class SentencesWithWords(val sentences: String, val words: Set<String>)
-data class WordWithSentences(val word: String, val sentences: List<SentencesWithWords>)
-
-fun sortWords(sentences: List<SentencesWithWords>, nbWords: Int) :  List<WordWithSentences> {
-
+    val sentences: List<Set<String>> = sentencesDataset.map { it.sentence.words_in_sentence.map { it.word_standard_format }.toSet() }
     val alreadyUsedWords = mutableSetOf<String>()
-    val remainingWords = sentences.flatMap { it.words }.toMutableSet()
-    val result = mutableListOf<WordWithSentences>()
+    val remainingWords = sentences.flatten().toMutableSet()
+    val result = mutableListOf<String>()
     val remainingSentences = sentences.toMutableSet()
 
-    while (alreadyUsedWords.size < nbWords){
+    while (alreadyUsedWords.size < nbWords) {
 
-        val wordToSentences = mutableMapOf<String,MutableList<SentencesWithWords>>()
-        for (sentence in remainingSentences){ // loop over all remaining sentences
-            val notAlreadyKnownWords = sentence.words subtract alreadyUsedWords
-            if (notAlreadyKnownWords.size == 1){ // consider sentences that miss only one word
-                val missingWord = notAlreadyKnownWords.first(); // get the word that would allow this sentence to be known
-                if (!wordToSentences.containsKey(missingWord)){
-                    wordToSentences[missingWord] = mutableListOf(sentence)
-                } else {
-                    wordToSentences[missingWord]!!.add(sentence)
-                }
+        val wordToCountSentence = mutableMapOf<String, MutableList<Set<String>>>()
+        for (sentence in remainingSentences) { // loop over all remaining sentences
+            val notAlreadyKnownWords = sentence subtract alreadyUsedWords
+            if (notAlreadyKnownWords.size == 1) { // consider sentences that miss only one word
+                val missingWord =
+                    notAlreadyKnownWords.first(); // get the word that would allow this sentence to be known
+                val currentListOfSentenceThisWord = wordToCountSentence.getOrDefault(missingWord, mutableListOf())
+                currentListOfSentenceThisWord.add(sentence)
+                wordToCountSentence[missingWord] = currentListOfSentenceThisWord
             }
         }
 
-        val nextWordWithSentences = wordToSentences.maxByOrNull { it.value.size }
+        val nextWordWithSentences = wordToCountSentence.maxByOrNull { it.value.count() }
         if (nextWordWithSentences == null){
             throw Exception("fuck")
         } else {
             alreadyUsedWords.add(nextWordWithSentences.key);
             remainingWords.remove(nextWordWithSentences.key)
-            result.add(WordWithSentences(nextWordWithSentences.key, nextWordWithSentences.value))
+            result.add(nextWordWithSentences.key)
             remainingSentences.removeAll(nextWordWithSentences.value)
         }
     }
     return result;
-
 }
 
-fun main() {
-
-    val languageDataStr = FileLoader.getFileFromResource("./language_data/vietnamese/language_data_vietnamese_100000.json").readText()
-    val languageData: LanguageData = Json.decodeFromString<LanguageData>(languageDataStr)
-
-    val sentences = languageData.sentences.map { SentencesWithWords(it.raw_sentence, it.words_in_sentence.map { w -> w.word_standard_format }.toSet()) }
-
-    val result = sortWords(sentences, 1000)
-
-    print(result)
-
-
+private fun getSortedWordsByFrequency(sentencesDataset: List<SentenceWithTranslation>, nbItems: Int): List<String> {
+    val countByWord = mutableMapOf<String, Int>()
+    for (sentence in sentencesDataset) {
+        for (word in sentence.sentence.words_in_sentence) {
+            val currentCount: Int = countByWord.getOrDefault(word.word_standard_format, 0)
+            countByWord[word.word_standard_format] = currentCount + 1
+        }
+    }
+    val sortedWords = countByWord.toList().sortedByDescending { it.second }.map { it.first }.take(nbItems)
+    return sortedWords
 }
