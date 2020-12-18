@@ -39,14 +39,13 @@ class LessonItemScreen extends StatelessWidget {
                       child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Text(state.currentItemOrNull?.hint?.hintDisplayed ?? '',
-                          style: Theme.of(context).textTheme.headline6),
+                      Text(state.currentItemOrNull.hint.hintDisplayed, style: Theme.of(context).textTheme.headline6),
                     ],
                   )),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(state.currentItemOrNull?.lastAnswer?.answer ?? '',
-                        style: Theme.of(context).textTheme.bodyText2),
+                    child:
+                        Text(state.currentItemOrNull.lastAnswer.answer, style: Theme.of(context).textTheme.bodyText2),
                   ),
                   LessonItemBottomBar(),
                 ],

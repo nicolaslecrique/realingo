@@ -18,6 +18,7 @@ RestSentence _$RestSentenceFromJson(Map<String, dynamic> json) {
     json['uri'] as String,
     json['sentence'] as String,
     json['translation'] as String,
+    json['hint'] as String,
   );
 }
 

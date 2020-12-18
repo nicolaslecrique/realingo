@@ -12,6 +12,7 @@ void main() {
     expect(actual.serverUri, matcher.serverUri);
     expect(actual.sentence, matcher.sentence);
     expect(actual.translation, matcher.translation);
+    expect(actual.hint, matcher.hint);
   }
 
   void expectUserItemToLearn(UserItemToLearn actual, UserItemToLearn matcher) {
@@ -45,9 +46,9 @@ void main() {
           'label_1',
           [
             UserItemToLearnSentence('item_1_sentence_1_uri', 'item_1_sentence_1_uri_serv', 'item_1_sentence_1_sen',
-                'item_1_sentence_1_tra'),
+                'item_1_sentence_1_tra', 'item_1_sentence_1_hint'),
             UserItemToLearnSentence('item_1_sentence_2_uri', 'item_1_sentence_2_uri_serv', 'item_1_sentence_2_sen',
-                'item_1_sentence_2_tra'),
+                'item_1_sentence_2_tra', 'item_1_sentence_2_hint'),
           ],
           UserItemToLearnStatus.NotLearned),
       UserItemToLearn(
@@ -56,7 +57,7 @@ void main() {
           'label_2',
           [
             UserItemToLearnSentence('item_2_sentence_1_uri', 'item_2_sentence_1_uri_serv', 'item_2_sentence_1_sen',
-                'item_2_sentence_1_tra'),
+                'item_2_sentence_1_tra', 'item_2_sentence_1_hint'),
           ],
           UserItemToLearnStatus.NotLearned),
     ]);

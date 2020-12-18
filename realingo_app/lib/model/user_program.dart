@@ -8,8 +8,9 @@ class UserItemToLearnSentence {
   final String serverUri;
   final String sentence;
   final String translation;
+  final String hint;
 
-  const UserItemToLearnSentence(this.uri, this.serverUri, this.sentence, this.translation);
+  const UserItemToLearnSentence(this.uri, this.serverUri, this.sentence, this.translation, this.hint);
 }
 
 @immutable

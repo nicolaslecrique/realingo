@@ -11,6 +11,7 @@ class TableUserItemSentence {
   final String uri = 'uri';
   final String sentence = 'sentence';
   final String translation = 'translation';
+  final String hint = 'hint';
   final String itemSentenceServerUri = 'item_sentence_server_uri';
   final String userItemToLearnId = 'user_item_to_learn_id';
 
@@ -27,6 +28,7 @@ class TableUserItemSentence {
     $uri TEXT NOT NULL UNIQUE,
     $sentence TEXT NOT NULL,
     $translation TEXT NOT NULL,
+    $hint TEXT NOT NULL,
     $itemSentenceServerUri STRING NOT NULL,
     $userItemToLearnId INTEGER NOT NULL,
     FOREIGN KEY ($userItemToLearnId) REFERENCES ${DB.userItemToLearn}(${DB.userItemToLearn.id})
@@ -51,14 +53,15 @@ class RowUserItemSentence {
   final String uri;
   final String sentence;
   final String translation;
+  final String hint;
 
   @JsonKey(name: 'item_sentence_server_uri')
   final String itemSentenceServerUri;
   @JsonKey(name: 'user_item_to_learn_id')
   final int userItemToLearnId;
 
-  RowUserItemSentence(
-      this.id, this.uri, this.sentence, this.translation, this.itemSentenceServerUri, this.userItemToLearnId);
+  RowUserItemSentence(this.id, this.uri, this.sentence, this.translation, this.itemSentenceServerUri,
+      this.userItemToLearnId, this.hint);
 
   factory RowUserItemSentence.fromDb(Map<String, dynamic> json) => _$RowUserItemSentenceFromJson(json);
 }

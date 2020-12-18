@@ -13,8 +13,9 @@ class ItemToLearnSentence {
   final String uri;
   final String sentence;
   final String translation;
+  final String hint;
 
-  const ItemToLearnSentence(this.uri, this.sentence, this.translation);
+  const ItemToLearnSentence(this.uri, this.sentence, this.translation, this.hint);
 }
 
 @immutable

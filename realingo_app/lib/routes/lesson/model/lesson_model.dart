@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:edit_distance/edit_distance.dart';
 import 'package:flutter/foundation.dart';
+import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/services/voice_service.dart';
 
@@ -94,16 +95,15 @@ class LessonModel extends ChangeNotifier {
         // new item
         return LessonState(
             ratioCompleted,
-            LessonItemState(_currentItemOrNull, _getFirstHint(_currentItemOrNull.sentence.sentence), AnswerResult(''),
+            LessonItemState(_currentItemOrNull, _getFirstHint(_currentItemOrNull.sentence), AnswerResult(''),
                 LessonItemStatus.ReadyForAnswer),
             LessonStatus.OnLessonItem);
       }
     } else if (_voiceStatus == VoiceServiceStatus.Initializing) {
       return LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     } else {
-      Hint currentHint = _state.currentItemOrNull != null
-          ? _state.currentItemOrNull.hint
-          : _getFirstHint(_currentItemOrNull.sentence.sentence);
+      Hint currentHint =
+          _state.currentItemOrNull != null ? _state.currentItemOrNull.hint : _getFirstHint(_currentItemOrNull.sentence);
       LessonItemState newItemState = _getItemNewState(nextHint, currentHint);
       return LessonState(ratioCompleted, newItemState, LessonStatus.OnLessonItem);
     }
@@ -158,7 +158,7 @@ class LessonModel extends ChangeNotifier {
     return Hint(sentence, previousHint.nbHintProvided + 1);
   }
 
-  static Hint _getFirstHint(String sentence) {
-    return Hint('_____', 0);
+  static Hint _getFirstHint(UserItemToLearnSentence sentence) {
+    return Hint(sentence.hint, 0);
   }
 }

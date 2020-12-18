@@ -28,8 +28,9 @@ class RestSentence {
   final String uri;
   final String sentence;
   final String translation;
+  final String hint;
 
-  const RestSentence(this.uri, this.sentence, this.translation);
+  const RestSentence(this.uri, this.sentence, this.translation, this.hint);
 
   factory RestSentence.fromJson(Map<String, dynamic> json) => _$RestSentenceFromJson(json);
 }
@@ -94,8 +95,8 @@ class RestApi {
     final restProgram = RestLearningProgram.fromJson(json.decode(response.body) as Map<String, dynamic>);
 
     final items = restProgram.itemsToLearn
-        .map((e) => ItemToLearn(
-            e.uri, e.label, e.sentences.map((s) => ItemToLearnSentence(s.uri, s.sentence, s.translation)).toList()))
+        .map((e) => ItemToLearn(e.uri, e.label,
+            e.sentences.map((s) => ItemToLearnSentence(s.uri, s.sentence, s.translation, s.hint)).toList()))
         .toList();
     return LearningProgram(restProgram.uri, items);
   }

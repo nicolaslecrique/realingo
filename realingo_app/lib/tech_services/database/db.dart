@@ -95,6 +95,7 @@ class Db {
             DB.userItemSentence.uri: sentence.uri,
             DB.userItemSentence.sentence: sentence.sentence,
             DB.userItemSentence.translation: sentence.translation,
+            DB.userItemSentence.hint: sentence.hint,
             DB.userItemSentence.itemSentenceServerUri: sentence.serverUri,
             DB.userItemSentence.userItemToLearnId: itemIds[idxItem],
           });
@@ -127,7 +128,7 @@ class Db {
             e.itemToLearnServerUri,
             e.label,
             sentencesByItemId[e.id]
-                .map((s) => UserItemToLearnSentence(s.uri, s.itemSentenceServerUri, s.sentence, s.translation))
+                .map((s) => UserItemToLearnSentence(s.uri, s.itemSentenceServerUri, s.sentence, s.translation, s.hint))
                 .toList(growable: false),
             UserItemToLearnStatusDb.fromDbString(e.status)))
         .toList(growable: false);

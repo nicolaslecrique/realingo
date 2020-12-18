@@ -14,5 +14,6 @@ RowUserItemSentence _$RowUserItemSentenceFromJson(Map<String, dynamic> json) {
     json['translation'] as String,
     json['item_sentence_server_uri'] as String,
     json['user_item_to_learn_id'] as int,
+    json['hint'] as String,
   );
 }
