@@ -1,6 +1,7 @@
 package co.globers.realingo.back.services
 
 import co.globers.realingo.back.model.ItemToLearn
+import co.globers.realingo.back.model.Language
 import co.globers.realingo.back.model.LearningProgram
 import co.globers.realingo.back.model.Sentence
 import co.globers.realingo.back.tools.FileLoader
@@ -46,7 +47,9 @@ internal fun loadProgram(originLanguage: Language, learnedLanguage: Language): L
         programUri,
         originLanguage.uri,
         learnedLanguage.uri,
-        program.items.map {
+        program.items
+            .filter { it.sentences.isNotEmpty() } // TODO fix in programbuilder and throw here instead of filter
+            .map {
             val itemUri = generateUri(it.itemString, programUri)
             ItemToLearn(
                 itemUri,
