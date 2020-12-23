@@ -104,7 +104,19 @@ class Db {
           });
         }
       }
-      await batchSentence.commit(noResult: true);
+      await batchSentence.commit();
+    });
+  }
+
+  Future<void> updateUserItemToLearnStatus(List<UserItemToLearn> items) async {
+    return await _db.transaction((Transaction txn) async {
+      Batch batchItems = txn.batch();
+      for (UserItemToLearn item in items) {
+        batchItems.update('${DB.userItemToLearn}',
+            <String, dynamic>{DB.userItemToLearn.status: UserItemToLearnStatusDb.toDbString(item.status)},
+            where: '${DB.userItemToLearn.uri} = ?', whereArgs: <dynamic>[item.uri]);
+      }
+      await batchItems.commit();
     });
   }
 

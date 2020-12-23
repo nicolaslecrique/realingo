@@ -21,8 +21,8 @@ class ConsideredItem {
 }
 
 class LessonBuilder {
-  static const NbItemsByLesson = 3;
-  static const NbSentencesByLessonItem = 3;
+  static const NbItemsByLesson = 2;
+  static const NbSentencesByLessonItem = 2;
 
   static List<LessonItem> buildLesson(UserLearningProgram program, List<ConsideredItem> modifiedItems) {
     List<LessonItem> lessonItems = [];
