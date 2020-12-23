@@ -6,6 +6,7 @@ import co.globers.realingo.back.model.Sentence
 import co.globers.realingo.back.model.Language
 import co.globers.realingo.back.services.ProgramCache
 import co.globers.realingo.back.services.ProgramKey
+import co.globers.realingo.back.services.TextToSpeech
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -50,13 +51,14 @@ data class RestLearningProgram(
         )
 }
 
+class RestSentenceRecord(val record: ByteArray)
 
 // variable to suppress on this deprecate
 @Suppress("DEPRECATION")
 private const val jsonUtf8Header: String = MediaType.APPLICATION_JSON_UTF8_VALUE
 
 @RestController
-class RestApi(val programCache: ProgramCache) {
+class RestApi(val programCache: ProgramCache, val textToSpeech: TextToSpeech) {
 
     @GetMapping("/api/v0/available_origin_languages", produces = [jsonUtf8Header])
     suspend fun getAvailableOriginLanguages(
@@ -83,6 +85,15 @@ class RestApi(val programCache: ProgramCache) {
         val restProgram = RestLearningProgram(program)
 
         return restProgram
+    }
+
+    @GetMapping("/api/v0/sentence_record", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    suspend fun getSentenceRecord(
+        @RequestParam(value = "language_uri") languageUri: String,
+        @RequestParam(value = "sentence") sentence: String) : ByteArray {
+
+        val result = textToSpeech.getRecord(Language.fromUri(languageUri), sentence)
+        return result
     }
 
 

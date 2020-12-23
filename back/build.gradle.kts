@@ -23,9 +23,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
 
+    // All default deps from skeleton
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
@@ -38,6 +37,13 @@ dependencies {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     testImplementation("io.projectreactor:reactor-test")
+
+    // serialization kotlin
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
+
+    // google text to speech API
+    implementation("com.google.cloud:google-cloud-texttospeech:1.2.7")
 }
 
 tasks.withType<Test> {

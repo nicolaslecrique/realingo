@@ -4,6 +4,7 @@ import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
 import 'package:realingo_app/routes/lesson/widgets/lesson_progress_bar.dart';
+import 'package:realingo_app/services/texttospeech_service.dart';
 
 import 'lesson_item_bottom_bar.dart';
 
@@ -39,6 +40,11 @@ class LessonItemScreen extends StatelessWidget {
                       child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      IconButton(
+                          icon: Icon(Icons.volume_up),
+                          onPressed: () => TextToSpeech.playAndCacheRecord(
+                              lesson.learnedLanguage, state.currentItemOrNull.lessonItem.sentence),
+                          tooltip: 'Play'),
                       Text(state.currentItemOrNull.hint.hintDisplayed, style: Theme.of(context).textTheme.headline6),
                     ],
                   )),

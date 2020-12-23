@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:edit_distance/edit_distance.dart';
 import 'package:flutter/foundation.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/services/voice_service.dart';
@@ -14,7 +15,7 @@ class LessonModel extends ChangeNotifier {
   final Language learnedLanguage;
   final List<LessonItem> _lessonItems;
   static final Levenshtein _distance = Levenshtein();
-  static const double _maxDistance = 0.25;
+  static const double _maxDistance = 0.5;
   VoiceService _voiceService;
   static final RegExp _normalizeStrRegex = RegExp(r'[^\w\s]+');
 
@@ -83,7 +84,7 @@ class LessonModel extends ChangeNotifier {
     _recomputeState();
   }
 
-  void _recomputeState({bool nextItem: false, bool nextHint: false}) {
+  void _recomputeState({bool nextItem = false, bool nextHint = false}) {
     _state = _getNewState(nextItem, nextHint);
     notifyListeners();
   }
