@@ -17,7 +17,7 @@ class ProgramServices {
     return await RestApi.getProgram(learnedLanguage, originLanguage);
   }
 
-  static Future<UserLearningProgram> buildUserProgram(LearningProgram program, ItemToLearn firstItemToLearn) async {
+  static Future<void> buildUserProgram(LearningProgram program, ItemToLearn firstItemToLearn) async {
     final now = DateTime.now().toString();
 
     String userProgramUri = '${program.uri}-$now';
@@ -43,7 +43,6 @@ class ProgramServices {
         UserLearningProgram(userProgramUri, program.uri, userItems, program.learnedLanguage, program.originLanguage);
     await db.insertUserLearningProgram(userProgram);
     await UserConfig.setDefaultUserProgramUri(userProgram.uri);
-    return userProgram;
   }
 
   static Future<UserLearningProgram> getDefaultUserProgramOrNull() async {

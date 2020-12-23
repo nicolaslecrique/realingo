@@ -38,7 +38,7 @@ class _LessonRouteState extends State<LessonRoute> {
           if (state.status == LessonStatus.WaitForVoiceServiceReady) {
             return LoadingScreen();
           } else if (state.status == LessonStatus.Completed) {
-            return EndLessonScreen();
+            return EndLessonScreen(lessonItems: args.lessonItems);
           } else {
             return LessonItemScreen();
           }

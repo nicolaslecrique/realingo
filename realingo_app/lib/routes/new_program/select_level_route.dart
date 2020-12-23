@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:realingo_app/common_screens/loading_screen.dart';
 import 'package:realingo_app/common_screens/one_button_screen.dart';
 import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/services/program_services.dart';
 
 import '../home_route.dart';
@@ -37,10 +38,11 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
       _savingProgram = true;
     });
 
-    UserLearningProgram userProgram =
-        await ProgramServices.buildUserProgram(learningProgram, _selectedFirstWordToLearn);
-    await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false,
-        arguments: HomeRouteArgs(userProgram));
+    await ProgramServices.buildUserProgram(learningProgram, _selectedFirstWordToLearn);
+
+    var model = Provider.of<UserProgramModel>(context, listen: false);
+    await model.reload();
+    await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false);
   }
 
   @override

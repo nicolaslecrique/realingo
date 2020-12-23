@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
-import 'package:realingo_app/routes/lesson/model/lesson_saver.dart';
 import 'package:realingo_app/services/voice_service.dart';
 
 import 'lesson_state.dart';
@@ -93,7 +92,6 @@ class LessonModel extends ChangeNotifier {
   LessonState _getNewState(bool nextItem, bool nextHint) {
     if (nextItem) {
       if (_remainingItems.isEmpty) {
-        LessonSaver.saveLesson(_lessonItems.map((e) => e.userItemToLearn).toList(growable: false));
         return LessonState(1.0, null, LessonStatus.Completed);
       } else {
         // new item

@@ -4,7 +4,7 @@ import 'package:realingo_app/common_screens/unexpected_error_screen.dart';
 
 @immutable
 class FutureBuilderWrapper<T> extends StatelessWidget {
-  const FutureBuilderWrapper({Key key, this.future, this.childBuilder}) : super(key: key);
+  const FutureBuilderWrapper({Key key, @required this.future, @required this.childBuilder}) : super(key: key);
 
   final Future<T> future;
   final Widget Function(T) childBuilder;

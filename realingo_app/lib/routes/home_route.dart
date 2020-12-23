@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/model/user_program_model.dart';
 
 import 'lesson/select_word_and_sentences_route.dart';
-
-@immutable
-class HomeRouteArgs {
-  final UserLearningProgram userProgram;
-
-  const HomeRouteArgs(this.userProgram);
-}
 
 class HomeRoute extends StatefulWidget {
   static const route = '/home';
@@ -27,8 +22,9 @@ class _HomeRouteState extends State<HomeRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final HomeRouteArgs homeRouteArgs = ModalRoute.of(context).settings.arguments as HomeRouteArgs;
-    final UserLearningProgram userProgram = homeRouteArgs.userProgram;
+    // for now no need to use consumer, we suppose it cannot change while we are on this route
+    var model = Provider.of<UserProgramModel>(context, listen: false);
+    UserLearningProgram userProgram = model.program;
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<UserItemToLearn> items = userProgram.itemsToLearn;
@@ -39,7 +35,7 @@ class _HomeRouteState extends State<HomeRoute> {
             var item = items[index];
             return ListTile(
               title: Text(item.label),
-              tileColor: item.status == UserItemToLearnStatus.SkippedAtStart ? Colors.grey : Colors.green,
+              tileColor: _getTileColor(item.status),
             );
           }),
       floatingActionButton: FloatingActionButton.extended(
@@ -49,5 +45,18 @@ class _HomeRouteState extends State<HomeRoute> {
         icon: Icon(Icons.arrow_forward_ios),
       ),
     );
+  }
+
+  Color _getTileColor(UserItemToLearnStatus status) {
+    switch (status) {
+      case UserItemToLearnStatus.SkippedAtStart:
+        return Colors.grey;
+      case UserItemToLearnStatus.Learned:
+        return Colors.green;
+      case UserItemToLearnStatus.Skipped:
+        return Colors.orangeAccent;
+      case UserItemToLearnStatus.NotLearned:
+        return Colors.deepOrangeAccent;
+    }
   }
 }
