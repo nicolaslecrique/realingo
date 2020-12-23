@@ -3,7 +3,7 @@ package co.globers.realingo.back.restapi.v0
 import co.globers.realingo.back.model.ItemToLearn
 import co.globers.realingo.back.model.LearningProgram
 import co.globers.realingo.back.model.Sentence
-import co.globers.realingo.back.services.Language
+import co.globers.realingo.back.model.Language
 import co.globers.realingo.back.services.ProgramCache
 import co.globers.realingo.back.services.ProgramKey
 import org.springframework.http.MediaType

@@ -39,7 +39,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
     if (newItemsList.length == LessonBuilder.NbItemsByLesson || _currentIndex == _args.itemsForLesson.length - 1) {
       // start lesson
       List<LessonItem> lessonItems = LessonBuilder.buildLesson(_args.userLearningProgram, newItemsList);
-      LessonRouteArgs lessonRouteArgs = LessonRouteArgs(lessonItems);
+      LessonRouteArgs lessonRouteArgs = LessonRouteArgs(_args.userLearningProgram.learnedLanguage, lessonItems);
       Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
     } else {
       SelectWordAndSentencesRouteArgs newArgs =

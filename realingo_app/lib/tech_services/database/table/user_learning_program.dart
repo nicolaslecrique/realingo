@@ -8,6 +8,8 @@ class TableUserLearningProgram {
   final String id = 'id';
   final String uri = 'uri';
   final String learningProgramServerUri = 'learning_program_server_uri';
+  final String learnedLanguageUri = 'learned_language_uri';
+  final String originLanguageUri = 'origin_language_uri';
 
   @override
   String toString() {
@@ -20,7 +22,9 @@ class TableUserLearningProgram {
   CREATE TABLE $this(
     $id INTEGER PRIMARY KEY,
     $uri TEXT NOT NULL UNIQUE,
-    $learningProgramServerUri TEXT NOT NULL
+    $learningProgramServerUri TEXT NOT NULL,
+    $learnedLanguageUri TEXT NOT NULL,
+    $originLanguageUri TEXT NOT NULL
   )
   ''';
 }
@@ -32,7 +36,14 @@ class RowUserLearningProgram {
   @JsonKey(name: 'learning_program_server_uri')
   final String learningProgramServerUri;
 
-  RowUserLearningProgram(this.id, this.uri, this.learningProgramServerUri);
+  @JsonKey(name: 'learned_language_uri')
+  final String learnedLanguageUri;
+
+  @JsonKey(name: 'origin_language_uri')
+  final String originLanguageUri;
+
+  RowUserLearningProgram(
+      this.id, this.uri, this.learningProgramServerUri, this.learnedLanguageUri, this.originLanguageUri);
 
   factory RowUserLearningProgram.fromDb(Map<String, dynamic> json) => _$RowUserLearningProgramFromJson(json);
 }

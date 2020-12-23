@@ -12,5 +12,7 @@ RowUserLearningProgram _$RowUserLearningProgramFromJson(
     json['id'] as int,
     json['uri'] as String,
     json['learning_program_server_uri'] as String,
+    json['learned_language_uri'] as String,
+    json['origin_language_uri'] as String,
   );
 }

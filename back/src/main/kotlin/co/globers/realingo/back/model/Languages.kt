@@ -1,4 +1,4 @@
-package co.globers.realingo.back.services
+package co.globers.realingo.back.model
 
 enum class Language(
         val shortCode: String,
@@ -6,9 +6,7 @@ enum class Language(
         val label: String
 ) {
     Vietnamese("vn", "vietnamese", "Vietnamese"),
-    English("en", "english", "English"),
-    French("fr", "french", "French"),
-    Spanish("sp","spanish", "Spanish");
+    French("fr", "french", "French");
 
     companion object {
         fun fromUri(uri: String): Language {

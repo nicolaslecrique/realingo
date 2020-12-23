@@ -31,6 +31,8 @@ class ItemToLearn {
 class LearningProgram {
   final String uri;
   final List<ItemToLearn> itemsToLearn;
+  final Language learnedLanguage;
+  final Language originLanguage;
 
-  const LearningProgram(this.uri, this.itemsToLearn);
+  const LearningProgram(this.uri, this.itemsToLearn, this.learnedLanguage, this.originLanguage);
 }

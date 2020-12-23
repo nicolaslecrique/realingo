@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/tech_services/database/db_init.dart';
 import 'package:realingo_app/tech_services/database/schema.dart';
@@ -66,6 +67,8 @@ class Db {
       int idProgram = await txn.insert('${DB.userLearningProgram}', <String, dynamic>{
         DB.userLearningProgram.uri: userProgram.uri,
         DB.userLearningProgram.learningProgramServerUri: userProgram.serverUri,
+        DB.userLearningProgram.originLanguageUri: userProgram.originLanguage.uri,
+        DB.userLearningProgram.learnedLanguageUri: userProgram.learnedLanguage.uri,
       });
 
       Batch batchItems = txn.batch();
@@ -133,7 +136,13 @@ class Db {
             UserItemToLearnStatusDb.fromDbString(e.status)))
         .toList(growable: false);
 
-    return UserLearningProgram(userProgram.uri, userProgram.learningProgramServerUri, items);
+    return UserLearningProgram(
+      userProgram.uri,
+      userProgram.learningProgramServerUri,
+      items,
+      getLanguageLabelFromUri(userProgram.learnedLanguageUri),
+      getLanguageLabelFromUri(userProgram.originLanguageUri),
+    );
   }
 
   Future<List<RowUserItemToLearn>> _selectRowItemsFromProgramIdx(int idProgram) async {
@@ -145,5 +154,10 @@ class Db {
     final List<RowUserItemToLearn> rowItems =
         resultItems.map((e) => RowUserItemToLearn.fromDb(e)).toList(growable: false);
     return rowItems;
+  }
+
+  // ugly shortcut, we should probably make table in db to describe a language
+  Language getLanguageLabelFromUri(String languageUri) {
+    return Language(languageUri, languageUri);
   }
 }

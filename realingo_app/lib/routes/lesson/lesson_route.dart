@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/common_screens/loading_screen.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
@@ -10,8 +11,9 @@ import 'package:realingo_app/routes/lesson/widgets/lesson_item_screen.dart';
 @immutable
 class LessonRouteArgs {
   final List<LessonItem> lessonItems;
+  final Language learnedLanguage;
 
-  const LessonRouteArgs(this.lessonItems);
+  const LessonRouteArgs(this.learnedLanguage, this.lessonItems);
 }
 
 @immutable
@@ -30,7 +32,7 @@ class _LessonRouteState extends State<LessonRoute> {
     LessonRouteArgs args = ModalRoute.of(context).settings.arguments as LessonRouteArgs;
 
     return ChangeNotifierProvider(
-        create: (context) => LessonModel(args.lessonItems),
+        create: (context) => LessonModel(args.learnedLanguage, args.lessonItems),
         child: Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
           LessonState state = lesson.state;
           if (state.status == LessonStatus.WaitForVoiceServiceReady) {

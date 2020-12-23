@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:realingo_app/model/program.dart';
 
 enum UserItemToLearnStatus { SkippedAtStart, Learned, Skipped, NotLearned }
 
@@ -30,6 +31,8 @@ class UserLearningProgram {
   final String uri;
   final String serverUri;
   final List<UserItemToLearn> itemsToLearn;
+  final Language learnedLanguage;
+  final Language originLanguage;
 
-  const UserLearningProgram(this.uri, this.serverUri, this.itemsToLearn);
+  const UserLearningProgram(this.uri, this.serverUri, this.itemsToLearn, this.learnedLanguage, this.originLanguage);
 }

@@ -11,6 +11,7 @@ import 'lesson_state.dart';
 
 class LessonModel extends ChangeNotifier {
   // immutable fields
+  final Language learnedLanguage;
   final List<LessonItem> _lessonItems;
   static final Levenshtein _distance = Levenshtein();
   static const double _maxDistance = 0.25;
@@ -27,7 +28,7 @@ class LessonModel extends ChangeNotifier {
   LessonState get state => _state;
   double get ratioCompleted => (_lessonItems.length - _remainingItems.length).toDouble() / _lessonItems.length;
 
-  LessonModel(this._lessonItems) {
+  LessonModel(this.learnedLanguage, this._lessonItems) {
     _remainingItems = QueueList<LessonItem>.from(_lessonItems);
     _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     _voiceService = VoiceService.get();

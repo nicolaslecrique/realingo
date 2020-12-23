@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -89,15 +90,23 @@ class RestApi {
     return languages;
   }
 
-  static Future<LearningProgram> getProgram(String learnedLanguageUri, String originLanguageUri) async {
+  static Future<LearningProgram> getProgram(Language learnedLanguage, Language originLanguage) async {
     http.Response response = await http.get(
-        '$_restApiBaseUrl/program?learned_language_uri=$learnedLanguageUri&origin_language_uri=$originLanguageUri');
+        '$_restApiBaseUrl/program?learned_language_uri=${learnedLanguage.uri}&origin_language_uri=${originLanguage.uri}');
     final restProgram = RestLearningProgram.fromJson(json.decode(response.body) as Map<String, dynamic>);
 
     final items = restProgram.itemsToLearn
         .map((e) => ItemToLearn(e.uri, e.label,
             e.sentences.map((s) => ItemToLearnSentence(s.uri, s.sentence, s.translation, s.hint)).toList()))
         .toList();
-    return LearningProgram(restProgram.uri, items);
+    return LearningProgram(restProgram.uri, items, learnedLanguage, originLanguage);
+  }
+
+  static Future<Uint8List> getRecord(String languageUri, String sentence) async {
+    http.Response response =
+        await http.get('$_restApiBaseUrl/sentence_record?language_uri=$languageUri&sentence=$sentence');
+
+    Uint8List body = response.bodyBytes;
+    return body;
   }
 }
