@@ -8,21 +8,21 @@ import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/tech_services/rest/rest_api.dart';
 
 class TextToSpeech {
-  static Future<void> playAndCacheRecord(Language language, UserItemToLearnSentence sentence) async {
+  static Future<void> play(Language language, UserItemToLearnSentence sentence) async {
     final Directory directory = await getApplicationSupportDirectory();
     String path = '${directory.absolute.path}/sentence_records/${sentence.uri}.wav';
     File file = File(path);
     if (await file.exists()) {
-      await _play(path);
+      await _playFromFile(path);
     } else {
       final Uint8List wavContent = await RestApi.getRecord(language.uri, sentence.sentence);
       await file.create(recursive: true); // in case sentence_records directory doesn't exist
       await file.writeAsBytes(wavContent, mode: FileMode.writeOnly, flush: true);
-      await _play(path);
+      await _playFromFile(path);
     }
   }
 
-  static Future<void> _play(String url) async {
+  static Future<void> _playFromFile(String url) async {
     AudioPlayer audioPlayer = AudioPlayer();
     await audioPlayer.play(url, isLocal: true);
   }

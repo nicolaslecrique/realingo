@@ -42,8 +42,8 @@ class LessonItemScreen extends StatelessWidget {
                     children: [
                       IconButton(
                           icon: Icon(Icons.volume_up),
-                          onPressed: () => TextToSpeech.playAndCacheRecord(
-                              lesson.learnedLanguage, state.currentItemOrNull.lessonItem.sentence),
+                          onPressed: () =>
+                              TextToSpeech.play(lesson.learnedLanguage, state.currentItemOrNull.lessonItem.sentence),
                           tooltip: 'Play'),
                       Text(state.currentItemOrNull.hint.hintDisplayed, style: Theme.of(context).textTheme.headline6),
                     ],
