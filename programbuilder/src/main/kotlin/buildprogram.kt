@@ -13,11 +13,11 @@ fun main() {
     val sentences = extractSentences()
     val sortedWords = sortWordBySentenceEnabledCount(sentences, nbItems)
     val rawProgram = buildRawProgram(sortedWords, sentences, nbSentencesByItem)
-    val rawProgramStr = Json.encodeToString(rawProgram)
-    File("raw_program_dump.json").writeText(rawProgramStr)
+    //val rawProgramStr = Json.encodeToString(rawProgram)
+    //File("raw_program_dump_filterbadwords.json").writeText(rawProgramStr)
 
     val program = toProgram(rawProgram)
     val programStr = Json.encodeToString(program)
 
-    File("learn_vn_from_fr_100k_program_nb_sentence.json").writeText(programStr)
+    File("learn_vn_from_fr.json").writeText(programStr)
 }

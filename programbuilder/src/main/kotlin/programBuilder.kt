@@ -9,9 +9,35 @@ private fun computeSentenceScoreForWord(sentence: SentenceWithWordToLean): Float
     return learnableWordProba * sentenceProba * translationSimilarity
 }
 
+private fun splitTextInSubWords(text: String): List<String>{
+    return text.split("\\P{L}+".toRegex()).filter { it.isNotBlank() }
+}
+
 private fun isSentenceOkForWord(sentence: SentenceWithWordToLean) : Boolean {
     // sentence ok if learned word is in back translation in identical form
-    return sentence.sentence.translation.back_translation.contains(sentence.wordToLean.word_raw_format)
+
+    val wordToLearnInBackTranslation = sentence.sentence.translation.back_translation
+        .contains(sentence.wordToLean.word_raw_format)
+
+    val text = sentence.sentence.sentence.raw_sentence
+
+    // http://www.regular-expressions.info/unicode.html#prop
+    // split in words or subwords
+    val subWordsWholeSentence = text.split("\\P{L}+".toRegex())
+        .filter { it.isNotBlank() }
+        .joinToString()
+    val subWordsByLearnableWords =
+        sentence.sentence.sentence.words_in_sentence
+            .map { it.word_raw_format }
+            .flatMap { splitTextInSubWords(it) }
+            .joinToString()
+
+    val onlyLearnable = subWordsWholeSentence == subWordsByLearnableWords
+    if (! onlyLearnable){
+        println("not learnable sentence: '$text'")
+    }
+
+    return wordToLearnInBackTranslation && onlyLearnable
 }
 
 // compute number of words common between sentence and back translation
@@ -106,13 +132,21 @@ fun buildRawProgram(
 
 private fun removeDuplicates(sortedSentences: List<SentenceWithInfo>): List<SentenceWithInfo> {
     val setUniqueSentences = mutableSetOf<String>()
+    val setUniqueTranslations = mutableSetOf<String>()
     val result = mutableListOf<SentenceWithInfo>()
     for (sentence in sortedSentences){
         // two sentences are "identical" if they contains the same words to learn in the same order
-        val sentenceKey = sentence.sentence.sentence.sentence.words_in_sentence.joinToString("_") { it.word_raw_format }
-        if ( ! setUniqueSentences.contains(sentenceKey)){
+        val sentenceKey = sentence.sentence.sentence.sentence
+            .words_in_sentence
+            .joinToString("_") { it.word_standard_format }
+
+        val translation = sentence.sentence.sentence.translation.translated_sentence
+
+        if ( ! setUniqueSentences.contains(sentenceKey) &&
+            ! setUniqueTranslations.contains(translation)){
             result.add(sentence)
             setUniqueSentences.add(sentenceKey)
+            setUniqueTranslations.add(translation)
         }
     }
     return result
