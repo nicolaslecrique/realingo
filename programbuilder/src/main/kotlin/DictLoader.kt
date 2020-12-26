@@ -7,10 +7,10 @@ class WordTranslation(
 
 class WordDef(
     val word: String,
-    val type: String,
-    val definition: String,
-    val phonetic: String,
-    val see: String
+    val type: String?,
+    val definition: String?,
+    val phonetic: String?,
+    val see: String?
 )
 
 class DictEntry(
@@ -28,7 +28,8 @@ class DictLoader {
                 .getFileFromResource("./language_data/dict/en-$languageCode-enwiktionary.txt")
                 .readLines()
 
-            val removedComments = languageDataStr.filter { ! it.startsWith("#") }
+            val removedComments = languageDataStr
+                .filter { ! it.startsWith("#") && ! it.startsWith("]]") }
 
             val words = removedComments.map { toDictEntry(it) }
 
@@ -49,7 +50,21 @@ class DictLoader {
         }
 
         private fun toDefinition(engDefStr: String): WordDef {
-            return WordDef(engDefStr, "", "", "", "")
+            val type = eltInScope(engDefStr, '{', '}')
+            val def = eltInScope(engDefStr, '(', ')')
+            val phonetic = eltInScope(engDefStr, '/', '/')
+            val splitSee = engDefStr.split("SEE:")
+            val see = if (splitSee.size == 2){
+                splitSee[1]
+            } else {
+                null
+            }
+            val startNotWordIndex = engDefStr.indexOfFirst { it in listOf('{', '(', '/') }
+            if (startNotWordIndex == -1 ){
+                throw Exception("WTF:" + engDefStr)
+            }
+            val word = engDefStr.substring(0, startNotWordIndex)
+            return WordDef(word, type, def, phonetic, see)
         }
 
         private fun toTranslation(translationStr: String): WordTranslation {
@@ -86,6 +101,15 @@ class DictLoader {
             val nbLeftParenthesis = str.count { it ==  startScope}
             val nbRightParenthesis = str.count { it ==  stopScope}
             return nbLeftParenthesis == nbRightParenthesis
+        }
+
+        private fun eltInScope(str: String, startScope: Char, stopScope: Char): String? {
+            val startIndex = str.indexOf(startScope)
+            val endIndex = str.lastIndexOf(stopScope)
+            if (startIndex in 0 until endIndex && endIndex >= 0){
+                return str.substring(startIndex + 1, endIndex)
+            }
+            return null
         }
 
 
