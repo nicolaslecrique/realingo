@@ -10,6 +10,8 @@ fun main() {
     val nbItems = 2000
     val nbSentencesByItem = 1000
 
+    val dict = DictLoader.load("fr")
+
     val sentences = extractSentences()
     val sortedWords = sortWordBySentenceEnabledCount(sentences, nbItems)
     val rawProgram = buildRawProgram(sortedWords, sentences, nbSentencesByItem)
