@@ -1,8 +1,8 @@
 class WordTranslation(
     val word: String,
-    val genre: String,
-    val nombre: String,
-    val phonetic: String,
+    val genreNumber: String?, // {}
+    val phonetic: String?, // /--/
+    val context: String? // [---]
 )
 
 class WordDef(
@@ -28,6 +28,7 @@ class DictLoader {
                 .getFileFromResource("./language_data/dict/en-$languageCode-enwiktionary.txt")
                 .readLines()
 
+            // # is for comment, ]] is a bad line in the middle of the file
             val removedComments = languageDataStr
                 .filter { ! it.startsWith("#") && ! it.startsWith("]]") }
 
@@ -55,23 +56,37 @@ class DictLoader {
             val phonetic = eltInScope(engDefStr, '/', '/')
             val splitSee = engDefStr.split("SEE:")
             val see = if (splitSee.size == 2){
-                splitSee[1]
+                splitSee[1].trim()
             } else {
                 null
             }
-            val startNotWordIndex = engDefStr.indexOfFirst { it in listOf('{', '(', '/') }
-            if (startNotWordIndex == -1 ){
-                throw Exception("WTF:" + engDefStr)
-            }
-            val word = engDefStr.substring(0, startNotWordIndex)
+            val word = getMainString(engDefStr)
             return WordDef(word, type, def, phonetic, see)
         }
 
+        private fun getMainString(wholeString: String): String {
+            val startNotWordIndex = wholeString.indexOfFirst { it in listOf('{', '(', '/', '[') }
+            return if (startNotWordIndex == -1) {
+                wholeString
+            } else {
+                wholeString.substring(0, startNotWordIndex)
+            }.trim()
+        }
+
         private fun toTranslation(translationStr: String): WordTranslation {
-            return WordTranslation(translationStr, "", "", "")
+            val genreNumber = eltInScope(translationStr, '{', '}')
+            val context = eltInScope(translationStr, '[', ']')
+            val phonetic = eltInScope(translationStr, '/', '/')
+            val translation = getMainString(translationStr)
+
+            return WordTranslation(translation, genreNumber, phonetic, context)
         }
 
         private fun splitTranslations(translationsStr: String): List<String>{
+
+            if (translationsStr.isBlank()){
+                return emptyList()
+            }
 
             val listOfCommaIndexes = mutableListOf<Int>()
             var index: Int = translationsStr.indexOf(",")
@@ -107,7 +122,7 @@ class DictLoader {
             val startIndex = str.indexOf(startScope)
             val endIndex = str.lastIndexOf(stopScope)
             if (startIndex in 0 until endIndex && endIndex >= 0){
-                return str.substring(startIndex + 1, endIndex)
+                return str.substring(startIndex + 1, endIndex).trim()
             }
             return null
         }
