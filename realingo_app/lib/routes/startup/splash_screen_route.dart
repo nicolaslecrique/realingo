@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/home/home_route.dart';
-import 'package:realingo_app/routes/new_program/select_learned_language_route.dart';
+import 'package:realingo_app/routes/new_program/building_program_route.dart';
+import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/tech_services/database/db.dart';
 
 @immutable
@@ -32,7 +34,10 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
     UserLearningProgram userProgram = model.program;
 
     if (userProgram == null) {
-      await Navigator.pushNamedAndRemoveUntil(context, SelectLearnedLanguageRoute.route, (r) => false);
+      List<Language> targets = await ProgramServices.getAvailableTargetLanguages();
+      List<Language> origins = await ProgramServices.getAvailableOriginLanguages(targets.first);
+      await Navigator.pushNamedAndRemoveUntil(context, BuildingProgramRoute.route, (r) => false,
+          arguments: BuildingProgramRouteArgs(origins.first, targets.first));
     } else {
       await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false);
     }
