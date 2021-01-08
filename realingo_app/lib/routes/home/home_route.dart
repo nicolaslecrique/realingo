@@ -56,30 +56,32 @@ class _HomeRouteState extends State<HomeRoute> {
     final List<UserItemToLearn> items = userProgram.itemsToLearn;
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(StandardSizes.medium),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    var item = items[index];
-                    return LearningItemCard(
-                      itemLabel: item.label,
-                      status: item.status,
-                    );
-                  }),
-            ),
-            SizedBox(height: StandardSizes.medium),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                child: Text('Start lesson'),
-                onPressed: () => startLesson(),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(StandardSizes.medium),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      var item = items[index];
+                      return LearningItemCard(
+                        itemLabel: item.label,
+                        status: item.status,
+                      );
+                    }),
               ),
-            )
-          ],
+              SizedBox(height: StandardSizes.medium),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  child: Text('Start lesson'),
+                  onPressed: () => startLesson(),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
