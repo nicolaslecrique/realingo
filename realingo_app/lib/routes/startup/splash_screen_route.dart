@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
-import 'package:realingo_app/routes/home_route.dart';
+import 'package:realingo_app/routes/home/home_route.dart';
 import 'package:realingo_app/routes/new_program/select_learned_language_route.dart';
 import 'package:realingo_app/tech_services/database/db.dart';
 
@@ -21,7 +22,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   void initState() {
     super.initState();
     // https://pub.dev/documentation/provider/latest/provider/Provider/of.html
-    loadUserDataThenRedirect().then((value) => null);
+    //loadUserDataThenRedirect().then((value) => null);
   }
 
   Future<void> loadUserDataThenRedirect() async {
@@ -40,7 +41,11 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text('Splash Screen')),
+      //nb: logo is done with https://cooltext.com/
+      body: Padding(
+        padding: const EdgeInsets.all(StandardSizes.medium),
+        child: Center(child: Image(image: AssetImage('assets/images/logo.png'))),
+      ),
     );
   }
 }
