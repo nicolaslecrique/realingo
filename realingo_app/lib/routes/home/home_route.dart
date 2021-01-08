@@ -1,10 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
+import 'package:realingo_app/routes/lesson/lesson_route.dart';
+import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 
-import '../lesson/select_word_and_sentences_route.dart';
 import 'widgets/learning_item_card.dart';
 
 class HomeRoute extends StatefulWidget {
@@ -20,6 +23,27 @@ class _HomeRouteState extends State<HomeRoute> {
   @override
   void initState() {
     super.initState();
+  }
+
+  Future<void> startLesson() async {
+    var model = Provider.of<UserProgramModel>(context, listen: false);
+    UserLearningProgram userProgram = model.program;
+
+    List<ConsideredItem> lessonItems = <ConsideredItem>[];
+    int idxFirstWord =
+        userProgram.itemsToLearn.indexWhere((UserItemToLearn e) => e.status == UserItemToLearnStatus.NotLearned);
+    for (int i = idxFirstWord;
+        i < min(idxFirstWord + LessonBuilder.NbItemsByLesson, userProgram.itemsToLearn.length);
+        i++) {
+      int nb_sentences = min(userProgram.itemsToLearn[i].sentences.length, LessonBuilder.NbSentencesByLessonItem);
+      var lessonItemSentenceIndexes = List.generate(nb_sentences, (index) => index);
+      lessonItems.add(ConsideredItem(i, ItemSkippedOrSelected.Selected, lessonItemSentenceIndexes));
+    }
+
+    List<LessonItem> lesson = LessonBuilder.buildLesson(userProgram, lessonItems);
+
+    LessonRouteArgs lessonRouteArgs = LessonRouteArgs(userProgram.learnedLanguage, lesson);
+    await Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
   }
 
   @override
@@ -52,8 +76,7 @@ class _HomeRouteState extends State<HomeRoute> {
               width: double.infinity,
               child: ElevatedButton(
                 child: Text('Start lesson'),
-                onPressed: () => Navigator.pushNamed(context, SelectWordAndSentencesRoute.route,
-                    arguments: SelectWordAndSentencesRouteArgs(userProgram, const [])),
+                onPressed: () => startLesson(),
               ),
             )
           ],
