@@ -4,7 +4,7 @@ import 'package:realingo_app/common_screens/one_button_screen.dart';
 import 'package:realingo_app/common_widgets/future_builder_wrapper.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
-import 'package:realingo_app/routes/home_route.dart';
+import 'package:realingo_app/routes/home/home_route.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_saver.dart';
 

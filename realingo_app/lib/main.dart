@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/model/user_program_model.dart';
-import 'package:realingo_app/routes/home_route.dart';
+import 'package:realingo_app/routes/home/home_route.dart';
 import 'package:realingo_app/routes/lesson/lesson_route.dart';
 import 'package:realingo_app/routes/lesson/select_word_and_sentences_route.dart';
 import 'package:realingo_app/routes/new_program/building_program_route.dart';

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
 
-import 'lesson/select_word_and_sentences_route.dart';
+import '../lesson/select_word_and_sentences_route.dart';
+import 'widgets/learning_item_card.dart';
 
 class HomeRoute extends StatefulWidget {
   static const route = '/home';
@@ -25,18 +27,18 @@ class _HomeRouteState extends State<HomeRoute> {
     // for now no need to use consumer, we suppose it cannot change while we are on this route
     var model = Provider.of<UserProgramModel>(context, listen: false);
     UserLearningProgram userProgram = model.program;
+    var style =
+        Theme.of(context).textTheme.headline5.merge(TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<UserItemToLearn> items = userProgram.itemsToLearn;
     return Scaffold(
       body: ListView.builder(
+          padding: EdgeInsets.all(StandardSizes.medium),
           itemCount: items.length,
           itemBuilder: (context, index) {
             var item = items[index];
-            return ListTile(
-              title: Text(item.label),
-              tileColor: _getTileColor(item.status),
-            );
+            return LearningItemCard(itemLabel: item.label);
           }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, SelectWordAndSentencesRoute.route,
