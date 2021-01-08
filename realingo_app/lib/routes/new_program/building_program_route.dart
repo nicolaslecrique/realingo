@@ -38,6 +38,6 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
 
   @override
   Widget build(BuildContext context) {
-    return LoadingScreen();
+    return LoadingScreen(message: 'Building program');
   }
 }

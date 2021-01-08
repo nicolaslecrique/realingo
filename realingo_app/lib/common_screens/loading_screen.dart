@@ -5,7 +5,7 @@ import 'package:realingo_app/design/constants.dart';
 class LoadingScreen extends StatelessWidget {
   final String message;
 
-  const LoadingScreen({Key key, this.message}) : super(key: key);
+  const LoadingScreen({Key key, @required this.message}) : super(key: key);
 
   // #57B4FA
   // #1696F7
@@ -21,7 +21,6 @@ class LoadingScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(message + '...', style: StandardFonts.bigFunny),
-            SizedBox(height: 2 * StandardSizes.medium),
             SizedBox(height: 2 * StandardSizes.medium),
             ClipRRect(
                 // https://stackoverflow.com/questions/57534160/how-to-add-a-border-corner-radius-to-a-linearprogressindicator-in-flutter

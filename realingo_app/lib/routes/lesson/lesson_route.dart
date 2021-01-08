@@ -36,7 +36,7 @@ class _LessonRouteState extends State<LessonRoute> {
         child: Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
           LessonState state = lesson.state;
           if (state.status == LessonStatus.WaitForVoiceServiceReady) {
-            return LoadingScreen();
+            return LoadingScreen(message: 'Loading lesson');
           } else if (state.status == LessonStatus.Completed) {
             return EndLessonScreen(lessonItems: args.lessonItems);
           } else {

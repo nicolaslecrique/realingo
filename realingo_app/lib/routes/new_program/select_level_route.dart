@@ -48,7 +48,7 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
   @override
   Widget build(BuildContext context) {
     if (_savingProgram) {
-      return LoadingScreen();
+      return LoadingScreen(message: 'Loading program');
     }
 
     final args = ModalRoute.of(context).settings.arguments as SelectLevelRouteArgs;

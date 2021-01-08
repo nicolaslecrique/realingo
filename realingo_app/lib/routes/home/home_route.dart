@@ -27,8 +27,6 @@ class _HomeRouteState extends State<HomeRoute> {
     // for now no need to use consumer, we suppose it cannot change while we are on this route
     var model = Provider.of<UserProgramModel>(context, listen: false);
     UserLearningProgram userProgram = model.program;
-    var style =
-        Theme.of(context).textTheme.headline5.merge(TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<UserItemToLearn> items = userProgram.itemsToLearn;

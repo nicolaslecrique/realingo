@@ -26,6 +26,7 @@ class EndLessonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilderWrapper<int>(
+      loadingMessage: 'Saving lesson',
       future: updateProgram(context),
       childBuilder: (int _) => OneButtonScreen(
         title: 'Lesson completed',

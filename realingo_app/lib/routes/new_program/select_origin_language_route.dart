@@ -41,6 +41,7 @@ class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilderWrapper(
+      loadingMessage: 'Loading programs',
       future: futureLanguages,
       childBuilder: (List<Language> languages) => OneButtonScreen(
         child: LanguagePicker(

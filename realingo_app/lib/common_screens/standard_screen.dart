@@ -21,6 +21,7 @@ class StandardScreen extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 Expanded(child: contentChild),
+                SizedBox(height: StandardSizes.medium),
                 SizedBox(
                   width: double.infinity,
                   child: bottomChild,

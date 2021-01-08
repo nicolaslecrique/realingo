@@ -73,7 +73,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
     nbSentencesToLearn = min(itemToLearn.sentences.length, LessonBuilder.NbSentencesByLessonItem);
 
     return StandardScreen(
-      title: 'Select ${LessonBuilder.NbSentencesByLessonItem} sentences to learn this word',
+      title: 'Select ${LessonBuilder.NbSentencesByLessonItem} sentences',
       contentChild: Column(
         children: [
           Padding(
@@ -83,11 +83,14 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
           Expanded(
             child: ListView.builder(
               itemCount: itemToLearn.sentences.length,
-              itemBuilder: (BuildContext context, int index) => ListTile(
-                title: Text(itemToLearn.sentences[index].sentence),
-                subtitle: Text(itemToLearn.sentences[index].translation),
-                selected: indexSelectedSentences.contains(index),
-                onTap: () => _onSentenceSelected(index),
+              itemBuilder: (BuildContext context, int index) => Card(
+                child: ListTile(
+                  visualDensity: VisualDensity.compact,
+                  title: Text(itemToLearn.sentences[index].sentence),
+                  subtitle: Text(itemToLearn.sentences[index].translation),
+                  selected: indexSelectedSentences.contains(index),
+                  onTap: () => _onSentenceSelected(index),
+                ),
               ),
             ),
           )
