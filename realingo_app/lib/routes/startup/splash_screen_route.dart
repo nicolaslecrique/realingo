@@ -22,7 +22,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   void initState() {
     super.initState();
     // https://pub.dev/documentation/provider/latest/provider/Provider/of.html
-    //loadUserDataThenRedirect().then((value) => null);
+    loadUserDataThenRedirect().then((value) => null);
   }
 
   Future<void> loadUserDataThenRedirect() async {

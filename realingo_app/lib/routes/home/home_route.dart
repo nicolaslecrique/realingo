@@ -32,33 +32,45 @@ class _HomeRouteState extends State<HomeRoute> {
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<UserItemToLearn> items = userProgram.itemsToLearn;
+
     return Scaffold(
-      body: ListView.builder(
-          padding: EdgeInsets.all(StandardSizes.medium),
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            var item = items[index];
-            return LearningItemCard(itemLabel: item.label);
-          }),
-      floatingActionButton: FloatingActionButton.extended(
+      body: Padding(
+        padding: const EdgeInsets.all(StandardSizes.medium),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    var item = items[index];
+                    return LearningItemCard(
+                      itemLabel: item.label,
+                      status: item.status,
+                    );
+                  }),
+            ),
+            SizedBox(height: StandardSizes.medium),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                child: Text('Start lesson'),
+                onPressed: () => Navigator.pushNamed(context, SelectWordAndSentencesRoute.route,
+                    arguments: SelectWordAndSentencesRouteArgs(userProgram, const [])),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  /*
+        floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, SelectWordAndSentencesRoute.route,
             arguments: SelectWordAndSentencesRouteArgs(userProgram, const [])),
         label: Text('Start lesson'),
         icon: Icon(Icons.arrow_forward_ios),
       ),
-    );
-  }
+   */
 
-  Color _getTileColor(UserItemToLearnStatus status) {
-    switch (status) {
-      case UserItemToLearnStatus.SkippedAtStart:
-        return Colors.grey;
-      case UserItemToLearnStatus.Learned:
-        return Colors.green;
-      case UserItemToLearnStatus.Skipped:
-        return Colors.orangeAccent;
-      case UserItemToLearnStatus.NotLearned:
-        return Colors.deepOrangeAccent;
-    }
-  }
 }
