@@ -14,6 +14,8 @@ import 'package:realingo_app/tech_services/app_config.dart';
 import 'package:realingo_app/tech_services/database/db_init.dart';
 import 'package:realingo_app/tech_services/user_config.dart';
 
+import 'design/constants.dart';
+
 void main() {
   if (AppConfig.deleteDataAtStartup) {
     // for debug
@@ -32,6 +34,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(
+            primaryColor: StandardColors.brandBlue,
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
