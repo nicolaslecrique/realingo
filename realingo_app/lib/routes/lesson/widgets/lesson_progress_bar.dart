@@ -8,6 +8,13 @@ class LessonProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LinearProgressIndicator(value: ratioCompleted, minHeight: StandardSizes.medium);
+    return ClipRRect(
+        // https://stackoverflow.com/questions/57534160/how-to-add-a-border-corner-radius-to-a-linearprogressindicator-in-flutter
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        child: LinearProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).accentColor),
+          value: ratioCompleted,
+          minHeight: StandardSizes.medium,
+        ));
   }
 }
