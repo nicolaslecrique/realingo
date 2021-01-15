@@ -18,31 +18,32 @@ enum LessonItemStatus {
   WaitForListeningAvailable,
   ListeningAnswer,
   WaitForAnswerResult,
-  CorrectAnswer,
-  CorrectAnswerNoHint
+  CorrectAnswerCorrectPronunciation,
+  CorrectAnswerBadPronunciation,
+  BadAnswer
 }
 
 @immutable
 class LessonItemState {
   final LessonItem lessonItem;
-  final Hint hint;
-  final AnswerResult lastAnswer;
+  final AnswerResult lastAnswerOrNull; // null if not reply given still
   final LessonItemStatus status;
 
-  const LessonItemState(this.lessonItem, this.hint, this.lastAnswer, this.status);
+  const LessonItemState(this.lessonItem, this.lastAnswerOrNull, this.status);
 }
 
 @immutable
 class AnswerResult {
-  final String answer;
+  final String rawAnswer;
+  final List<AnswerPart> processedAnswer;
 
-  const AnswerResult(this.answer);
+  const AnswerResult(this.rawAnswer, this.processedAnswer);
 }
 
 @immutable
-class Hint {
-  final String hintDisplayed;
-  final int nbHintProvided;
+class AnswerPart {
+  final String expectedWord;
+  final bool isPronunciationCorrect;
 
-  const Hint(this.hintDisplayed, this.nbHintProvided);
+  const AnswerPart(this.expectedWord, this.isPronunciationCorrect);
 }

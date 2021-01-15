@@ -24,6 +24,9 @@ class StandardColors {
   };
 
   static MaterialColor themeColor = MaterialColor(0xFF57B4FA, colorCodes);
+
+  static Color correct = Colors.green;
+  static Color incorrect = Colors.red;
 }
 
 class StandardFonts {

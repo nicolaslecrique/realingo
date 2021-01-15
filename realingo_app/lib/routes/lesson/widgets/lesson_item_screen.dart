@@ -4,11 +4,18 @@ import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
 import 'package:realingo_app/routes/lesson/widgets/lesson_progress_bar.dart';
+import 'package:realingo_app/routes/lesson/widgets/reply_rich_text.dart';
 import 'package:realingo_app/services/texttospeech_service.dart';
 
 import 'lesson_item_bottom_bar.dart';
 
 class LessonItemScreen extends StatelessWidget {
+  static const _canListenStates = [
+    LessonItemStatus.BadAnswer,
+    LessonItemStatus.CorrectAnswerBadPronunciation,
+    LessonItemStatus.CorrectAnswerCorrectPronunciation,
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
@@ -30,30 +37,29 @@ class LessonItemScreen extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text('Translate the sentence', style: Theme.of(context).textTheme.headline5)),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(state.currentItemOrNull.lessonItem.sentence.translation,
-                        style: Theme.of(context).textTheme.headline6),
-                  ),
-                ),
                 Expanded(
                     child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    IconButton(
-                        icon: Icon(Icons.volume_up),
-                        onPressed: () =>
-                            TextToSpeech.play(lesson.learnedLanguage, state.currentItemOrNull.lessonItem.sentence),
-                        tooltip: 'Play'),
-                    Text(state.currentItemOrNull.hint.hintDisplayed, style: Theme.of(context).textTheme.headline6),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(state.currentItemOrNull.lessonItem.sentence.translation,
+                          style: Theme.of(context).textTheme.headline6),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                            icon: Icon(Icons.volume_up),
+                            onPressed: _canListenStates.contains(state.currentItemOrNull.status)
+                                ? () => TextToSpeech.play(
+                                    lesson.learnedLanguage, state.currentItemOrNull.lessonItem.sentence)
+                                : null,
+                            tooltip: 'Play'),
+                        ReplyRichText(itemState: state.currentItemOrNull),
+                      ],
+                    ),
                   ],
                 )),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(state.currentItemOrNull.lastAnswer.answer, style: Theme.of(context).textTheme.bodyText2),
-                ),
                 LessonItemBottomBar(),
               ],
             )),

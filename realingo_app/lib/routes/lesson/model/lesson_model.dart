@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:edit_distance/edit_distance.dart';
 import 'package:flutter/foundation.dart';
 import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/services/voice_service.dart';
 
@@ -22,7 +21,7 @@ class LessonModel extends ChangeNotifier {
   // internal current state
   LessonState _state;
   VoiceServiceStatus _voiceStatus; // initialized by _voiceService.register
-  String _voiceResult = '';
+  String _lastVoiceResultOrNull = null;
   Queue<LessonItem> _remainingItems;
 
   LessonItem get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
@@ -44,7 +43,7 @@ class LessonModel extends ChangeNotifier {
 
   void startListening() {
     debugPrint('lesson_model:startListening');
-    _checkStatus([LessonItemStatus.ReadyForAnswer]);
+    _checkStatus([LessonItemStatus.ReadyForAnswer, LessonItemStatus.CorrectAnswerBadPronunciation]);
     _voiceService.startListening();
   }
 
@@ -55,27 +54,32 @@ class LessonModel extends ChangeNotifier {
   }
 
   void nextLessonItem() {
-    _checkStatus([LessonItemStatus.CorrectAnswer, LessonItemStatus.CorrectAnswerNoHint]);
+    _checkStatus([
+      LessonItemStatus.BadAnswer,
+      LessonItemStatus.CorrectAnswerBadPronunciation, // mark card as OK
+      LessonItemStatus.CorrectAnswerCorrectPronunciation
+    ]);
 
-    if (_state.currentItemOrNull.status == LessonItemStatus.CorrectAnswerNoHint) {
+    if (_state.currentItemOrNull.status == LessonItemStatus.CorrectAnswerBadPronunciation ||
+        _state.currentItemOrNull.status == LessonItemStatus.CorrectAnswerCorrectPronunciation) {
       _remainingItems.removeFirst();
       if (_remainingItems.isEmpty) {
         _voiceService.unregister();
       }
     } else {
+      // bad answer
       _remainingItems.addLast(_remainingItems.removeFirst());
     }
-    _voiceResult = '';
+    _lastVoiceResultOrNull = null;
     _recomputeState(nextItem: true);
   }
 
-  void askForHint() {
-    _checkStatus([LessonItemStatus.ReadyForAnswer]);
-    _recomputeState(nextHint: true);
-  }
-
   void _onVoiceResult(String result) {
-    _voiceResult = result;
+    if (result == null || result.isEmpty) {
+      // if we get no valid result we just ignore it
+      return;
+    }
+    _lastVoiceResultOrNull = result;
     _recomputeState();
   }
 
@@ -84,55 +88,51 @@ class LessonModel extends ChangeNotifier {
     _recomputeState();
   }
 
-  void _recomputeState({bool nextItem = false, bool nextHint = false}) {
-    _state = _getNewState(nextItem, nextHint);
+  void _recomputeState({bool nextItem = false}) {
+    _state = _getNewState(nextItem);
     notifyListeners();
   }
 
-  LessonState _getNewState(bool nextItem, bool nextHint) {
+  LessonState _getNewState(bool nextItem) {
     if (nextItem) {
       if (_remainingItems.isEmpty) {
         return LessonState(1.0, null, LessonStatus.Completed);
       } else {
         // new item
-        return LessonState(
-            ratioCompleted,
-            LessonItemState(_currentItemOrNull, _getFirstHint(_currentItemOrNull.sentence), AnswerResult(''),
-                LessonItemStatus.ReadyForAnswer),
+        return LessonState(ratioCompleted, LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer),
             LessonStatus.OnLessonItem);
       }
     } else if (_voiceStatus == VoiceServiceStatus.Initializing) {
       return LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     } else {
-      Hint currentHint =
-          _state.currentItemOrNull != null ? _state.currentItemOrNull.hint : _getFirstHint(_currentItemOrNull.sentence);
-      LessonItemState newItemState = _getItemNewState(nextHint, currentHint);
+      LessonItemState newItemState = _getItemNewState();
       return LessonState(ratioCompleted, newItemState, LessonStatus.OnLessonItem);
     }
   }
 
-  LessonItemState _getItemNewState(bool nextHint, Hint currentHint) {
-    if (_isVoiceResultCorrect(_currentItemOrNull.sentence.sentence, _voiceResult)) {
-      if (currentHint.nbHintProvided == 0) {
-        return LessonItemState(
-            _currentItemOrNull, currentHint, AnswerResult(_voiceResult), LessonItemStatus.CorrectAnswerNoHint);
+  LessonItemState _getItemNewState() {
+    if (_voiceStatus == VoiceServiceStatus.Ready) {
+      if (_lastVoiceResultOrNull == null) {
+        return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer);
       } else {
-        return LessonItemState(
-            _currentItemOrNull, currentHint, AnswerResult(_voiceResult), LessonItemStatus.CorrectAnswer);
+        var itemStatus = _getItemStatusWithVoiceResult(_currentItemOrNull.sentence.sentence, _lastVoiceResultOrNull);
+        final answerParts = _getAnswerResult(_currentItemOrNull.sentence.sentence, _lastVoiceResultOrNull);
+        return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull, answerParts), itemStatus);
       }
+    } else {
+      var itemStatus = _getItemStatusWithVoiceStatus(_voiceStatus);
+      return LessonItemState(
+          _currentItemOrNull,
+          _lastVoiceResultOrNull == null
+              ? null
+              : AnswerResult(_lastVoiceResultOrNull,
+                  _getAnswerResult(_currentItemOrNull.sentence.sentence, _lastVoiceResultOrNull)),
+          itemStatus);
     }
-    if (nextHint) {
-      return LessonItemState(_currentItemOrNull, _getNextHint(currentHint, _currentItemOrNull.sentence.sentence),
-          AnswerResult(_voiceResult), LessonItemStatus.ReadyForAnswer);
-    }
-
-    return LessonItemState(_currentItemOrNull, currentHint, AnswerResult(_voiceResult), _getItemStatus(_voiceStatus));
   }
 
-  static LessonItemStatus _getItemStatus(VoiceServiceStatus status) {
+  static LessonItemStatus _getItemStatusWithVoiceStatus(VoiceServiceStatus status) {
     switch (status) {
-      case VoiceServiceStatus.Ready:
-        return LessonItemStatus.ReadyForAnswer;
       case VoiceServiceStatus.Starting:
         return LessonItemStatus.WaitForListeningAvailable;
       case VoiceServiceStatus.Listening:
@@ -149,18 +149,23 @@ class LessonModel extends ChangeNotifier {
     return original.toLowerCase().trim().replaceAll(_normalizeStrRegex, '');
   }
 
-  static bool _isVoiceResultCorrect(String expectedSentence, String voiceResult) {
-    final expected = _normalizeString(expectedSentence);
+  static LessonItemStatus _getItemStatusWithVoiceResult(String expectedSentence, String voiceResult) {
+    final normalizedExpected = _normalizeString(expectedSentence);
     final normalizedResult = _normalizeString(voiceResult);
-    final dist = _distance.normalizedDistance(normalizedResult, expected);
-    return dist < _maxDistance;
+    if (normalizedExpected == normalizedResult) {
+      return LessonItemStatus.CorrectAnswerCorrectPronunciation;
+    } else if (_distance.normalizedDistance(normalizedResult, normalizedExpected) < _maxDistance) {
+      return LessonItemStatus.CorrectAnswerBadPronunciation;
+    } else {
+      return LessonItemStatus.BadAnswer;
+    }
   }
 
-  static Hint _getNextHint(Hint previousHint, String sentence) {
-    return Hint(sentence, previousHint.nbHintProvided + 1);
-  }
+  static List<AnswerPart> _getAnswerResult(String expectedSentence, String voiceResult) {
+    final splitExpected = expectedSentence.split(' ');
+    final splitResult = _normalizeString(voiceResult).split(' ').toSet();
 
-  static Hint _getFirstHint(UserItemToLearnSentence sentence) {
-    return Hint(sentence.hint, 0);
+    var list = splitExpected.map((String e) => AnswerPart(e + ' ', splitResult.contains(_normalizeString(e)))).toList();
+    return list;
   }
 }
