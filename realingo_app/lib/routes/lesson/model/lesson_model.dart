@@ -9,6 +9,13 @@ import 'package:realingo_app/services/voice_service.dart';
 
 import 'lesson_state.dart';
 
+class SentenceWithNormalization {
+  final String rawSentence;
+  final String normalizedSentence;
+
+  const SentenceWithNormalization(this.rawSentence, this.normalizedSentence);
+}
+
 class LessonModel extends ChangeNotifier {
   // immutable fields
   final Language learnedLanguage;
@@ -16,12 +23,14 @@ class LessonModel extends ChangeNotifier {
   static final Levenshtein _distance = Levenshtein();
   static const double _maxDistance = 0.5;
   VoiceService _voiceService;
-  static final RegExp _normalizeStrRegex = RegExp(r'[^\w\s]+');
+  // https://stackoverflow.com/questions/15531928/matching-unicode-letters-with-regexp
+  static final RegExp _normalizeStrRegex = RegExp(r'[^\p{L}]+', unicode: true);
+  static final RegExp _whiteSpaceRegex = RegExp(r'[ ]+');
 
   // internal current state
   LessonState _state;
   VoiceServiceStatus _voiceStatus; // initialized by _voiceService.register
-  String _lastVoiceResultOrNull = null;
+  SentenceWithNormalization _lastVoiceResultOrNull = null;
   Queue<LessonItem> _remainingItems;
 
   LessonItem get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
@@ -79,7 +88,7 @@ class LessonModel extends ChangeNotifier {
       // if we get no valid result we just ignore it
       return;
     }
-    _lastVoiceResultOrNull = result;
+    _lastVoiceResultOrNull = SentenceWithNormalization(result, _normalizeString(result));
     _recomputeState();
   }
 
@@ -115,18 +124,22 @@ class LessonModel extends ChangeNotifier {
       if (_lastVoiceResultOrNull == null) {
         return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer);
       } else {
-        var itemStatus = _getItemStatusWithVoiceResult(_currentItemOrNull.sentence.sentence, _lastVoiceResultOrNull);
-        final answerParts = _getAnswerResult(_currentItemOrNull.sentence.sentence, _lastVoiceResultOrNull);
-        return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull, answerParts), itemStatus);
+        final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
+        var itemStatus =
+            _getItemStatusWithVoiceResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
+        final answerParts = _getAnswerResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
+        return LessonItemState(
+            _currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts), itemStatus);
       }
     } else {
       var itemStatus = _getItemStatusWithVoiceStatus(_voiceStatus);
+      final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
       return LessonItemState(
           _currentItemOrNull,
           _lastVoiceResultOrNull == null
               ? null
-              : AnswerResult(_lastVoiceResultOrNull,
-                  _getAnswerResult(_currentItemOrNull.sentence.sentence, _lastVoiceResultOrNull)),
+              : AnswerResult(_lastVoiceResultOrNull.rawSentence,
+                  _getAnswerResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence)),
           itemStatus);
     }
   }
@@ -145,27 +158,46 @@ class LessonModel extends ChangeNotifier {
   }
 
   static String _normalizeString(String original) {
-    // https://stackoverflow.com/questions/53239702/how-to-remove-only-symbols-from-string-in-dart
-    return original.toLowerCase().trim().replaceAll(_normalizeStrRegex, '');
+    var normalized =
+        original.toLowerCase().replaceAll(_normalizeStrRegex, ' ').replaceAll(_whiteSpaceRegex, ' ').trim();
+    return normalized;
   }
 
-  static LessonItemStatus _getItemStatusWithVoiceResult(String expectedSentence, String voiceResult) {
-    final normalizedExpected = _normalizeString(expectedSentence);
-    final normalizedResult = _normalizeString(voiceResult);
+  static LessonItemStatus _getItemStatusWithVoiceResult(String normalizedExpected, String normalizedResult) {
     if (normalizedExpected == normalizedResult) {
       return LessonItemStatus.CorrectAnswerCorrectPronunciation;
-    } else if (_distance.normalizedDistance(normalizedResult, normalizedExpected) < _maxDistance) {
-      return LessonItemStatus.CorrectAnswerBadPronunciation;
     } else {
-      return LessonItemStatus.BadAnswer;
+      var dist = _distance.normalizedDistance(normalizedResult, normalizedExpected);
+      if (dist < _maxDistance) {
+        debugPrint(
+            "BadPronunciation because distance between correct '$normalizedExpected' and reply '$normalizedResult' is $dist");
+        return LessonItemStatus.CorrectAnswerBadPronunciation;
+      } else {
+        debugPrint(
+            "BadAnswer because distance between correct '$normalizedExpected' and reply '$normalizedResult' is $dist");
+        return LessonItemStatus.BadAnswer;
+      }
     }
   }
 
-  static List<AnswerPart> _getAnswerResult(String expectedSentence, String voiceResult) {
-    final splitExpected = expectedSentence.split(' ');
-    final splitResult = _normalizeString(voiceResult).split(' ').toSet();
+  // TO solve BadPronunciation because distance between correct 'bà bà' and reply 'ba bà' is 0.2
+  static List<AnswerPart> _getAnswerResult(String normalizedExpected, String normalizedResult) {
+    final splitExpected = normalizedExpected.split(' ');
+    final splitResult = normalizedResult.split(' ').toSet();
 
-    var list = splitExpected.map((String e) => AnswerPart(e + ' ', splitResult.contains(_normalizeString(e)))).toList();
+    var list = splitExpected.map((String e) => AnswerPart(e + ' ', splitResult.contains(e))).toList();
     return list;
   }
 }
+
+/*
+
+TODO NICO JE RECUPERE DES RESULTATS INTERMEDIAIRE DE LA VOICE => CA FAIT BLINKER LA GUI C EST MOCHE
+
+flutter: lesson state changed to LessonStatus.OnLessonItem/LessonItemStatus.CorrectAnswerBadPronunciation
+flutter: BadAnswer because distance between correct 'bà bà' and reply 'bả' is 0.8
+flutter: lesson state changed to LessonStatus.OnLessonItem/LessonItemStatus.BadAnswer
+flutter: BadPronunciation because distance between correct 'bà bà' and reply 'bả bả' is 0.4
+flutter: BadPronunciation because distance between correct 'bà bà' and reply 'bả bả' is 0.4
+flutter: lesson state changed to LessonStatus.OnLessonItem/LessonItemStatus.CorrectAnswerBadPronunciation
+ */
