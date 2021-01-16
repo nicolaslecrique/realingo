@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -11,6 +12,7 @@ class VoiceService {
   void Function(String result) _onResultCallback;
   VoiceServiceStatus _status = VoiceServiceStatus.Initializing;
   static VoiceService _instance;
+  String _lastVoiceResult = '';
 
   // we make a singleton because _speech.initialize should be called only once
   VoiceService._constructor();
@@ -39,6 +41,7 @@ class VoiceService {
   }
 
   void _onStatusChanged(VoiceServiceStatus status) {
+    debugPrint('voice_service:_onStatusChanged: $_status');
     _status = status;
     if (_onStatusChangedCallback != null) {
       _onStatusChangedCallback(_status);
@@ -59,15 +62,18 @@ class VoiceService {
 
   // only called from error to "listen" function, so it's only a recognize error (i.e. : no one spoke)
   void _errorListener(SpeechRecognitionError errorNotification) {
-    print(errorNotification.toString());
+    debugPrint(errorNotification.toString());
     _onResult('');
   }
 
   void _statusListener(String status) {
-    //print("_statusListener:" + status);
+    debugPrint('voice_service:_statusListener: $status');
     if (status == 'listening') {
       _onStatusChanged(VoiceServiceStatus.Listening);
     } else if (status == 'notListening') {
+      // Nice to have woud be to prevent double event onResult + onStatusChanged(result) => create double refresh on GUI
+      // but it's just e performance issue
+      _onResult(_lastVoiceResult);
       _onStatusChanged(VoiceServiceStatus.Ready);
     }
   }
@@ -77,7 +83,8 @@ class VoiceService {
     //_getLocalId(null);
 
     _speech.listen(
-        onResult: (SpeechRecognitionResult result) => {if (result.finalResult) _onResult(result.recognizedWords)},
+        onResult: (SpeechRecognitionResult result) =>
+            {if (result.finalResult) _lastVoiceResult = result.recognizedWords},
         listenFor: Duration(seconds: 20),
         localeId: 'vi-VN',
         onSoundLevelChange: (double level) => null,
