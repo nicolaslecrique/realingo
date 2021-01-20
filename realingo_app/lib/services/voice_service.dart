@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -37,6 +39,7 @@ class VoiceService {
   String _lastSttResultOrNull;
   String _lastSttStatusOrNull;
   bool _initializationOkOrNull;
+  bool _newStateReceived;
 
   // we make a singleton because _speech.initialize should be called only once
   VoiceService._constructor();
@@ -92,8 +95,18 @@ class VoiceService {
     if (newState != _state) {
       _state = newState;
       if (_onStateChangedCallback != null) {
-        _onStateChangedCallback(_state);
+        // we delay callback by 100ms, if we get a new one within this time frame, we cancel the old one
+        VoiceServiceState stateToUseForEvent = _state;
+        Timer(Duration(milliseconds: 200), () => _triggerOnStateChangedIfNotOverridden(stateToUseForEvent));
       }
+    }
+  }
+
+  void _triggerOnStateChangedIfNotOverridden(VoiceServiceState state) {
+    if (_state != _state) {
+      debugPrint('state has changed during the delaying time, so we cancel call to _onStateChangedCallback');
+    } else {
+      _onStateChangedCallback(_state);
     }
   }
 

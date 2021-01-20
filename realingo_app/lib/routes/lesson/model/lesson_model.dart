@@ -22,6 +22,7 @@ class LessonModel extends ChangeNotifier {
   final List<LessonItem> _lessonItems;
   static final Levenshtein _distance = Levenshtein();
   static const double _maxDistance = 0.5;
+  static const int _nbTryForPronunciation = 3;
   VoiceService _voiceService;
   // https://stackoverflow.com/questions/15531928/matching-unicode-letters-with-regexp
   static final RegExp _normalizeStrRegex = RegExp(r'[^\p{L}]+', unicode: true);
@@ -33,6 +34,7 @@ class LessonModel extends ChangeNotifier {
   SentenceWithNormalization _lastVoiceResultOrNull = null;
   Queue<LessonItem> _remainingItems;
 
+  // getters on current state
   LessonItem get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
   LessonState get state => _state;
   double get ratioCompleted => (_lessonItems.length - _remainingItems.length).toDouble() / _lessonItems.length;
@@ -84,19 +86,9 @@ class LessonModel extends ChangeNotifier {
 
   void _onVoiceStateChanged(VoiceServiceState state) {
     _voiceServiceState = state;
-    if (state.status == VoiceServiceStatus.Ready) {
-      // if voiceStatus si "ready", we suppose that this result replace the previous one
-      // even if this result is null. This solve the following issue:
-      // 1) voiceService return "Ready/result=null" for half a second
-      // 2) then finally Ready/result=voice_result
-      // if we don't set _lastVoiceResultOrNull to null we show the previous result on the screen for this time.
-      // then blink to the correct reply when voice_result comes
-      if (_state.currentItemOrNull == null) {
-        _lastVoiceResultOrNull = null;
-      } else {
-        _lastVoiceResultOrNull =
-            SentenceWithNormalization(state.newResultOrNull, _normalizeString(state.newResultOrNull));
-      }
+    if (state.newResultOrNull != null) {
+      _lastVoiceResultOrNull =
+          SentenceWithNormalization(state.newResultOrNull, _normalizeString(state.newResultOrNull));
     }
     _recomputeState();
   }
@@ -112,7 +104,9 @@ class LessonModel extends ChangeNotifier {
         return LessonState(1.0, null, LessonStatus.Completed);
       } else {
         // new item
-        return LessonState(ratioCompleted, LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer),
+        return LessonState(
+            ratioCompleted,
+            LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer, null),
             LessonStatus.OnLessonItem);
       }
     } else if (_voiceServiceState.status == VoiceServiceStatus.Initializing) {
@@ -123,9 +117,13 @@ class LessonModel extends ChangeNotifier {
     }
   }
 
+  //TODO NICO ERREUR DE RAISONNEMENT, ON PEUT PAS SE BASER SUR LE "LAST_STATE"
+  // EN FAIT C'est qu'il y a 2 niveau, un niveau suite de réponses, un niveau "status dans la réponse courante
+
   LessonItemState _getItemNewState() {
     if (_voiceServiceState.status == VoiceServiceStatus.Ready) {
-      if (_lastVoiceResultOrNull == null) {
+      if (_lastVoiceResultOrNull == null && _state.currentItemOrNull.lastAnswerOrNull == null) {
+        // no answer on this item yet, and no voiceResult no take into account
         return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer);
       } else {
         final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
@@ -133,19 +131,29 @@ class LessonModel extends ChangeNotifier {
         var itemStatus =
             _getItemStatusWithVoiceResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
         final answerParts = _getAnswerResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
-        return LessonItemState(
-            _currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts), itemStatus);
+
+        var statusBeforeCurrentUpdate = _state.currentItemOrNull.remainingTryIfBadPronunciationOrNull;
+
+        if (statusBeforeCurrentUpdate == LessonItemStatus.CorrectAnswerBadPronunciation &&
+            itemStatus != LessonItemStatus.CorrectAnswerCorrectPronunciation) {
+          // was in badPronunciation and new is not perfect either (badAnswer or badPronunciation)
+          int remainingTry = _state.currentItemOrNull.remainingTryIfBadPronunciationOrNull - 1;
+          if (remainingTry > 0) {
+            return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts),
+                LessonItemStatus.CorrectAnswerBadPronunciation, remainingTry);
+          } else {
+            return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts),
+                LessonItemStatus.CorrectAnswerBadPronunciationNoMoreTry, null);
+          }
+        } else {
+          return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts),
+              itemStatus, itemStatus == LessonItemStatus.CorrectAnswerBadPronunciation ? _nbTryForPronunciation : null);
+        }
       }
     } else {
       var itemStatus = _getItemStatusWithVoiceStatus(_voiceServiceState.status);
       final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
-      return LessonItemState(
-          _currentItemOrNull,
-          _lastVoiceResultOrNull == null
-              ? null
-              : AnswerResult(_lastVoiceResultOrNull.rawSentence,
-                  _getAnswerResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence)),
-          itemStatus);
+      return LessonItemState(_currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, itemStatus, null);
     }
   }
 
@@ -194,17 +202,3 @@ class LessonModel extends ChangeNotifier {
     return list;
   }
 }
-
-/*
-
-TODO NICO JE RECUPERE DES RESULTATS INTERMEDIAIRE DE LA VOICE => CA FAIT BLINKER LA GUI C EST MOCHE
-
-flutter: lesson state changed to LessonStatus.OnLessonItem/LessonItemStatus.CorrectAnswerBadPronunciation
-flutter: BadAnswer because distance between correct 'bà bà' and reply 'bả' is 0.8
-flutter: lesson state changed to LessonStatus.OnLessonItem/LessonItemStatus.BadAnswer
-flutter: BadPronunciation because distance between correct 'bà bà' and reply 'bả bả' is 0.4
-flutter: BadPronunciation because distance between correct 'bà bà' and reply 'bả bả' is 0.4
-flutter: lesson state changed to LessonStatus.OnLessonItem/LessonItemStatus.CorrectAnswerBadPronunciation
- */
-// TODO Gerer les 3 essais pour améliorer sa prononciation => sinon desfois on peut pas sortir
-// si on est passé en mode "pronunciation", on doit pas pouvoir revenir en mode "mauvaise réponse"
