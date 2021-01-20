@@ -4,15 +4,39 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:speech_to_text/speech_to_text.dart';
 
-enum VoiceServiceStatus { Initializing, Ready, Starting, Listening, Stopping, Error }
+enum VoiceServiceStatus {
+  Initializing, // initializing service
+  Ready, // ready to start record
+  Starting, // starting record
+  Listening, // recording
+  Stopping, // stopping record
+  Error // received error
+}
+
+enum VoiceServiceAction { StartListening, StopListening }
+
+class VoiceServiceState {
+  final VoiceServiceStatus status;
+  final String newResultOrNull;
+
+  const VoiceServiceState(this.status, this.newResultOrNull);
+
+  @override
+  bool operator ==(Object other) {
+    VoiceServiceState otherState = other as VoiceServiceState;
+    return status == otherState.status && newResultOrNull == otherState.newResultOrNull;
+  }
+}
 
 class VoiceService {
   final stt.SpeechToText _speech = stt.SpeechToText();
-  void Function(VoiceServiceStatus status) _onStatusChangedCallback;
-  void Function(String result) _onResultCallback;
-  VoiceServiceStatus _status = VoiceServiceStatus.Initializing;
+  void Function(VoiceServiceState state) _onStateChangedCallback;
+  VoiceServiceState _state = VoiceServiceState(VoiceServiceStatus.Initializing, null);
   static VoiceService _instance;
-  String _lastVoiceResult = '';
+
+  String _lastSttResultOrNull;
+  String _lastSttStatusOrNull;
+  bool _initializationOkOrNull;
 
   // we make a singleton because _speech.initialize should be called only once
   VoiceService._constructor();
@@ -20,37 +44,56 @@ class VoiceService {
   factory VoiceService.get() {
     if (_instance == null) {
       _instance = VoiceService._constructor();
-      _instance._speech.initialize(onStatus: _instance._statusListener, onError: _instance._errorListener).then(
-          (isOk) => isOk
-              ? _instance._onStatusChanged(VoiceServiceStatus.Ready)
-              : _instance._onStatusChanged(VoiceServiceStatus.Error));
+      _instance._speech.initialize(onStatus: _instance._statusListener, onError: _instance._errorListener).then((isOk) {
+        _instance._initializationOkOrNull = isOk;
+        _instance._onStateChanged();
+      });
     }
     return _instance;
   }
 
-  void register(
-      void Function(VoiceServiceStatus status) onStatusChangedCallback, void Function(String result) onResultCallback) {
-    _onStatusChangedCallback = onStatusChangedCallback;
-    _onResultCallback = onResultCallback;
-    _onStatusChangedCallback(_status);
+  void register(void Function(VoiceServiceState state) onStateChanged) {
+    _onStateChangedCallback = onStateChanged;
+    _onStateChangedCallback(_state); // on register, we send a snapshot of current state
   }
 
   void unregister() {
-    _onStatusChangedCallback = null;
-    _onResultCallback = null;
+    _onStateChangedCallback = null;
   }
 
-  void _onStatusChanged(VoiceServiceStatus status) {
-    debugPrint('voice_service:_onStatusChanged: $_status');
-    _status = status;
-    if (_onStatusChangedCallback != null) {
-      _onStatusChangedCallback(_status);
+  VoiceServiceState computeNewState(VoiceServiceAction actionOrNull) {
+    if (_initializationOkOrNull == null) {
+      return VoiceServiceState(VoiceServiceStatus.Initializing, null);
+    } else if (_initializationOkOrNull == false) {
+      return VoiceServiceState(VoiceServiceStatus.Error, null);
+    } else if (actionOrNull == null) {
+      if (_lastSttStatusOrNull == 'listening') {
+        return VoiceServiceState(VoiceServiceStatus.Listening, null);
+      } else if ((_lastSttStatusOrNull == null) || (_lastSttStatusOrNull == 'notListening')) {
+        // _lastSttStatusOrNull is null after initialization done (callback "notListening" not called)
+        String lastResult = _lastSttResultOrNull;
+        // _lastSttResultOrNull is taken into account in new state, we can discard it
+        _lastSttResultOrNull = null;
+        return VoiceServiceState(VoiceServiceStatus.Ready, lastResult);
+      }
+    } else {
+      switch (actionOrNull) {
+        case VoiceServiceAction.StartListening:
+          return VoiceServiceState(VoiceServiceStatus.Starting, null);
+        case VoiceServiceAction.StopListening:
+          return VoiceServiceState(VoiceServiceStatus.Stopping, null);
+      }
     }
   }
 
-  void _onResult(String result) {
-    if (_onResultCallback != null) {
-      _onResultCallback(result);
+  void _onStateChanged({VoiceServiceAction actionOrNull}) {
+    debugPrint('VoiceService:_onStateChanged, action: $actionOrNull, _lastSttResultOrNull: $_lastSttResultOrNull');
+    VoiceServiceState newState = computeNewState(actionOrNull);
+    if (newState != _state) {
+      _state = newState;
+      if (_onStateChangedCallback != null) {
+        _onStateChangedCallback(_state);
+      }
     }
   }
 
@@ -63,37 +106,36 @@ class VoiceService {
   // only called from error to "listen" function, so it's only a recognize error (i.e. : no one spoke)
   void _errorListener(SpeechRecognitionError errorNotification) {
     debugPrint(errorNotification.toString());
-    _onResult('');
+    _lastSttResultOrNull = null;
+    _onStateChanged();
   }
 
   void _statusListener(String status) {
-    debugPrint('voice_service:_statusListener: $status');
-    if (status == 'listening') {
-      _onStatusChanged(VoiceServiceStatus.Listening);
-    } else if (status == 'notListening') {
-      // Nice to have woud be to prevent double event onResult + onStatusChanged(result) => create double refresh on GUI
-      // but it's just e performance issue
-      _onResult(_lastVoiceResult);
-      _onStatusChanged(VoiceServiceStatus.Ready);
-    }
+    debugPrint('voice_service:_statusListener: $status, _lastSttResultOrNull: $_lastSttResultOrNull');
+    _lastSttStatusOrNull = status;
+    _onStateChanged();
   }
 
   void startListening() {
-    _onStatusChanged(VoiceServiceStatus.Starting);
-    //_getLocalId(null);
+    debugPrint('VoiceService:startListening');
+
+    _onStateChanged(actionOrNull: VoiceServiceAction.StartListening);
 
     _speech.listen(
         onResult: (SpeechRecognitionResult result) =>
-            {if (result.finalResult) _lastVoiceResult = result.recognizedWords},
-        listenFor: Duration(seconds: 20),
+            {if (result.finalResult) _lastSttResultOrNull = result.recognizedWords},
+        listenFor: Duration(seconds: 10),
         localeId: 'vi-VN',
         onSoundLevelChange: (double level) => null,
         cancelOnError: true,
-        listenMode: ListenMode.deviceDefault);
+        listenMode: ListenMode.deviceDefault); // will trigger a status change to "listening"
   }
 
   void stopListening() {
-    _onStatusChanged(VoiceServiceStatus.Stopping);
-    _speech.stop().then((value) => _onStatusChanged(VoiceServiceStatus.Ready));
+    debugPrint('VoiceService:stopListening');
+    _onStateChanged(actionOrNull: VoiceServiceAction.StopListening);
+    _speech.stop().then((value) => _onStateChanged());
+    // we have to add the callback because the callback _statusListener
+    // is not always called (if was not listening before)
   }
 }

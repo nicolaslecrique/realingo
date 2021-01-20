@@ -29,7 +29,7 @@ class LessonModel extends ChangeNotifier {
 
   // internal current state
   LessonState _state;
-  VoiceServiceStatus _voiceStatus; // initialized by _voiceService.register
+  VoiceServiceState _voiceServiceState; // initialized by _voiceService.register
   SentenceWithNormalization _lastVoiceResultOrNull = null;
   Queue<LessonItem> _remainingItems;
 
@@ -41,7 +41,7 @@ class LessonModel extends ChangeNotifier {
     _remainingItems = QueueList<LessonItem>.from(_lessonItems);
     _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     _voiceService = VoiceService.get();
-    _voiceService.register(_onVoiceStatusChanged, _onVoiceResult);
+    _voiceService.register(_onVoiceStateChanged);
   }
 
   void _checkStatus(List<LessonItemStatus> expectedStatus) {
@@ -58,7 +58,6 @@ class LessonModel extends ChangeNotifier {
 
   void stopListening() {
     debugPrint('lesson_model:stopListening');
-    _checkStatus([LessonItemStatus.ListeningAnswer]);
     _voiceService.stopListening();
   }
 
@@ -83,17 +82,22 @@ class LessonModel extends ChangeNotifier {
     _recomputeState(nextItem: true);
   }
 
-  void _onVoiceResult(String result) {
-    if (result == null || result.isEmpty) {
-      // if we get no valid result we just ignore it
-      return;
+  void _onVoiceStateChanged(VoiceServiceState state) {
+    _voiceServiceState = state;
+    if (state.status == VoiceServiceStatus.Ready) {
+      // if voiceStatus si "ready", we suppose that this result replace the previous one
+      // even if this result is null. This solve the following issue:
+      // 1) voiceService return "Ready/result=null" for half a second
+      // 2) then finally Ready/result=voice_result
+      // if we don't set _lastVoiceResultOrNull to null we show the previous result on the screen for this time.
+      // then blink to the correct reply when voice_result comes
+      if (_state.currentItemOrNull == null) {
+        _lastVoiceResultOrNull = null;
+      } else {
+        _lastVoiceResultOrNull =
+            SentenceWithNormalization(state.newResultOrNull, _normalizeString(state.newResultOrNull));
+      }
     }
-    _lastVoiceResultOrNull = SentenceWithNormalization(result, _normalizeString(result));
-    _recomputeState();
-  }
-
-  void _onVoiceStatusChanged(VoiceServiceStatus status) {
-    _voiceStatus = status;
     _recomputeState();
   }
 
@@ -111,7 +115,7 @@ class LessonModel extends ChangeNotifier {
         return LessonState(ratioCompleted, LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer),
             LessonStatus.OnLessonItem);
       }
-    } else if (_voiceStatus == VoiceServiceStatus.Initializing) {
+    } else if (_voiceServiceState.status == VoiceServiceStatus.Initializing) {
       return LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     } else {
       LessonItemState newItemState = _getItemNewState();
@@ -120,11 +124,12 @@ class LessonModel extends ChangeNotifier {
   }
 
   LessonItemState _getItemNewState() {
-    if (_voiceStatus == VoiceServiceStatus.Ready) {
+    if (_voiceServiceState.status == VoiceServiceStatus.Ready) {
       if (_lastVoiceResultOrNull == null) {
         return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer);
       } else {
         final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
+
         var itemStatus =
             _getItemStatusWithVoiceResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
         final answerParts = _getAnswerResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
@@ -132,7 +137,7 @@ class LessonModel extends ChangeNotifier {
             _currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts), itemStatus);
       }
     } else {
-      var itemStatus = _getItemStatusWithVoiceStatus(_voiceStatus);
+      var itemStatus = _getItemStatusWithVoiceStatus(_voiceServiceState.status);
       final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
       return LessonItemState(
           _currentItemOrNull,
@@ -201,3 +206,5 @@ flutter: BadPronunciation because distance between correct 'bà bà' and reply '
 flutter: BadPronunciation because distance between correct 'bà bà' and reply 'bả bả' is 0.4
 flutter: lesson state changed to LessonStatus.OnLessonItem/LessonItemStatus.CorrectAnswerBadPronunciation
  */
+// TODO Gerer les 3 essais pour améliorer sa prononciation => sinon desfois on peut pas sortir
+// si on est passé en mode "pronunciation", on doit pas pouvoir revenir en mode "mauvaise réponse"

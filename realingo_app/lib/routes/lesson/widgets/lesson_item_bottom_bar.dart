@@ -18,7 +18,8 @@ class _State {
       {this.backgroundColorOrNull, this.textColorOrNull, this.titleText = '', this.subtitleTextOrNull});
 
   static final _State ready = _State('Reply', Icons.mic, null, (LessonModel lesson) => lesson.startListening);
-  static final _State wait = _State('...', Icons.mic, StandardColors.brandBlue, (LessonModel lesson) => (() => null));
+  static final _State wait =
+      _State('...', Icons.mic, StandardColors.brandBlue, (LessonModel lesson) => lesson.stopListening);
   static final _State listen = _State('...', Icons.mic, null, (LessonModel lesson) => lesson.stopListening);
 
   static final _State badPronunciation = _State('Retry', Icons.mic, null, (LessonModel lesson) => lesson.startListening,
@@ -38,7 +39,7 @@ class _State {
       'Continue', Icons.arrow_forward_ios, StandardColors.incorrect, (LessonModel lesson) => lesson.nextLessonItem,
       backgroundColorOrNull: Colors.grey,
       textColorOrNull: StandardColors.incorrect,
-      titleText: 'Your reply:',
+      titleText: 'Wrong answer, your reply:',
       subtitleTextOrNull: (LessonItemState item) => item.lastAnswerOrNull.rawAnswer);
 
   static _State getState(LessonItemStatus status) {
