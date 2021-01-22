@@ -39,7 +39,6 @@ class VoiceService {
   String _lastSttResultOrNull;
   String _lastSttStatusOrNull;
   bool _initializationOkOrNull;
-  bool _newStateReceived;
 
   // we make a singleton because _speech.initialize should be called only once
   VoiceService._constructor();
@@ -95,10 +94,17 @@ class VoiceService {
     if (newState != _state) {
       _state = newState;
       if (_onStateChangedCallback != null) {
-        // we delay callback by 100ms, if we get a new one within this time frame, we cancel the old one
-        VoiceServiceState stateToUseForEvent = _state;
-        Timer(Duration(milliseconds: 200), () => _triggerOnStateChangedIfNotOverridden(stateToUseForEvent));
+        if (actionOrNull != null) {
+          // if callback call is an action, we can call callbck right away
+          _onStateChangedCallback(newState);
+        } else {
+          // else we delay callback by 100ms, if we get a new one within this time frame, we cancel the old one
+          VoiceServiceState stateToUseForEvent = _state;
+          Timer(Duration(milliseconds: 200), () => _triggerOnStateChangedIfNotOverridden(stateToUseForEvent));
+        }
       }
+    } else {
+      debugPrint('VoiceService:_onStateChanged, no event sent because state kept the same');
     }
   }
 

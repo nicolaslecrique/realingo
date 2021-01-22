@@ -14,12 +14,17 @@ class LessonState {
 }
 
 enum LessonItemStatus {
-  ReadyForAnswer,
+  ReadyForFirstAnswer,
   WaitForListeningAvailable,
   ListeningAnswer,
   WaitForAnswerResult,
+  OnAnswerFeedback
+}
+
+enum AnswerStatus {
   CorrectAnswerCorrectPronunciation,
   CorrectAnswerBadPronunciation,
+  CorrectAnswerBadPronunciationNoMoreTry,
   BadAnswer
 }
 
@@ -36,8 +41,11 @@ class LessonItemState {
 class AnswerResult {
   final String rawAnswer;
   final List<AnswerPart> processedAnswer;
+  final AnswerStatus answerStatus;
+  final int remainingTryIfBadPronunciationOrNull;
 
-  const AnswerResult(this.rawAnswer, this.processedAnswer);
+  const AnswerResult(
+      this.rawAnswer, this.processedAnswer, this.answerStatus, this.remainingTryIfBadPronunciationOrNull);
 }
 
 @immutable

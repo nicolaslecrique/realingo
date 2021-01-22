@@ -9,12 +9,7 @@ import 'package:realingo_app/services/voice_service.dart';
 
 import 'lesson_state.dart';
 
-class SentenceWithNormalization {
-  final String rawSentence;
-  final String normalizedSentence;
-
-  const SentenceWithNormalization(this.rawSentence, this.normalizedSentence);
-}
+enum _AnswerQuality { Good, GoodResultBadPronunciation, Bad }
 
 class LessonModel extends ChangeNotifier {
   // immutable fields
@@ -30,8 +25,6 @@ class LessonModel extends ChangeNotifier {
 
   // internal current state
   LessonState _state;
-  VoiceServiceState _voiceServiceState; // initialized by _voiceService.register
-  SentenceWithNormalization _lastVoiceResultOrNull = null;
   Queue<LessonItem> _remainingItems;
 
   // getters on current state
@@ -54,7 +47,7 @@ class LessonModel extends ChangeNotifier {
 
   void startListening() {
     debugPrint('lesson_model:startListening');
-    _checkStatus([LessonItemStatus.ReadyForAnswer, LessonItemStatus.CorrectAnswerBadPronunciation]);
+    _checkStatus([LessonItemStatus.ReadyForFirstAnswer, LessonItemStatus.OnAnswerFeedback]);
     _voiceService.startListening();
   }
 
@@ -64,14 +57,10 @@ class LessonModel extends ChangeNotifier {
   }
 
   void nextLessonItem() {
-    _checkStatus([
-      LessonItemStatus.BadAnswer,
-      LessonItemStatus.CorrectAnswerBadPronunciation, // mark card as OK
-      LessonItemStatus.CorrectAnswerCorrectPronunciation
-    ]);
+    _checkStatus([LessonItemStatus.OnAnswerFeedback]);
 
-    if (_state.currentItemOrNull.status == LessonItemStatus.CorrectAnswerBadPronunciation ||
-        _state.currentItemOrNull.status == LessonItemStatus.CorrectAnswerCorrectPronunciation) {
+    if (_state.currentItemOrNull.lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry ||
+        _state.currentItemOrNull.lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerCorrectPronunciation) {
       _remainingItems.removeFirst();
       if (_remainingItems.isEmpty) {
         _voiceService.unregister();
@@ -80,39 +69,35 @@ class LessonModel extends ChangeNotifier {
       // bad answer
       _remainingItems.addLast(_remainingItems.removeFirst());
     }
-    _lastVoiceResultOrNull = null;
     _recomputeState(nextItem: true);
   }
 
   void _onVoiceStateChanged(VoiceServiceState state) {
-    _voiceServiceState = state;
-    if (state.newResultOrNull != null) {
-      _lastVoiceResultOrNull =
-          SentenceWithNormalization(state.newResultOrNull, _normalizeString(state.newResultOrNull));
-    }
-    _recomputeState();
+    _recomputeState(newVoiceStateOrNull: state);
   }
 
-  void _recomputeState({bool nextItem = false}) {
-    _state = _getNewState(nextItem);
+  void _recomputeState({bool nextItem = false, VoiceServiceState newVoiceStateOrNull}) {
+    _state = _getNewState(nextItem, newVoiceStateOrNull);
     notifyListeners();
   }
 
-  LessonState _getNewState(bool nextItem) {
+  LessonState _getNewState(bool nextItem, VoiceServiceState newVoiceStateOrNull) {
+    if (nextItem == false && newVoiceStateOrNull == null) {
+      throw Exception('lesson_model: nextItem is false and newVoiceStateOrNull null');
+    }
+
     if (nextItem) {
       if (_remainingItems.isEmpty) {
         return LessonState(1.0, null, LessonStatus.Completed);
       } else {
         // new item
-        return LessonState(
-            ratioCompleted,
-            LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer, null),
-            LessonStatus.OnLessonItem);
+        return LessonState(ratioCompleted,
+            LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem);
       }
-    } else if (_voiceServiceState.status == VoiceServiceStatus.Initializing) {
+    } else if (newVoiceStateOrNull.status == VoiceServiceStatus.Initializing) {
       return LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     } else {
-      LessonItemState newItemState = _getItemNewState();
+      LessonItemState newItemState = _getItemNewState(newVoiceStateOrNull);
       return LessonState(ratioCompleted, newItemState, LessonStatus.OnLessonItem);
     }
   }
@@ -120,40 +105,29 @@ class LessonModel extends ChangeNotifier {
   //TODO NICO ERREUR DE RAISONNEMENT, ON PEUT PAS SE BASER SUR LE "LAST_STATE"
   // EN FAIT C'est qu'il y a 2 niveau, un niveau suite de réponses, un niveau "status dans la réponse courante
 
-  LessonItemState _getItemNewState() {
-    if (_voiceServiceState.status == VoiceServiceStatus.Ready) {
-      if (_lastVoiceResultOrNull == null && _state.currentItemOrNull.lastAnswerOrNull == null) {
-        // no answer on this item yet, and no voiceResult no take into account
-        return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForAnswer);
-      } else {
-        final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
+  // PB central: si voice is Ready avec resultat null: on ne sait pas si
+  // 1) il n'y a pas eu d'enregistrement, et donc il faut revenir au stade précédent
+  // 2) on est juste en attente une fraction de secondes, et donc il faut juste comme si on était tojours
+  //    en mode WaitForAnswerResult
 
-        var itemStatus =
-            _getItemStatusWithVoiceResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
-        final answerParts = _getAnswerResult(normalizedExpectedSentence, _lastVoiceResultOrNull.normalizedSentence);
-
-        var statusBeforeCurrentUpdate = _state.currentItemOrNull.remainingTryIfBadPronunciationOrNull;
-
-        if (statusBeforeCurrentUpdate == LessonItemStatus.CorrectAnswerBadPronunciation &&
-            itemStatus != LessonItemStatus.CorrectAnswerCorrectPronunciation) {
-          // was in badPronunciation and new is not perfect either (badAnswer or badPronunciation)
-          int remainingTry = _state.currentItemOrNull.remainingTryIfBadPronunciationOrNull - 1;
-          if (remainingTry > 0) {
-            return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts),
-                LessonItemStatus.CorrectAnswerBadPronunciation, remainingTry);
-          } else {
-            return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts),
-                LessonItemStatus.CorrectAnswerBadPronunciationNoMoreTry, null);
-          }
+  LessonItemState _getItemNewState(VoiceServiceState voiceServiceState) {
+    if (voiceServiceState.status == VoiceServiceStatus.Ready) {
+      if (voiceServiceState.newResultOrNull == null || voiceServiceState.newResultOrNull.isEmpty) {
+        if (_state.currentItemOrNull == null) {
+          // we were not on a item before, we set it
+          return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer);
         } else {
-          return LessonItemState(_currentItemOrNull, AnswerResult(_lastVoiceResultOrNull.rawSentence, answerParts),
-              itemStatus, itemStatus == LessonItemStatus.CorrectAnswerBadPronunciation ? _nbTryForPronunciation : null);
+          // voice result null, we just keep the same state
+          return _state.currentItemOrNull;
         }
+      } else {
+        AnswerResult newAnswerResult = _getNewAnswerResult(_currentItemOrNull.sentence.sentence,
+            voiceServiceState.newResultOrNull, _state.currentItemOrNull.lastAnswerOrNull);
+        return LessonItemState(_currentItemOrNull, newAnswerResult, LessonItemStatus.OnAnswerFeedback);
       }
     } else {
-      var itemStatus = _getItemStatusWithVoiceStatus(_voiceServiceState.status);
-      final normalizedExpectedSentence = _normalizeString(_currentItemOrNull.sentence.sentence);
-      return LessonItemState(_currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, itemStatus, null);
+      var itemStatus = _getItemStatusWithVoiceStatus(voiceServiceState.status);
+      return LessonItemState(_currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, itemStatus);
     }
   }
 
@@ -176,29 +150,73 @@ class LessonModel extends ChangeNotifier {
     return normalized;
   }
 
-  static LessonItemStatus _getItemStatusWithVoiceResult(String normalizedExpected, String normalizedResult) {
+  static _AnswerQuality _getAnswerStatusWithVoiceResult(String normalizedExpected, String normalizedResult) {
     if (normalizedExpected == normalizedResult) {
-      return LessonItemStatus.CorrectAnswerCorrectPronunciation;
+      return _AnswerQuality.Good;
     } else {
       var dist = _distance.normalizedDistance(normalizedResult, normalizedExpected);
       if (dist < _maxDistance) {
         debugPrint(
             "BadPronunciation because distance between correct '$normalizedExpected' and reply '$normalizedResult' is $dist");
-        return LessonItemStatus.CorrectAnswerBadPronunciation;
+        return _AnswerQuality.GoodResultBadPronunciation;
       } else {
         debugPrint(
             "BadAnswer because distance between correct '$normalizedExpected' and reply '$normalizedResult' is $dist");
-        return LessonItemStatus.BadAnswer;
+        return _AnswerQuality.Bad;
       }
     }
   }
 
   // TO solve BadPronunciation because distance between correct 'bà bà' and reply 'ba bà' is 0.2
-  static List<AnswerPart> _getAnswerResult(String normalizedExpected, String normalizedResult) {
+  static List<AnswerPart> _getAnswerParts(String normalizedExpected, String normalizedResult) {
     final splitExpected = normalizedExpected.split(' ');
     final splitResult = normalizedResult.split(' ').toSet();
 
     var list = splitExpected.map((String e) => AnswerPart(e + ' ', splitResult.contains(e))).toList();
     return list;
+  }
+
+  // ignore: missing_return
+  AnswerResult _getNewAnswerResult(String expectedSentence, String voiceResult, AnswerResult lastAnswerOrNull) {
+    final normalizedExpectedSentence = _normalizeString(expectedSentence);
+    final normalizedVoiceResult = _normalizeString(voiceResult);
+
+    var answerQuality = _getAnswerStatusWithVoiceResult(normalizedExpectedSentence, normalizedVoiceResult);
+    final answerParts = _getAnswerParts(normalizedExpectedSentence, normalizedVoiceResult);
+
+    switch (answerQuality) {
+      case _AnswerQuality.Good:
+        return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerCorrectPronunciation, null);
+      case _AnswerQuality.GoodResultBadPronunciation:
+        if (lastAnswerOrNull == null) {
+          return AnswerResult(
+              voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciation, _nbTryForPronunciation);
+        } else if (lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerBadPronunciation) {
+          if (lastAnswerOrNull.remainingTryIfBadPronunciationOrNull == 1) {
+            return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry, 0);
+          } else {
+            return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciation,
+                lastAnswerOrNull.remainingTryIfBadPronunciationOrNull - 1);
+          }
+        } else {
+          throw Exception(
+              "LessonModel:_getNewAnswerResult invalid state, lastAnswerStatus is '${lastAnswerOrNull.answerStatus}'");
+        }
+        break; // useless, just to shut up compiler
+      case _AnswerQuality.Bad:
+        if (lastAnswerOrNull == null) {
+          return AnswerResult(voiceResult, answerParts, AnswerStatus.BadAnswer, null);
+        } else if (lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerBadPronunciation) {
+          if (lastAnswerOrNull.remainingTryIfBadPronunciationOrNull == 1) {
+            return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry, 0);
+          } else {
+            return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciation,
+                lastAnswerOrNull.remainingTryIfBadPronunciationOrNull - 1);
+          }
+        } else {
+          throw Exception(
+              "LessonModel:_getNewAnswerResult invalid state, lastAnswerStatus is '${lastAnswerOrNull.answerStatus}'");
+        }
+    }
   }
 }

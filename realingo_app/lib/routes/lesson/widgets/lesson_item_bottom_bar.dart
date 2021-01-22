@@ -26,7 +26,15 @@ class _State {
       backgroundColorOrNull: Colors.grey,
       textColorOrNull: StandardColors.correct,
       titleText: 'Good!',
-      subtitleTextOrNull: (LessonItemState item) => 'Listen and try to improve your pronunciation');
+      subtitleTextOrNull: (LessonItemState item) =>
+          "Listen and try to improve your pronunciation (${item.lastAnswerOrNull.remainingTryIfBadPronunciationOrNull} more ${item.lastAnswerOrNull.remainingTryIfBadPronunciationOrNull == 1 ? 'try' : 'tries'})");
+
+  static final _State badPronunciationNoTry = _State(
+      'Continue', Icons.check, StandardColors.correct, (LessonModel lesson) => lesson.nextLessonItem,
+      backgroundColorOrNull: Colors.grey,
+      textColorOrNull: StandardColors.correct,
+      titleText: 'Good!',
+      subtitleTextOrNull: (LessonItemState item) => "No more try, you'll do better next time");
 
   static final _State perfect = _State(
       'Continue', Icons.check, StandardColors.correct, (LessonModel lesson) => lesson.nextLessonItem,
@@ -42,9 +50,10 @@ class _State {
       titleText: 'Wrong answer, your reply:',
       subtitleTextOrNull: (LessonItemState item) => item.lastAnswerOrNull.rawAnswer);
 
-  static _State getState(LessonItemStatus status) {
+  // ignore: missing_return
+  static _State getState(LessonItemStatus status, AnswerStatus answerStatusOrNull) {
     switch (status) {
-      case LessonItemStatus.ReadyForAnswer:
+      case LessonItemStatus.ReadyForFirstAnswer:
         return ready;
       case LessonItemStatus.WaitForListeningAvailable:
         return wait;
@@ -52,12 +61,17 @@ class _State {
         return listen;
       case LessonItemStatus.WaitForAnswerResult:
         return wait;
-      case LessonItemStatus.CorrectAnswerCorrectPronunciation:
-        return perfect;
-      case LessonItemStatus.CorrectAnswerBadPronunciation:
-        return badPronunciation;
-      case LessonItemStatus.BadAnswer:
-        return bad;
+      case LessonItemStatus.OnAnswerFeedback:
+        switch (answerStatusOrNull) {
+          case AnswerStatus.CorrectAnswerCorrectPronunciation:
+            return perfect;
+          case AnswerStatus.CorrectAnswerBadPronunciation:
+            return badPronunciation;
+          case AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry:
+            return badPronunciationNoTry;
+          case AnswerStatus.BadAnswer:
+            return bad;
+        }
     }
   }
 }
@@ -68,7 +82,7 @@ class LessonItemBottomBar extends StatelessWidget {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
       var status = lesson.state.currentItemOrNull.status;
 
-      _State state = _State.getState(status);
+      _State state = _State.getState(status, lesson.state.currentItemOrNull.lastAnswerOrNull?.answerStatus);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

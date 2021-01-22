@@ -15,23 +15,19 @@ class ReplyRichText extends StatelessWidget {
       return RichText(text: TextSpan(text: itemState.lessonItem.sentence.hint, style: defaultTextStyle));
     }
 
-    switch (itemState.status) {
-      case LessonItemStatus.WaitForListeningAvailable:
-      case LessonItemStatus.ListeningAnswer:
-      case LessonItemStatus.WaitForAnswerResult:
-      case LessonItemStatus.CorrectAnswerBadPronunciation:
+    switch (itemState.lastAnswerOrNull.answerStatus) {
+      case AnswerStatus.CorrectAnswerCorrectPronunciation:
+        return RichText(text: TextSpan(text: itemState.lessonItem.sentence.sentence, style: defaultTextStyle));
+      case AnswerStatus.CorrectAnswerBadPronunciation:
+      case AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry:
         return RichText(
             text: TextSpan(
                 children: itemState.lastAnswerOrNull.processedAnswer
                     .map((AnswerPart e) => TextSpan(
                         text: e.expectedWord, style: e.isPronunciationCorrect ? defaultTextStyle : errorTextStyle))
                     .toList()));
-      case LessonItemStatus.CorrectAnswerCorrectPronunciation:
+      case AnswerStatus.BadAnswer:
         return RichText(text: TextSpan(text: itemState.lessonItem.sentence.sentence, style: defaultTextStyle));
-      case LessonItemStatus.BadAnswer:
-        return RichText(text: TextSpan(text: itemState.lessonItem.sentence.sentence, style: defaultTextStyle));
-      case LessonItemStatus.ReadyForAnswer:
-        throw Exception('ReadyForAnswer should have lastAnswerOrNull == null');
     }
   }
 }

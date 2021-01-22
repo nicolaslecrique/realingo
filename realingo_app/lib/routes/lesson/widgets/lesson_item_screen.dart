@@ -10,12 +10,6 @@ import 'package:realingo_app/services/texttospeech_service.dart';
 import 'lesson_item_bottom_bar.dart';
 
 class LessonItemScreen extends StatelessWidget {
-  static const _canListenStates = [
-    LessonItemStatus.BadAnswer,
-    LessonItemStatus.CorrectAnswerBadPronunciation,
-    LessonItemStatus.CorrectAnswerCorrectPronunciation,
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
@@ -50,7 +44,7 @@ class LessonItemScreen extends StatelessWidget {
                       children: [
                         IconButton(
                             icon: Icon(Icons.volume_up),
-                            onPressed: _canListenStates.contains(state.currentItemOrNull.status)
+                            onPressed: state.currentItemOrNull.status == LessonItemStatus.OnAnswerFeedback
                                 ? () => TextToSpeech.play(
                                     lesson.learnedLanguage, state.currentItemOrNull.lessonItem.sentence)
                                 : null,
