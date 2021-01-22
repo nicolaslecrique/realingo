@@ -34,24 +34,16 @@ class VoiceService {
   final stt.SpeechToText _speech = stt.SpeechToText();
   void Function(VoiceServiceState state) _onStateChangedCallback;
   VoiceServiceState _state = VoiceServiceState(VoiceServiceStatus.Initializing, null);
-  static VoiceService _instance;
 
   String _lastSttResultOrNull;
   String _lastSttStatusOrNull;
   bool _initializationOkOrNull;
 
-  // we make a singleton because _speech.initialize should be called only once
-  VoiceService._constructor();
-
-  factory VoiceService.get() {
-    if (_instance == null) {
-      _instance = VoiceService._constructor();
-      _instance._speech.initialize(onStatus: _instance._statusListener, onError: _instance._errorListener).then((isOk) {
-        _instance._initializationOkOrNull = isOk;
-        _instance._onStateChanged();
-      });
-    }
-    return _instance;
+  VoiceService() {
+    _speech.initialize(onStatus: _statusListener, onError: _errorListener).then((isOk) {
+      _initializationOkOrNull = isOk;
+      _onStateChanged();
+    });
   }
 
   void register(void Function(VoiceServiceState state) onStateChanged) {
@@ -73,10 +65,7 @@ class VoiceService {
         return VoiceServiceState(VoiceServiceStatus.Listening, null);
       } else if ((_lastSttStatusOrNull == null) || (_lastSttStatusOrNull == 'notListening')) {
         // _lastSttStatusOrNull is null after initialization done (callback "notListening" not called)
-        String lastResult = _lastSttResultOrNull;
-        // _lastSttResultOrNull is taken into account in new state, we can discard it
-        _lastSttResultOrNull = null;
-        return VoiceServiceState(VoiceServiceStatus.Ready, lastResult);
+        return VoiceServiceState(VoiceServiceStatus.Ready, _lastSttResultOrNull);
       }
     } else {
       switch (actionOrNull) {
@@ -88,17 +77,24 @@ class VoiceService {
     }
   }
 
+  // TODO : faire un "stop" qui est async et retourne le resultat et basta
+
   void _onStateChanged({VoiceServiceAction actionOrNull}) {
-    debugPrint('VoiceService:_onStateChanged, action: $actionOrNull, _lastSttResultOrNull: $_lastSttResultOrNull');
+    debugPrint(
+        'VoiceService:_onStateChanged, action: $actionOrNull, _lastSttResultOrNull: $_lastSttResultOrNull, _lastSttStatusOrNull: $_lastSttStatusOrNull');
     VoiceServiceState newState = computeNewState(actionOrNull);
     if (newState != _state) {
       _state = newState;
       if (_onStateChangedCallback != null) {
         if (actionOrNull != null) {
           // if callback call is an action, we can call callbck right away
+          debugPrint('VoiceService:_onStateChanged, notify new state: ${newState.status}/${newState.newResultOrNull}');
           _onStateChangedCallback(newState);
         } else {
           // else we delay callback by 100ms, if we get a new one within this time frame, we cancel the old one
+          // it is because we might receive several "notListening" with result null events just before
+          // the final result come. and a "notListening" with result null might also be the last one
+          // so we wait a bit to know if it's the last one or not
           VoiceServiceState stateToUseForEvent = _state;
           Timer(Duration(milliseconds: 200), () => _triggerOnStateChangedIfNotOverridden(stateToUseForEvent));
         }
@@ -109,10 +105,11 @@ class VoiceService {
   }
 
   void _triggerOnStateChangedIfNotOverridden(VoiceServiceState state) {
-    if (_state != _state) {
+    if (state != _state) {
       debugPrint('state has changed during the delaying time, so we cancel call to _onStateChangedCallback');
     } else {
-      _onStateChangedCallback(_state);
+      debugPrint('VoiceService:_onStateChanged, notify new state: ${state.status}/${state.newResultOrNull}');
+      _onStateChangedCallback(state);
     }
   }
 
@@ -137,12 +134,18 @@ class VoiceService {
 
   void startListening() {
     debugPrint('VoiceService:startListening');
-
+    _lastSttResultOrNull = null;
     _onStateChanged(actionOrNull: VoiceServiceAction.StartListening);
 
     _speech.listen(
-        onResult: (SpeechRecognitionResult result) =>
-            {if (result.finalResult) _lastSttResultOrNull = result.recognizedWords},
+        onResult: (SpeechRecognitionResult result) {
+          debugPrint(
+              "VoiceService:startListening, final: ${result.finalResult}, new result: '${result.recognizedWords}'");
+          _lastSttResultOrNull = result.recognizedWords;
+          if (result.finalResult) {
+            _onStateChanged();
+          }
+        },
         listenFor: Duration(seconds: 10),
         localeId: 'vi-VN',
         onSoundLevelChange: (double level) => null,

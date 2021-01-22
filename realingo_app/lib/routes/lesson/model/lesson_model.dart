@@ -35,7 +35,7 @@ class LessonModel extends ChangeNotifier {
   LessonModel(this.learnedLanguage, this._lessonItems) {
     _remainingItems = QueueList<LessonItem>.from(_lessonItems);
     _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
-    _voiceService = VoiceService.get();
+    _voiceService = VoiceService();
     _voiceService.register(_onVoiceStateChanged);
   }
 
@@ -78,6 +78,8 @@ class LessonModel extends ChangeNotifier {
 
   void _recomputeState({bool nextItem = false, VoiceServiceState newVoiceStateOrNull}) {
     _state = _getNewState(nextItem, newVoiceStateOrNull);
+    debugPrint(
+        'LessonModel:_recomputeState, new State is ${_state.status}/${_state.currentItemOrNull?.status}/${_state.currentItemOrNull?.lastAnswerOrNull?.answerStatus}');
     notifyListeners();
   }
 
@@ -113,12 +115,13 @@ class LessonModel extends ChangeNotifier {
   LessonItemState _getItemNewState(VoiceServiceState voiceServiceState) {
     if (voiceServiceState.status == VoiceServiceStatus.Ready) {
       if (voiceServiceState.newResultOrNull == null || voiceServiceState.newResultOrNull.isEmpty) {
-        if (_state.currentItemOrNull == null) {
-          // we were not on a item before, we set it
+        if (_state.currentItemOrNull == null || _state.currentItemOrNull.lastAnswerOrNull == null) {
+          // we were not on a item before, or no response yet, we set the item and mark ReadyForFirstAnswer
           return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer);
         } else {
-          // voice result null, we just keep the same state
-          return _state.currentItemOrNull;
+          // voice result null with previous reply, we just keep the same lastAnswer
+          return LessonItemState(
+              _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.OnAnswerFeedback);
         }
       } else {
         AnswerResult newAnswerResult = _getNewAnswerResult(_currentItemOrNull.sentence.sentence,
