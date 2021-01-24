@@ -26,6 +26,7 @@ class LessonModel extends ChangeNotifier {
   // internal current state
   LessonState _state;
   Queue<LessonItem> _remainingItems;
+  bool actionInProcess = false; // init, start, stop and nextItem should not happens at the same time
 
   // getters on current state
   LessonItem get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
@@ -35,115 +36,141 @@ class LessonModel extends ChangeNotifier {
   LessonModel(this.learnedLanguage, this._lessonItems) {
     _remainingItems = QueueList<LessonItem>.from(_lessonItems);
     _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
-    _voiceService = VoiceService();
-    _voiceService.register(_onVoiceStateChanged);
+    _voiceService = VoiceService.get();
+    _init();
   }
 
-  void _checkStatus(List<LessonItemStatus> expectedStatus) {
-    if (_state.status != LessonStatus.OnLessonItem || !expectedStatus.contains(_state.currentItemOrNull.status)) {
-      throw Exception('expected status $expectedStatus, but was ${_state.currentItemOrNull?.status}');
+  void _updateState(LessonState state) {
+    _state = state;
+    notifyListeners();
+  }
+
+  bool _takeLock() {
+    if (actionInProcess) {
+      return false;
+    } else {
+      actionInProcess = true;
+      return true;
     }
   }
 
-  void startListening() {
-    debugPrint('lesson_model:startListening');
-    _checkStatus([LessonItemStatus.ReadyForFirstAnswer, LessonItemStatus.OnAnswerFeedback]);
-    _voiceService.startListening();
+  void _releaseLock() {
+    actionInProcess = false;
   }
 
-  void stopListening() {
+  Future<void> _init() async {
+    if (!_takeLock()) {
+      return;
+    }
+
+    _updateState(LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady));
+    bool initOk = await _voiceService.init();
+    if (initOk) {
+      _updateState(LessonState(ratioCompleted,
+          LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
+    } else {
+      throw Exception('LessonModel:init, init voiceService failed');
+    }
+    _releaseLock();
+  }
+
+  Future<void> startListening() async {
+    debugPrint('lesson_model:startListening');
+
+    if (!_takeLock()) {
+      return;
+    }
+
+    _checkStatus([LessonItemStatus.ReadyForFirstAnswer, LessonItemStatus.OnAnswerFeedback]);
+
+    var before = _state;
+
+    _updateState(LessonState(
+        ratioCompleted,
+        LessonItemState(
+            _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.WaitForListeningAvailable),
+        LessonStatus.OnLessonItem));
+
+    bool startedOk = await _voiceService.startListening();
+
+    if (startedOk) {
+      _updateState(LessonState(
+          ratioCompleted,
+          LessonItemState(
+              _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.ListeningAnswer),
+          LessonStatus.OnLessonItem));
+    } else {
+      _updateState(before); // it failed, so we come back to whatever the previous state was
+    }
+
+    _releaseLock();
+  }
+
+  Future<void> stopListening() async {
     debugPrint('lesson_model:stopListening');
-    _voiceService.stopListening();
+
+    if (!_takeLock()) {
+      return;
+    }
+
+    _updateState(LessonState(
+        ratioCompleted,
+        LessonItemState(
+            _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.WaitForAnswerResult),
+        LessonStatus.OnLessonItem));
+
+    String result = await _voiceService.stopListening();
+
+    if (result == null || result.isEmpty) {
+      bool firstAnswer = _state.currentItemOrNull.lastAnswerOrNull == null;
+      _updateState(LessonState(
+          ratioCompleted,
+          LessonItemState(_currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull,
+              firstAnswer ? LessonItemStatus.ReadyForFirstAnswer : LessonItemStatus.OnAnswerFeedback),
+          LessonStatus.OnLessonItem));
+    } else {
+      AnswerResult newAnswerResult =
+          _getNewAnswerResult(_currentItemOrNull.sentence.sentence, result, _state.currentItemOrNull.lastAnswerOrNull);
+      _updateState(LessonState(
+          ratioCompleted,
+          LessonItemState(_currentItemOrNull, newAnswerResult, LessonItemStatus.OnAnswerFeedback),
+          LessonStatus.OnLessonItem));
+    }
+
+    _releaseLock();
   }
 
   void nextLessonItem() {
     _checkStatus([LessonItemStatus.OnAnswerFeedback]);
 
+    if (!_takeLock()) {
+      return;
+    }
+
     if (_state.currentItemOrNull.lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry ||
         _state.currentItemOrNull.lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerCorrectPronunciation) {
       _remainingItems.removeFirst();
       if (_remainingItems.isEmpty) {
-        _voiceService.unregister();
+        _updateState(LessonState(1.0, null, LessonStatus.Completed));
+      } else {
+        _updateState(LessonState(
+            ratioCompleted,
+            LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer),
+            LessonStatus.OnLessonItem));
       }
     } else {
       // bad answer
       _remainingItems.addLast(_remainingItems.removeFirst());
-    }
-    _recomputeState(nextItem: true);
-  }
-
-  void _onVoiceStateChanged(VoiceServiceState state) {
-    _recomputeState(newVoiceStateOrNull: state);
-  }
-
-  void _recomputeState({bool nextItem = false, VoiceServiceState newVoiceStateOrNull}) {
-    _state = _getNewState(nextItem, newVoiceStateOrNull);
-    debugPrint(
-        'LessonModel:_recomputeState, new State is ${_state.status}/${_state.currentItemOrNull?.status}/${_state.currentItemOrNull?.lastAnswerOrNull?.answerStatus}');
-    notifyListeners();
-  }
-
-  LessonState _getNewState(bool nextItem, VoiceServiceState newVoiceStateOrNull) {
-    if (nextItem == false && newVoiceStateOrNull == null) {
-      throw Exception('lesson_model: nextItem is false and newVoiceStateOrNull null');
+      _updateState(LessonState(ratioCompleted,
+          LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
     }
 
-    if (nextItem) {
-      if (_remainingItems.isEmpty) {
-        return LessonState(1.0, null, LessonStatus.Completed);
-      } else {
-        // new item
-        return LessonState(ratioCompleted,
-            LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem);
-      }
-    } else if (newVoiceStateOrNull.status == VoiceServiceStatus.Initializing) {
-      return LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
-    } else {
-      LessonItemState newItemState = _getItemNewState(newVoiceStateOrNull);
-      return LessonState(ratioCompleted, newItemState, LessonStatus.OnLessonItem);
-    }
+    _releaseLock();
   }
 
-  //TODO NICO ERREUR DE RAISONNEMENT, ON PEUT PAS SE BASER SUR LE "LAST_STATE"
-  // EN FAIT C'est qu'il y a 2 niveau, un niveau suite de réponses, un niveau "status dans la réponse courante
-
-  // PB central: si voice is Ready avec resultat null: on ne sait pas si
-  // 1) il n'y a pas eu d'enregistrement, et donc il faut revenir au stade précédent
-  // 2) on est juste en attente une fraction de secondes, et donc il faut juste comme si on était tojours
-  //    en mode WaitForAnswerResult
-
-  LessonItemState _getItemNewState(VoiceServiceState voiceServiceState) {
-    if (voiceServiceState.status == VoiceServiceStatus.Ready) {
-      if (voiceServiceState.newResultOrNull == null || voiceServiceState.newResultOrNull.isEmpty) {
-        if (_state.currentItemOrNull == null || _state.currentItemOrNull.lastAnswerOrNull == null) {
-          // we were not on a item before, or no response yet, we set the item and mark ReadyForFirstAnswer
-          return LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer);
-        } else {
-          // voice result null with previous reply, we just keep the same lastAnswer
-          return LessonItemState(
-              _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.OnAnswerFeedback);
-        }
-      } else {
-        AnswerResult newAnswerResult = _getNewAnswerResult(_currentItemOrNull.sentence.sentence,
-            voiceServiceState.newResultOrNull, _state.currentItemOrNull.lastAnswerOrNull);
-        return LessonItemState(_currentItemOrNull, newAnswerResult, LessonItemStatus.OnAnswerFeedback);
-      }
-    } else {
-      var itemStatus = _getItemStatusWithVoiceStatus(voiceServiceState.status);
-      return LessonItemState(_currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, itemStatus);
-    }
-  }
-
-  static LessonItemStatus _getItemStatusWithVoiceStatus(VoiceServiceStatus status) {
-    switch (status) {
-      case VoiceServiceStatus.Starting:
-        return LessonItemStatus.WaitForListeningAvailable;
-      case VoiceServiceStatus.Listening:
-        return LessonItemStatus.ListeningAnswer;
-      case VoiceServiceStatus.Stopping:
-        return LessonItemStatus.WaitForAnswerResult;
-      default:
-        throw Exception('_recomputeState: unexpected voice service status $status');
+  void _checkStatus(List<LessonItemStatus> expectedStatus) {
+    if (_state.status != LessonStatus.OnLessonItem || !expectedStatus.contains(_state.currentItemOrNull.status)) {
+      throw Exception('expected status $expectedStatus, but was ${_state.currentItemOrNull?.status}');
     }
   }
 
@@ -180,7 +207,7 @@ class LessonModel extends ChangeNotifier {
   }
 
   // ignore: missing_return
-  AnswerResult _getNewAnswerResult(String expectedSentence, String voiceResult, AnswerResult lastAnswerOrNull) {
+  static AnswerResult _getNewAnswerResult(String expectedSentence, String voiceResult, AnswerResult lastAnswerOrNull) {
     final normalizedExpectedSentence = _normalizeString(expectedSentence);
     final normalizedVoiceResult = _normalizeString(voiceResult);
 
