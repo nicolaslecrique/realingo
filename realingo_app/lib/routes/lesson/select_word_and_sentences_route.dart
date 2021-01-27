@@ -73,7 +73,7 @@ class _SelectWordAndSentencesRouteState extends State<SelectWordAndSentencesRout
     nbSentencesToLearn = min(itemToLearn.sentences.length, LessonBuilder.NbSentencesByLessonItem);
 
     return StandardScreen(
-      title: 'Select ${LessonBuilder.NbSentencesByLessonItem} sentences',
+      titleOrNull: 'Select ${LessonBuilder.NbSentencesByLessonItem} sentences',
       contentChild: Column(
         children: [
           Padding(

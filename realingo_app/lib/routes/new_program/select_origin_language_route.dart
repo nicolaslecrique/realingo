@@ -49,7 +49,7 @@ class _SelectOriginLanguageRouteState extends State<SelectOriginLanguageRoute> {
           selected: selectedLanguage,
           onSelect: (e) => setState(() => selectedLanguage = e),
         ),
-        title: 'Native language',
+        titleOrNull: 'Native language',
         buttonText: 'OK',
         onButtonPressed: selectedLanguage == null
             ? null

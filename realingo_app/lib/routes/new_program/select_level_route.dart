@@ -55,7 +55,7 @@ class _SelectLevelRouteState extends State<SelectLevelRoute> {
     final items = args.learningProgram.itemsToLearn;
 
     return OneButtonScreen(
-      title: "Select the first word you don't know",
+      titleOrNull: "Select the first word you don't know",
       child: ListView.builder(
           itemCount: items.length,
           itemBuilder: (context, index) {
