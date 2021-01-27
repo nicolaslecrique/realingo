@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/common_screens/one_button_screen.dart';
 import 'package:realingo_app/common_widgets/future_builder_wrapper.dart';
+import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/home/home_route.dart';
@@ -29,11 +30,31 @@ class EndLessonScreen extends StatelessWidget {
       loadingMessage: 'Saving lesson',
       future: updateProgram(context),
       childBuilder: (int _) => OneButtonScreen(
-        title: 'Lesson completed',
-        child: Center(child: Text('Congratulation')),
-        buttonText: 'OK',
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text('Congratulations!', style: StandardFonts.bigFunny),
+            Text('Lesson completed', style: StandardFonts.bigFunnyAccent),
+          ],
+        ),
+        buttonText: 'Ok',
         onButtonPressed: () => Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (route) => false),
       ),
     );
   }
+
+  /*
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilderWrapper<int>(
+      loadingMessage: 'Saving lesson',
+      future: updateProgram(context),
+      childBuilder: (int _) => OneButtonScreen(
+        title: 'Lesson completed',
+        child: Center(child: Text('Congratulation !')),
+        buttonText: 'Ok',
+        onButtonPressed: () => Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (route) => false),
+      ),
+    );
+  }*/
 }

@@ -33,6 +33,9 @@ class StandardFonts {
   static TextStyle bigFunny =
       GoogleFonts.indieFlower(fontSize: 32, fontWeight: FontWeight.w900, color: StandardColors.brandBlue);
 
+  static TextStyle bigFunnyAccent =
+      GoogleFonts.indieFlower(fontSize: 32, fontWeight: FontWeight.w900, color: StandardColors.accentColor);
+
   static TextStyle bigFunnyWhite =
       GoogleFonts.indieFlower(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white);
 
