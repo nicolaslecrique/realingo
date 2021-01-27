@@ -76,7 +76,7 @@ class _HomeRouteState extends State<HomeRoute> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  child: Text('Start lesson', style: StandardFonts.button),
+                  child: Text('Start lesson'),
                   onPressed: () => startLesson(),
                 ),
               )
