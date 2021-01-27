@@ -8,6 +8,7 @@ class ReplyRichText extends StatelessWidget {
   const ReplyRichText({Key key, this.itemState}) : super(key: key);
 
   @override
+  // ignore: missing_return
   Widget build(BuildContext context) {
     var defaultTextStyle = Theme.of(context).textTheme.headline5;
     var errorTextStyle = defaultTextStyle.apply(color: StandardColors.accentColor);
