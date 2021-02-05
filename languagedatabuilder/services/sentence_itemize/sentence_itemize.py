@@ -1,10 +1,12 @@
 import string
 from dataclasses import dataclass
-from typing import Set, List, Dict, Iterable
+from typing import Set, List, Dict, Iterable, Tuple
+import regex
 
+import ahocorasick
 import numpy as np
 
-from services.sentence_itemize.dict_loader import load_dict, WordSenseTranslation, DictionaryFromEnglish
+from services.sentence_itemize.dict_loader import load_dict, DictionaryFromEnglish
 
 
 def find_char_indexes_in_str(string: str, char: str):
@@ -13,100 +15,56 @@ def find_char_indexes_in_str(string: str, char: str):
     return np.where(np_buffer == ord(char))          # Find indices with numpy
 
 
-@dataclass
-class PrefixTreeNode:
-    is_item_end: bool # True if it's a word, no if it's only step toward
-    children: Dict[str, 'PrefixTreeNode']
-
-
-def build_prefix_tree(items: Iterable[str]) -> PrefixTreeNode:
-    root: PrefixTreeNode = PrefixTreeNode(is_item_end=False, children={})
-    for item in items:
-        current_node: PrefixTreeNode = root
-        split: List[str] = item.split()
-        for token in split:
-            if token not in current_node.children:
-                current_node.children[token] = PrefixTreeNode(is_item_end=False, children={})
-            current_node = current_node.children[token]
-        current_node.is_item_end = True
-    return root
-
-
 def load_items_from_dict(dict: DictionaryFromEnglish) -> Set[str]:
     items: Set[str] = set()
     for entry in dict.entries:
         for trans in entry.translations:
             item: str = trans.word
-            std_item = item.lower()
-            items.add(std_item)
+            std_item: str = item.lower()
+            if len(std_item) > 0:
+                items.add(std_item)
     return items
-
-
-def get_possible_prefixes(sentence_normalized: str, itemsTree: PrefixTreeNode, split_indexes: List[int]) -> List[int]:
-
-    result: List[int] = []
-    current_start: int = 0
-    current_node: PrefixTreeNode = itemsTree
-    for idx in split_indexes:
-        current_token = sentence_normalized[current_start:idx]
-        if current_token in current_node.children:
-            current_node = current_node.children[current_token]
-            if current_node.is_item_end:
-                result.append(idx)
-            current_start = idx + 1
-        else:
-            # not possible other prefixes
-            return result
-    return result
-
-# we suppose that sentence has not punctuation
-def split_sentence_in_items(sentence_normalized: str, itemsTree: PrefixTreeNode, split_indexes: List[int]) -> List[str]:
-
-    result: List[str] = []
-    start_idx: int = 0
-    current_list = []
-    for idx in split_indexes:
-        part: str = sentence_normalized[start_idx: idx]
-
-
-    pass
-
-
 
 vn_dict = load_dict("vi")
 items: Set[str] = load_items_from_dict(vn_dict)
-tree: PrefixTreeNode = build_prefix_tree(items)
+ahoc_automaton = ahocorasick.Automaton()
+for item in items:
+    ahoc_automaton.add_word(item, item)
+ahoc_automaton.make_automaton()
+
+# https://stackoverflow.com/questions/6314614/match-any-unicode-letter
+# https://stackoverflow.com/questions/6314614/match-any-unicode-letter
+# regex.UNICODE
+pattern = regex.compile(r'\p{L}')
+
+
+@dataclass(frozen=True)
+class ItemizedSentence:
+    sentence: str
+    items: List[Tuple[int, int]]
+
 
 with open(f"../../programs_data/vietnamese/open_subtitles.txt", "r") as open_subtitles_file:
-    print("start read lines")
     lines: List[str] = open_subtitles_file.read().splitlines()
-    transtable = str.maketrans(string.punctuation, '|'*len(string.punctuation))
-
+    result = []
+    errors = []
+    transtable = str.maketrans('', '', string.punctuation + string.whitespace)
     for line in lines:
-        sentence = line.lower()
-        without_punct = sentence.translate(transtable)
-        whitespace_idxes = find_char_indexes_in_str(without_punct, ' ')
-        sep_idxes = find_char_indexes_in_str(without_punct, '|')
-
-
-        for sep_idx in sep_idxes:
-            pass
-
-
-
-        split: List[str] = sentence.split()
-        current_str: List[str] = split
-        while len(current_str) > 0:
-            current_str_current_subset: List[str] = current_str
-            while len(current_str_current_subset) > 0:
-                str_to_find: str = string.join(current_str_current_subset)
-                if str_to_find in items:
-                    pass # TODO
-                else:
-                    # not found, we remove last item
-                    current_str_current_subset = current_str_current_subset[:-1]
-
-    print("end read lines")
+        sentence: str = line.lower()
+        split_result = [res for res in ahoc_automaton.iter_long(sentence)]
+        rebuilt_sentence = "".join(pair[1] for pair in split_result)
+        rebuilt_compacted = rebuilt_sentence.translate(transtable)
+        sentence_compacted = sentence.translate(transtable)
+        if sentence_compacted == rebuilt_compacted:
+            result.append(ItemizedSentence(
+                sentence=line,
+                items=[(pair[0] - len(pair[1]) + 1, pair[0]) for pair in split_result]
+            ))
+        else:
+            errors.append(ItemizedSentence(
+                sentence=line,
+                items=[(pair[0] - len(pair[1]) + 1, pair[0]) for pair in split_result]
+            ))
 
 
 
