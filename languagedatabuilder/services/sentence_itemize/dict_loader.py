@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Set
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 import json
@@ -32,10 +32,20 @@ class DictionaryFromEnglish:
     entries: List[DictEntry]
 
 
-def load_dict(language: str) -> DictionaryFromEnglish:
+def load_dict(file_path: str) -> DictionaryFromEnglish:
 
-    with open(f"data/{language}_from_english_dict.json", "r") as dict_file:
+    with open(file_path, "r") as dict_file:
         content: str = dict_file.read()
         dict: DictionaryFromEnglish = DictionaryFromEnglish.from_json(content)
         return dict
 
+
+def load_items_from_dict(dict: DictionaryFromEnglish) -> Set[str]:
+    items: Set[str] = set()
+    for entry in dict.entries:
+        for trans in entry.translations:
+            item: str = trans.word
+            std_item: str = item.lower()
+            if len(std_item) > 0:
+                items.add(std_item)
+    return items
