@@ -1,0 +1,4 @@
+dataclasses-json==0.5.2
+transformers==4.3.2
+torch==1.7.1
+sentencepiece==0.1.95
