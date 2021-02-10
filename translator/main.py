@@ -29,16 +29,18 @@ cache_to_print: List[str] = []
 
 while current_line_index < len(lines):
     end_line_index = current_line_index + batch_size
-    batch_lines = lines[current_line_index:end_line_index]
+    try:
+        batch_lines = lines[current_line_index:end_line_index]
+        translated: List[TranslatedSentence] = translator.translate(batch_lines)
+        batch_json_lines: List[str] = [t.to_json(ensure_ascii=False) + "\n" for t in translated]
+        cache_to_print.extend(batch_json_lines)
 
-    translated: List[TranslatedSentence] = translator.translate(batch_lines)
-    batch_json_lines: List[str] = [t.to_json(ensure_ascii=False) + "\n" for t in translated]
-    cache_to_print.extend(batch_json_lines)
-
-    if len(cache_to_print) > cache_to_print_size:
-        print(f"print line {current_line_index}")
-        with open(dest_file, "a+", encoding="utf-8") as translated_file:
-            translated_file.writelines(cache_to_print)
-        cache_to_print = []
+        if len(cache_to_print) > cache_to_print_size:
+            print(f"print line {current_line_index}")
+            with open(dest_file, "a+", encoding="utf-8") as translated_file:
+                translated_file.writelines(cache_to_print)
+            cache_to_print = []
+    except ValueError as e:
+        print(f"error at line {current_line_index}: '{e}'")
 
     current_line_index = end_line_index
