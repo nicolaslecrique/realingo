@@ -1,69 +1,112 @@
+import dataLoaders.LanguageDataLoader
+import dataLoaders.SentencesTranslationLoader
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import java.io.File
-import java.net.URL
 
 @Serializable
-data class WordInSentenceInData(
-    val word_standard_format: String,
+data class WordSenseInfo(
+    val wordSenseUri: String,
+    val wordInEnglish: String,
+    val translations: List<String>
+)
+
+@Serializable
+data class WordInSentenceInfo (
     val word_raw_format: String,
+    val word_standard_format: String,
     val min_index_in_sentence: Int,
     val max_index_in_sentence: Int,
-    val word_probability_in_sentence: Float
+    val word_probability_in_sentence: Float,
+    val wordSensesUri: List<String>
 )
 
 @Serializable
-data class SentenceData(
-    val raw_sentence: String,
-    val words_in_sentence: List<WordInSentenceInData>,
-    val sentence_probability: Float
-)
-
-@Serializable
-data class LanguageData(
-    val sentences: List<SentenceData>
-)
-
-@Serializable
-data class TranslatedSentence(
-    val original_sentence: String,
-    val translated_sentence: String,
+data class SentenceInfo(
+    val rawSentence: String,
+    val sentenceProbability: Float,
+    val translation: String,
     val back_translation: String,
-    val confidence: Float  // number between zero and one, for now: one if back-translation is equals to original sentence
+    val words: List<WordInSentenceInfo>
 )
 
 @Serializable
-data class SentencesTranslation(
-    val translated_sentences: List<TranslatedSentence>
+data class ProgramData(
+    val sentences: List<SentenceInfo>,
+    val wordSenses: List<WordSenseInfo>
 )
 
+fun extractProgramData() : ProgramData {
+    val languageData = LanguageDataLoader.load("./language_data/vietnamese/language_data_vietnamese_100000.json")
+    val translations = SentencesTranslationLoader.load("./language_data/vietnamese/translation_vn_fr_100000.json")
+    val dict = BilingualDictBuilder.load("vi", "fr")
 
-class FileLoader {
+    val translationMap = translations.associateBy { it.original_sentence }
+    val wordSenseMap = dict.entries
+        .groupBy { it.key.word }
+        .mapValues { p -> p.value.flatMap { it.value }}
+        .mapValues { l -> l.value.map { entry ->
+            WordSenseInfo(
+                "${entry.definition.word}-${entry.definition.type}-${entry.definition.definition}",
+                entry.definition.word,
+                entry.translations.map { it.word }
+            )
+        } }
+    // one word str -> several words (diff by genre, number...) -> several DictEntry for each word
+    // the merge str -> several Dict Entry
 
-    companion object {
-        fun getFileFromResource(fileName: String): File {
-            val classLoader: ClassLoader = FileLoader::class.java.classLoader
-            val resource: URL = classLoader.getResource(fileName)!!
-            return File(resource.toURI())
+    var nbSentencesOk = 0
+    var nbSentencesWithWordMissing = 0
+    var nbSentencesByMissingWord = mutableMapOf<String,Int>()
+    val sentences = languageData.sentences
+        .mapNotNull { s ->
+            val rawSentence = s.raw_sentence
+            val sentenceProba = s.sentence_probability
+            val translated = translationMap[rawSentence]
+            val wordSenses = s.words_in_sentence.map {
+                val senses = wordSenseMap[it.word_standard_format]
+                it to senses
+            }
+            if ( translated == null || wordSenses.any { it.second == null }){
+                nbSentencesWithWordMissing++
+                println("sentence skipped '$rawSentence' because of word '${wordSenses.filter { it.second == null }.map { it.first.word_standard_format }}'")
+                for (word in wordSenses.filter { it.second == null }){
+                    nbSentencesByMissingWord.putIfAbsent(word.first.word_standard_format, 0)
+                    nbSentencesByMissingWord[word.first.word_standard_format] = nbSentencesByMissingWord[word.first.word_standard_format] !! + 1
+                }
+                null
+            } else {
+                nbSentencesOk++
+                val translation = translated.translated_sentence
+                val backTranslation = translated.back_translation
+                SentenceInfo(
+                    rawSentence,
+                    sentenceProba,
+                    translation,
+                    backTranslation,
+                    wordSenses.map { pair ->
+                        WordInSentenceInfo(
+                            pair.first.word_raw_format,
+                            pair.first.word_standard_format,
+                            pair.first.min_index_in_sentence,
+                            pair.first.max_index_in_sentence,
+                            pair.first.word_probability_in_sentence,
+                            pair.second!!.map { it.wordSenseUri }
+                        )
+                    }
+                )
+            }
         }
-    }
 
-}
+    val sortedByDescending = nbSentencesByMissingWord.toList().sortedByDescending { it.second }
 
-@Serializable
-data class SentenceWithTranslation(val sentence: SentenceData, val translation: TranslatedSentence)
+    val allUsedSenseUris = sentences
+        .flatMap { it.words }
+        .flatMap { it.wordSensesUri }
+        .toSet()
 
-fun extractSentences() : List<SentenceWithTranslation> {
-    val languageDataStr = FileLoader.getFileFromResource("./language_data/vietnamese/language_data_vietnamese_100000.json").readText()
-    val languageData = Json.decodeFromString<LanguageData>(languageDataStr)
+    val wordSenses = wordSenseMap
+        .flatMap { it.value }
+        .toSet()
+        .filter { it.wordSenseUri in allUsedSenseUris }
 
-    val translationsStr = FileLoader.getFileFromResource("./language_data/vietnamese/translation_vn_fr_100000.json").readText()
-    val translations = Json.decodeFromString<SentencesTranslation>(translationsStr)
-    val translationMap = translations.translated_sentences.associateBy { it.original_sentence }
-
-    val sentencesWithTranslation = languageData.sentences
-        .map { SentenceWithTranslation(it, translationMap.getValue(it.raw_sentence)) }
-
-    return sentencesWithTranslation
+    return ProgramData(sentences, wordSenses)
 }

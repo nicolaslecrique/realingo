@@ -1,21 +1,32 @@
 package poc
 
-import SentenceInfo
+import ProgramBuilderV2.SentenceTranslatedItemized
 
+data class ItemToSentences (
+    val item: String,
+    val sentences: List<SentenceTranslatedItemized>
+    )
 
-fun sortWordBySentenceEnabledCount(sentencesDataset: List<SentenceInfo>, nbWords: Int) :  List<String> {
+data class SentenceWithSetOfItem(
+    val sentence: SentenceTranslatedItemized,
+    val items: Set<String>
+)
 
-    val sentences: List<Set<String>> = sentencesDataset.map { s -> s.words.map { it.word_standard_format }.toSet() }
+fun sortWordBySentenceEnabledCount(sentencesDataset: List<SentenceTranslatedItemized>, nbWords: Int) :  List<ItemToSentences> {
+
+    val sentencesWithSet = sentencesDataset.map {
+        SentenceWithSetOfItem(it, it.itemized.items.map { it.item_std_format }.toSet()) }
+
     val alreadyUsedWords = mutableSetOf<String>()
-    val remainingWords = sentences.flatten().toMutableSet()
-    val result = mutableListOf<String>()
-    val remainingSentences = sentences.toMutableSet()
+    val remainingWords = sentencesWithSet.map { it.items }.flatten().toMutableSet()
+    val result = mutableListOf<ItemToSentences>()
+    val remainingSentences = sentencesWithSet.toMutableSet()
 
     while (alreadyUsedWords.size < nbWords) {
 
-        val wordToCountSentence = mutableMapOf<String, MutableList<Set<String>>>()
+        val wordToCountSentence = mutableMapOf<String, MutableList<SentenceWithSetOfItem>>()
         for (sentence in remainingSentences) { // loop over all remaining sentences
-            val notAlreadyKnownWords = sentence subtract alreadyUsedWords
+            val notAlreadyKnownWords = sentence.items subtract alreadyUsedWords
             if (notAlreadyKnownWords.size == 1) { // consider sentences that miss only one word
                 val missingWord =
                     notAlreadyKnownWords.first(); // get the word that would allow this sentence to be known
@@ -31,7 +42,7 @@ fun sortWordBySentenceEnabledCount(sentencesDataset: List<SentenceInfo>, nbWords
         } else {
             alreadyUsedWords.add(nextWordWithSentences.key);
             remainingWords.remove(nextWordWithSentences.key)
-            result.add(nextWordWithSentences.key)
+            result.add(ItemToSentences(nextWordWithSentences.key, nextWordWithSentences.value.map { it.sentence }))
             remainingSentences.removeAll(nextWordWithSentences.value)
         }
     }

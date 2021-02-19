@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import kotlin.system.measureNanoTime
 
 @Serializable
 data class WordSenseTranslation(
@@ -96,7 +95,7 @@ class DictLoader {
             val word = getMainString(engDefStr)
             return WordSenseEnglishDefinition(word, type, def, phonetic, see)
         }
-        
+
         private fun getMainString(wholeString: String): String {
             val wholeStringTrimed = wholeString.trim()
             val startNotWordIndex = wholeStringTrimed.indexOfFirst { it in listOf('{', '(', '/', '[') }

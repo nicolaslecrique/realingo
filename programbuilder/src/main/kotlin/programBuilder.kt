@@ -1,10 +1,10 @@
 import kotlinx.serialization.Serializable
 
-private fun computeSentenceScoreForWord(sentence: SentenceWithWordToLean): Float {
+private fun computeSentenceScoreForWord(sentence: SentenceInfo, wordToLean: WordInSentenceInfo): Float {
 
-    val learnableWordProba = sentence.wordToLean.word_probability_in_sentence
-    val sentenceProba = sentence.sentence.sentence.sentence_probability
-    val translationSimilarity = computeBackTranslationSimilarity(sentence.sentence)
+    val learnableWordProba = wordToLean.word_probability_in_sentence
+    val sentenceProba = sentence.sentenceProbability
+    val translationSimilarity = computeBackTranslationSimilarity(sentence.rawSentence, sentence.back_translation)
 
     return learnableWordProba * sentenceProba * translationSimilarity
 }
@@ -13,13 +13,12 @@ private fun splitTextInSubWords(text: String): List<String>{
     return text.split("\\P{L}+".toRegex()).filter { it.isNotBlank() }
 }
 
-private fun isSentenceOkForWord(sentence: SentenceWithWordToLean) : Boolean {
+private fun isSentenceOkForWord(sentence: SentenceInfo, wordToLean: WordInSentenceInfo) : Boolean {
     // sentence ok if learned word is in back translation in identical form
+    val wordToLearnInBackTranslation = sentence.back_translation.contains(wordToLean.word_raw_format)
 
-    val wordToLearnInBackTranslation = sentence.sentence.translation.back_translation
-        .contains(sentence.wordToLean.word_raw_format)
-
-    val text = sentence.sentence.sentence.raw_sentence
+    // and if all words are learnable
+    val text = sentence.rawSentence
 
     // http://www.regular-expressions.info/unicode.html#prop
     // split in words or subwords
@@ -27,7 +26,7 @@ private fun isSentenceOkForWord(sentence: SentenceWithWordToLean) : Boolean {
         .filter { it.isNotBlank() }
         .joinToString()
     val subWordsByLearnableWords =
-        sentence.sentence.sentence.words_in_sentence
+        sentence.words
             .map { it.word_raw_format }
             .flatMap { splitTextInSubWords(it) }
             .joinToString()
@@ -41,10 +40,10 @@ private fun isSentenceOkForWord(sentence: SentenceWithWordToLean) : Boolean {
 }
 
 // compute number of words common between sentence and back translation
-private fun computeBackTranslationSimilarity(sentence: SentenceWithTranslation): Float {
+private fun computeBackTranslationSimilarity(sentence: String, backTranslation: String): Float {
 
-    val sentenceSplit = sentence.sentence.raw_sentence.split(' ').toSet()
-    val backTranslationSplit = sentence.translation.back_translation.split(' ').toSet()
+    val sentenceSplit = sentence.split(' ').toSet()
+    val backTranslationSplit = backTranslation.split(' ').toSet()
     val refSize = Integer.max(
         sentenceSplit.size,
         backTranslationSplit.size
@@ -53,11 +52,11 @@ private fun computeBackTranslationSimilarity(sentence: SentenceWithTranslation):
 
 }
 
-private fun computeHint(sentence: SentenceWithWordToLean): String {
+private fun computeHint(sentence: SentenceInfo): String {
 
     // we fill words not in back translation
-    val sentenceSplit = sentence.sentence.sentence.raw_sentence.split(' ')
-    val backTranslationSplit = sentence.sentence.translation.back_translation.split(' ').toSet()
+    val sentenceSplit = sentence.rawSentence.split(' ')
+    val backTranslationSplit = sentence.back_translation.split(' ').toSet()
 
     return sentenceSplit.joinToString(" ") {
         if (backTranslationSplit.contains(it)) "_".repeat(it.length) else it
@@ -65,7 +64,12 @@ private fun computeHint(sentence: SentenceWithWordToLean): String {
 }
 
 @Serializable
-data class SentenceWithWordToLean(val sentence: SentenceWithTranslation, val wordToLean: WordInSentenceInData)
+data class SentenceWithWordToLean(
+    val sentence: SentenceInfo,
+    val wordToLean: WordInSentenceInfo,
+    val hint: String,
+    val score: Float
+)
 
 @Serializable
 data class SentenceWithInfo(val sentence: SentenceWithWordToLean, val hint: String, val score: Float)
@@ -77,48 +81,65 @@ fun toProgram(rawProgram: RawProgram): LearningProgram {
                 it.first,
                 it.second.map { s ->
                     Sentence(
-                        s.sentence.sentence.sentence.raw_sentence,
-                        s.sentence.sentence.translation.translated_sentence,
-                        s.hint
+                        s.sentence.rawSentence,
+                        s.sentence.translation,
+                        s.hint,
+                        s.sentence.words.map { w ->
+                            ItemInSentence(
+                                //w.word_raw_format,
+                                w.word_standard_format,
+                                w.wordSensesUri,
+                                w.min_index_in_sentence,
+                                w.max_index_in_sentence
+                            )
+                        }
+                        ) }
                     )
                 }
-            )
-        }
-    return LearningProgram(result)
+
+    // TODO NICO DELETE
+    val dict = rawProgram.wordSenses.map { ItemDictionaryEntry(it.wordSenseUri, listOf()) }
+
+    return LearningProgram(result, ItemDictionary(dict))
 }
 
 @Serializable
-data class RawProgram(val itemsByWord: List<Pair<String, List<SentenceWithInfo>>>)
+data class RawProgram(
+    val itemsByWord: List<Pair<String, List<SentenceWithWordToLean>>>,
+    val wordSenses: List<WordSenseInfo>
+)
 
 fun buildRawProgram(
     sortedWordsToLearn: List<String>,
-    sentences: List<SentenceWithTranslation>,
+    programData: ProgramData,
     nbSentencesByItem: Int
 ): RawProgram {
     val setOfWordsToLearn = sortedWordsToLearn.toSet()
 
     val wordToRank = sortedWordsToLearn.mapIndexed { index, word -> word to index }.toMap()
 
+    val sentences = programData.sentences
+
     val sentencesWithWordToLean = sentences
-        .filter { s -> s.sentence.words_in_sentence.all { setOfWordsToLearn.contains(it.word_standard_format) } }
+        .filter { s -> s.words.all { setOfWordsToLearn.contains(it.word_standard_format) } }
         .map { s ->
+            val hardestWord = s.words.maxByOrNull { wordToRank.getValue(it.word_standard_format) }!!
             SentenceWithWordToLean(
                 s,
-                s.sentence.words_in_sentence.maxByOrNull { wordToRank.getValue(it.word_standard_format) }!!
+                hardestWord,
+                  computeHint(s),
+                computeSentenceScoreForWord(s, hardestWord)
             )
-        }
-        .map { s ->
-            SentenceWithInfo(s, computeHint(s), computeSentenceScoreForWord(s))
         }
 
     // associate each sentence to its less frequent word in the sentence
     // then filter the 100 best sentences for each word
     val rawProgram = sentencesWithWordToLean
-        .groupBy { s -> s.sentence.wordToLean.word_standard_format }
+        .groupBy { s -> s.wordToLean.word_standard_format }
         .mapValues { pair ->
 
             val sortedOkSentences = pair.value
-                .filter { isSentenceOkForWord(it.sentence) }
+                .filter { isSentenceOkForWord(it.sentence, it.wordToLean) }
                 .sortedByDescending { it.score }
 
             val withoutDupSentences = removeDuplicates(sortedOkSentences)
@@ -127,20 +148,32 @@ fun buildRawProgram(
         }
         .toList()
         .sortedBy { wordToRank.getValue(it.first) }
-    return RawProgram(rawProgram)
+
+    val wordSensesUrisInProgram = rawProgram
+        .flatMap { it.second }
+        .flatMap { it.sentence.words }
+        .flatMap { it.wordSensesUri }
+        .toSet()
+
+    val wordSensesInProgram = programData.wordSenses
+        .filter { it.wordSenseUri in wordSensesUrisInProgram }
+
+    return RawProgram(rawProgram, wordSensesInProgram)
 }
 
-private fun removeDuplicates(sortedSentences: List<SentenceWithInfo>): List<SentenceWithInfo> {
+
+
+private fun removeDuplicates(sortedSentences: List<SentenceWithWordToLean>): List<SentenceWithWordToLean> {
     val setUniqueSentences = mutableSetOf<String>()
     val setUniqueTranslations = mutableSetOf<String>()
-    val result = mutableListOf<SentenceWithInfo>()
+    val result = mutableListOf<SentenceWithWordToLean>()
     for (sentence in sortedSentences){
         // two sentences are "identical" if they contains the same words to learn in the same order
-        val sentenceKey = sentence.sentence.sentence.sentence
-            .words_in_sentence
+        val sentenceKey = sentence.sentence
+            .words
             .joinToString("_") { it.word_standard_format }
 
-        val translation = sentence.sentence.sentence.translation.translated_sentence
+        val translation = sentence.sentence.translation
 
         if ( ! setUniqueSentences.contains(sentenceKey) &&
             ! setUniqueTranslations.contains(translation)){
