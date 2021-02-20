@@ -57,6 +57,9 @@ class DictLoader {
                 .filter { ! it.startsWith("#") && ! it.startsWith("]]") }
 
             val words = removedComments.map { toDictEntry(it) }
+                .filter {
+                    it.definition.type != null && it.definition.type !in setOf("prop", "interj", "proverb", "phrase", "contraction")
+                }
 
             return DictionaryFromEnglish(words)
         }

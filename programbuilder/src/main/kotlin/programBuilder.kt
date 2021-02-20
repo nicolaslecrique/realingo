@@ -88,7 +88,6 @@ fun toProgram(rawProgram: RawProgram): LearningProgram {
                             ItemInSentence(
                                 //w.word_raw_format,
                                 w.word_standard_format,
-                                w.wordSensesUri,
                                 w.min_index_in_sentence,
                                 w.max_index_in_sentence
                             )

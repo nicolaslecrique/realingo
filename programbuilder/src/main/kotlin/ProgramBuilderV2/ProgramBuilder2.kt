@@ -30,28 +30,39 @@ class ProgramBuilder2 {
             val itemized = ItemizedSentencesLoader.load("./language_data/vietnamese/itemized_sentences_vn.json")
 
             val dict = DictLoader.load("vi")
-            val itemDict = buildDictionary(dict)
+            val dictValidEntries = dict.entries
+                .flatMap { it.translations.map { it.word } }
+                .toSet()
 
             val validSentences = getValidSentences(itemized, translations)
-            val itemToSentences = sortWordBySentenceEnabledCount(validSentences, 1000)
+            val itemToAllSentences = sortWordBySentenceEnabledCount(validSentences, 3000)
 
-            val itemToSentencesFilteredForWordToLearn = itemToSentences.map { itemToSentences ->
+            val allowedItems = mutableSetOf<String>()
+
+            val validItemsToSentences = itemToAllSentences
+                .filter { it.item in dictValidEntries }
+                .filter { itemToSentences ->
+                    val nbSentencesOk = itemToSentences.sentences.count { sentence ->
+                        // a sentence is ok if it doesn't contain item that has been removed
+                        sentenceOkForItem(sentence, itemToSentences.item, allowedItems)
+                    }
+                    if (nbSentencesOk > 0){
+                        allowedItems.add(itemToSentences.item)
+                    }
+                    nbSentencesOk > 0
+                }
+                .map { itemToSentences ->
+                    val sentencesOk = itemToSentences.sentences
+                        .filter {sentenceOkForItem(it, itemToSentences.item, allowedItems)}
+
                 ItemToSentences(
                     itemToSentences.item,
-                    itemToSentences.sentences
-                        .filter {sentenceOkForItem(it, itemToSentences.item)} // back translation must contain learned word
-                        //.sortedByDescending { it.translation.original_sentence.length } // we prefer longer sentences
+                    sentencesOk // back translation must contain learned word
                 )
             }
-                .filter { itemToSentences -> // filter words for which there is not enough sentences (should be very few)
-                    if (itemToSentences.sentences.isEmpty()) {
-                        println("remove item '${itemToSentences.item}'")
-                    }
-                    itemToSentences.sentences.isNotEmpty()
-                }
 
 
-            val items = itemToSentencesFilteredForWordToLearn.map { itemToSentences ->
+            val items = validItemsToSentences.map { itemToSentences ->
                 Item(
                     itemStdFormat = itemToSentences.item,
                     sentences = itemToSentences.sentences.map { sentence ->
@@ -71,6 +82,8 @@ class ProgramBuilder2 {
                 )
             }
 
+            val itemDict = buildDictionary(dict, allowedItems)
+
             println("hello")
             return LearningProgram(items, itemDict)
         }
@@ -85,11 +98,12 @@ val regex = "\\P{L}+".toRegex()
 
 
 
-private fun buildDictionary(dict: DictionaryFromEnglish) : ItemDictionary {
+private fun buildDictionary(dict: DictionaryFromEnglish, items: Set<String>) : ItemDictionary {
 
     val listEntries = dict.entries
         .flatMap { e -> e.translations.map { e to it } } // each entry / translation
         .groupBy { it.second.word }
+        .filter { it.key in items }
         .map { wordToPair ->
             ItemDictionaryEntry(
                 itemStdForm = wordToPair.key,
@@ -101,14 +115,16 @@ private fun buildDictionary(dict: DictionaryFromEnglish) : ItemDictionary {
                 }
             )
         }
+
     return ItemDictionary(listEntries)
 }
 
-private fun sentenceOkForItem(sentence: SentenceTranslatedItemized, itemStdFormat: String): Boolean {
+private fun sentenceOkForItem(sentence: SentenceTranslatedItemized, itemStdFormat: String, usableItems: Set<String>): Boolean {
     val foundItem = sentence.itemized.items.first { it.item_std_format == itemStdFormat }
     val rawItem = sentence.itemized.sentence.substring(foundItem.min_index, foundItem.max_index + 1).toLowerCase()
     val itemFoundInBackTranslation = sentence.translation.back_translation.toLowerCase().contains(rawItem)
-    return itemFoundInBackTranslation
+    val onlyUsableItems = sentence.itemized.items.all { it.item_std_format == itemStdFormat || it.item_std_format in usableItems }
+    return itemFoundInBackTranslation && onlyUsableItems
 }
 
 private fun computeHint(sentence: SentenceTranslatedItemized): String {
@@ -142,7 +158,9 @@ private fun getValidSentences(
         .filter { sentenceToItemizedDict.containsKey(it.original_sentence) } // we can itemize the sentence
         .map { SentenceTranslatedItemized(it, sentenceToItemizedDict.getValue(it.original_sentence)) }
         .filter { it.translation.translation_score > 0.99 } // filter when translation score is too low
-        .filter { it.itemized.items.isNotEmpty() && it.itemized.items.first().min_index == 0 } // remove sentence starting with "- "
+        .filter { it.itemized.items.isNotEmpty() } // remove empty sentences
+        .filter { it.itemized.items.first().min_index == 0 } // remove sentence starting with "- "
+        .filter { ! it.itemized.sentence.contains("...") }
         .filter { s -> // Most common word must not represent more that half the sentence.
             val maxByOrNull =
                 s.itemized.items.groupingBy { it.item_std_format }.eachCount().maxByOrNull { it.value }

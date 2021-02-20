@@ -38,7 +38,7 @@ fun sortWordBySentenceEnabledCount(sentencesDataset: List<SentenceTranslatedItem
 
         val nextWordWithSentences = wordToCountSentence.maxByOrNull { it.value.count() }
         if (nextWordWithSentences == null){
-            throw Exception("fuck")
+            throw Exception("Cas not managed: no single word enable more sentences, we must manage case to add two words at a time")
         } else {
             alreadyUsedWords.add(nextWordWithSentences.key);
             remainingWords.remove(nextWordWithSentences.key)
