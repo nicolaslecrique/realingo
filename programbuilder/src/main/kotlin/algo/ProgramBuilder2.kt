@@ -160,14 +160,14 @@ private fun getValidSentences(
         .filter { it.translation.translation_score > 0.99 } // filter when translation score is too low
         .filter { it.itemized.items.isNotEmpty() } // remove empty sentences
         .filter { it.itemized.items.first().min_index == 0 } // remove sentence starting with "- "
-        .filter { ! it.itemized.sentence.contains("...") }
+        .filter { ! it.itemized.sentence.contains("..") }
         .filter { s -> // Most common word must not represent more that half the sentence.
             val maxByOrNull =
                 s.itemized.items.groupingBy { it.item_std_format }.eachCount().maxByOrNull { it.value }
             if (maxByOrNull == null) {
                 false
             } else {
-                maxByOrNull.value == 1 || maxByOrNull.value * 2 <= s.itemized.items.size
+                maxByOrNull.value == 1 || maxByOrNull.value * 2 < s.itemized.items.size
             }
         }// group items
         .groupBy { it.itemized.items.map { i -> i.item_std_format }.toSet() }
