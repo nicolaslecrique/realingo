@@ -49,7 +49,7 @@ class DictLoader {
 
         fun load(languageCode: String): DictionaryFromEnglish{
 
-            val languageDataStr = FileLoader.getFileFromResource("./language_data/dict2/en-$languageCode-enwiktionary.txt")
+            val languageDataStr = FileLoader.getFileFromResource("./language_data/dict/en-$languageCode-enwiktionary.txt")
                 .readLines()
 
             // # is for comment, ]] is a bad line in the middle of the file

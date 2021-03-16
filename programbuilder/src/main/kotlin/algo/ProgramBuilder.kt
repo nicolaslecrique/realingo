@@ -1,12 +1,12 @@
 package ProgramBuilderV2
 
-import Item
-import ItemDictionary
-import ItemDictionaryDefinition
-import ItemDictionaryEntry
-import ItemInSentence
-import LearningProgram
-import Sentence
+import ProgramBuilderItem
+import ProgramBuilderItemDictionary
+import ProgramBuilderItemDictionaryDefinition
+import ProgramBuilderItemDictionaryEntry
+import ProgramBuilderItemInSentence
+import ProgramBuilderLearningProgram
+import ProgramBuilderSentence
 import dataLoaders.DictLoader
 import dataLoaders.DictionaryFromEnglish
 import dataLoaders.ItemizedSentence
@@ -22,10 +22,10 @@ data class SentenceTranslatedItemized(
     val itemized: ItemizedSentence
 )
 
-class ProgramBuilder2 {
+class ProgramBuilder {
 
     companion object {
-        fun buildProgram() : LearningProgram {
+        fun buildProgram() : ProgramBuilderLearningProgram {
             val translations = SentencesTranslationLoader.load("./language_data/vietnamese/open_subtitles_translated.jsonl")
             val itemized = ItemizedSentencesLoader.load("./language_data/vietnamese/itemized_sentences_vn.json")
 
@@ -63,15 +63,15 @@ class ProgramBuilder2 {
 
 
             val items = validItemsToSentences.map { itemToSentences ->
-                Item(
+                ProgramBuilderItem(
                     itemStdFormat = itemToSentences.item,
                     sentences = itemToSentences.sentences.map { sentence ->
-                        Sentence(
+                        ProgramBuilderSentence(
                             sentence = sentence.itemized.sentence,
                             translation = sentence.translation.translated_sentence,
                             hint = computeHint(sentence),
                             itemsInSentence = sentence.itemized.items.map { itemizedSentenceItem ->
-                                ItemInSentence(
+                                ProgramBuilderItemInSentence(
                                     itemStdForm = itemizedSentenceItem.item_std_format,
                                     startIndexInSentence = itemizedSentenceItem.min_index,
                                     endIndexInSentence = itemizedSentenceItem.max_index
@@ -85,7 +85,7 @@ class ProgramBuilder2 {
             val itemDict = buildDictionary(dict, allowedItems)
 
             println("hello")
-            return LearningProgram(items, itemDict)
+            return ProgramBuilderLearningProgram(items, itemDict)
         }
 
 
@@ -98,17 +98,17 @@ val regex = "\\P{L}+".toRegex()
 
 
 
-private fun buildDictionary(dict: DictionaryFromEnglish, items: Set<String>) : ItemDictionary {
+private fun buildDictionary(dict: DictionaryFromEnglish, items: Set<String>) : ProgramBuilderItemDictionary {
 
     val listEntries = dict.entries
         .flatMap { e -> e.translations.map { e to it } } // each entry / translation
         .groupBy { it.second.word }
         .filter { it.key in items }
         .map { wordToPair ->
-            ItemDictionaryEntry(
+            ProgramBuilderItemDictionaryEntry(
                 itemStdForm = wordToPair.key,
                 englishDefinitions = wordToPair.value.map {
-                    ItemDictionaryDefinition(
+                    ProgramBuilderItemDictionaryDefinition(
                         itemInEnglish = it.first.definition.word,
                         definitionInEnglish = it.first.definition.definition ?: "" + if (it.second.context != null) "[${it.second.context}]" else ""
                     )
@@ -116,7 +116,7 @@ private fun buildDictionary(dict: DictionaryFromEnglish, items: Set<String>) : I
             )
         }
 
-    return ItemDictionary(listEntries)
+    return ProgramBuilderItemDictionary(listEntries)
 }
 
 private fun sentenceOkForItem(sentence: SentenceTranslatedItemized, itemStdFormat: String, usableItems: Set<String>): Boolean {
