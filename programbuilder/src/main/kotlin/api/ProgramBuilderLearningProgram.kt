@@ -24,7 +24,7 @@ data class ProgramBuilderItemInSentence(
 
 @Serializable
 data class ProgramBuilderItemDictionary(
-        val entry: List<ProgramBuilderItemDictionaryEntry>
+        val entries: Map<String, List<ProgramBuilderItemDictionaryDefinition>>
 )
 
 @Serializable
