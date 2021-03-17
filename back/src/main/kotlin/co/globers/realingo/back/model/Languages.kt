@@ -6,7 +6,7 @@ enum class Language(
         val label: String
 ) {
     Vietnamese("vn", "vietnamese", "Vietnamese"),
-    French("fr", "french", "French");
+    English("en", "english", "English");
 
     companion object {
         fun fromUri(uri: String): Language {

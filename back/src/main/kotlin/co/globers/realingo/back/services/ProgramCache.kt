@@ -10,18 +10,27 @@ data class ProgramKey(val learnedLanguage: Language, val originLanguage: Languag
 class ProgramCache {
 
     val availableOriginLanguages: List<Language> = listOf(
-        Language.French
+        Language.English
     )
 
     val availableLearnedLanguages: List<Language> = listOf(
         Language.Vietnamese
     )
 
-    private val availablePrograms = listOf(
-        ProgramKey(Language.Vietnamese, Language.French)
+    private val vnFromEnglishProgram = loadProgram(
+        learnedLanguage = Language.Vietnamese,
+        originLanguage = Language.English
     )
 
-    val programs: Map<ProgramKey, LearningProgram> = availablePrograms
-        .map { it to loadProgram(it.originLanguage, it.learnedLanguage) }
-        .toMap()
+    val availablePrograms = mapOf(
+        ProgramKey(
+            learnedLanguage = Language.Vietnamese,
+            originLanguage= Language.English) to vnFromEnglishProgram.uri
+    )
+
+    val programsByUri = mapOf(
+        vnFromEnglishProgram.uri to vnFromEnglishProgram
+    )
+
+
 }

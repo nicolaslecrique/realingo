@@ -1,8 +1,5 @@
 package co.globers.realingo.back.restapi.v0
 
-import co.globers.realingo.back.model.ItemToLearn
-import co.globers.realingo.back.model.LearningProgram
-import co.globers.realingo.back.model.Sentence
 import co.globers.realingo.back.model.Language
 import co.globers.realingo.back.services.ProgramCache
 import co.globers.realingo.back.services.ProgramKey
@@ -12,46 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-data class RestLanguage(
-        val uri: String,
-        val label: String
-){
-    constructor(language: Language): this(language.uri, language.label)
-}
 
-data class RestSentence(
-        val uri: String,
-        val sentence: String,
-        val translation: String,
-        val hint: String
-) {
-    constructor(sentence: Sentence) : this(sentence.uri, sentence.sentence, sentence.translation, sentence.hint)
-}
-
-data class RestItemToLearn(
-        val uri: String,
-        val label: String,
-        val sentences: List<RestSentence>
-) {
-    constructor(item: ItemToLearn) : this(item.uri, item.label, item.sentences.map { RestSentence(it) })
-}
-
-data class RestLearningProgram(
-        val uri: String,
-        val originLanguageUri: String,
-        val learnedLanguageUri: String,
-        val itemsToLearn: List<RestItemToLearn>
-){
-    constructor(program: LearningProgram) :
-        this(
-            program.uri,
-            program.originLanguageUri,
-            program.learnedLanguageUri,
-            program.itemsToLearn.map { RestItemToLearn(it) }
-        )
-}
-
-class RestSentenceRecord(val record: ByteArray)
 
 // variable to suppress on this deprecate
 @Suppress("DEPRECATION")
@@ -63,12 +21,12 @@ class RestApi(val programCache: ProgramCache, val textToSpeech: TextToSpeech) {
     @GetMapping("/api/v0/available_origin_languages", produces = [jsonUtf8Header])
     suspend fun getAvailableOriginLanguages(
             @RequestParam(value = "learned_language_uri") learnedLanguageUri: String): List<RestLanguage> {
-        return programCache.availableOriginLanguages.map { RestLanguage(it) }
+        return programCache.availableOriginLanguages.map { ModelToRestAdapter.toRest(it) }
     }
 
     @GetMapping("/api/v0/available_learned_languages", produces = [jsonUtf8Header])
     suspend fun getAvailableLearnedLanguages(): List<RestLanguage> {
-        return programCache.availableLearnedLanguages.map { RestLanguage(it) }
+        return programCache.availableLearnedLanguages.map { ModelToRestAdapter.toRest(it) }
     }
 
     // dart client use latin1 format if utf-8 not explicitly specified by the server
@@ -81,10 +39,22 @@ class RestApi(val programCache: ProgramCache, val textToSpeech: TextToSpeech) {
         val originLanguage = Language.fromUri(originLanguageUri)
         val learnedLanguage = Language.fromUri(learnedLanguageUri)
 
-        val program = programCache.programs.getValue(ProgramKey(learnedLanguage, originLanguage))
-        val restProgram = RestLearningProgram(program)
-
+        val programUri = programCache.availablePrograms.getValue(ProgramKey(learnedLanguage, originLanguage))
+        val program = programCache.programsByUri.getValue(programUri)
+        val restProgram = ModelToRestAdapter.toRest(program)
         return restProgram
+    }
+
+    @GetMapping("/api/v0/lesson", produces = [jsonUtf8Header])
+    suspend fun getLesson(
+        @RequestParam(value = "program_uri") programUri: String,
+        @RequestParam(value = "lesson_uri") lessonUri: String
+    ): RestLesson {
+
+        val program = programCache.programsByUri.getValue(programUri)
+        val lesson = program.lessons.first { it.uri == lessonUri }
+        val restLesson = ModelToRestAdapter.toRest(lesson)
+        return restLesson
     }
 
     @GetMapping("/api/v0/sentence_record", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
