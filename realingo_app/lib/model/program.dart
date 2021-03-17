@@ -8,31 +8,62 @@ class Language {
   const Language(this.uri, this.label);
 }
 
+// ------- Lesson -----------
+
 @immutable
-class ItemToLearnSentence {
+class ItemTranslation {
+  final String translation;
+  final String englishDefinition;
+
+  const ItemTranslation(this.translation, this.englishDefinition);
+}
+
+@immutable
+class ItemInSentence {
+  final int startIndex;
+  final int endIndex;
+  final String label;
+  final List<ItemTranslation> translations;
+
+  const ItemInSentence(this.startIndex, this.endIndex, this.label, this.translations);
+}
+
+@immutable
+class Sentence {
   final String uri;
   final String sentence;
   final String translation;
   final String hint;
+  final List<ItemInSentence> items;
 
-  const ItemToLearnSentence(this.uri, this.sentence, this.translation, this.hint);
+  const Sentence(this.uri, this.sentence, this.translation, this.hint, this.items);
 }
 
 @immutable
-class ItemToLearn {
+class Lesson {
   final String uri;
   final String label;
-  final List<ItemToLearnSentence> sentences;
+  final List<Sentence> sentences;
 
-  const ItemToLearn(this.uri, this.label, this.sentences);
+  const Lesson(this.uri, this.label, this.sentences);
+}
+
+// --------- Program -----------
+
+@immutable
+class LessonInProgram {
+  final String uri;
+  final String label;
+
+  const LessonInProgram(this.uri, this.label);
 }
 
 @immutable
 class LearningProgram {
   final String uri;
-  final List<ItemToLearn> itemsToLearn;
-  final Language learnedLanguage;
-  final Language originLanguage;
+  final Language originLanguageUri;
+  final Language learnedLanguageUri;
+  final List<LessonInProgram> lessons;
 
-  const LearningProgram(this.uri, this.itemsToLearn, this.learnedLanguage, this.originLanguage);
+  const LearningProgram(this.uri, this.originLanguageUri, this.learnedLanguageUri, this.lessons);
 }
