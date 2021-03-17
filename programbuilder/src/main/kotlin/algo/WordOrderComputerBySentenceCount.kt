@@ -1,6 +1,6 @@
 package poc
 
-import ProgramBuilderV2.SentenceTranslatedItemized
+import algo.SentenceTranslatedItemized
 
 data class ItemToSentences (
     val item: String,

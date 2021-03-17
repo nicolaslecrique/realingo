@@ -1,9 +1,8 @@
-package ProgramBuilderV2
+package algo
 
 import ProgramBuilderItem
 import ProgramBuilderItemDictionary
 import ProgramBuilderItemDictionaryDefinition
-import ProgramBuilderItemDictionaryEntry
 import ProgramBuilderItemInSentence
 import ProgramBuilderLearningProgram
 import ProgramBuilderSentence
@@ -53,7 +52,7 @@ class ProgramBuilder {
                 }
                 .map { itemToSentences ->
                     val sentencesOk = itemToSentences.sentences
-                        .filter {sentenceOkForItem(it, itemToSentences.item, allowedItems)}
+                        .filter { sentenceOkForItem(it, itemToSentences.item, allowedItems) }
 
                 ItemToSentences(
                     itemToSentences.item,
@@ -105,16 +104,14 @@ private fun buildDictionary(dict: DictionaryFromEnglish, items: Set<String>) : P
         .groupBy { it.second.word }
         .filter { it.key in items }
         .map { wordToPair ->
-            ProgramBuilderItemDictionaryEntry(
-                itemStdForm = wordToPair.key,
-                englishDefinitions = wordToPair.value.map {
+                wordToPair.key to
+                wordToPair.value.map {
                     ProgramBuilderItemDictionaryDefinition(
                         itemInEnglish = it.first.definition.word,
                         definitionInEnglish = it.first.definition.definition ?: "" + if (it.second.context != null) "[${it.second.context}]" else ""
                     )
                 }
-            )
-        }
+        }.toMap()
 
     return ProgramBuilderItemDictionary(listEntries)
 }

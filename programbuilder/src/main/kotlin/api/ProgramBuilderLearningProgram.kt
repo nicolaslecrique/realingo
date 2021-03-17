@@ -9,13 +9,6 @@ data class ProgramBuilderItemDictionaryDefinition(
 )
 
 @Serializable
-data class ProgramBuilderItemDictionaryEntry (
-        val itemStdForm: String,
-        val englishDefinitions: List<ProgramBuilderItemDictionaryDefinition>
-        )
-
-
-@Serializable
 data class ProgramBuilderItemInSentence(
         val itemStdForm: String,
         val startIndexInSentence: Int,
@@ -39,12 +32,6 @@ data class ProgramBuilderSentence(
 data class ProgramBuilderItem(
         val itemStdFormat: String,
         val sentences: List<ProgramBuilderSentence>
-)
-
-
-@Serializable
-data class ProgramBuilderLesson(
-        val items: List<ProgramBuilderItem>
 )
 
 
