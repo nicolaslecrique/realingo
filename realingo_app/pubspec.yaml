@@ -24,8 +24,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Local database
-  sqflite: ^1.3.2+1
 
   # manage relative path, used by sqflite
   path: ^1.7.0
@@ -72,8 +70,6 @@ dev_dependencies:
   # to serialize / unserialize data from rest API
   json_serializable: ^3.5.0
 
-  # to test sqlite code
-  sqflite_common_ffi: ^1.1.1
 
   # distance between strings (levenshtein..)
   edit_distance: ^0.4.1
