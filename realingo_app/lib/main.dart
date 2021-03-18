@@ -14,6 +14,8 @@ import 'design/constants.dart';
 void main() {
   if (AppConfig.deleteDataAtStartup) {
     // for debug
+    // cf. https://flutter.dev/docs/cookbook/persistence/sqlite, needed to access SharedPreference
+    WidgetsFlutterBinding.ensureInitialized();
     UserConfig.clear();
   }
 
