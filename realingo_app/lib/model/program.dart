@@ -61,9 +61,9 @@ class LessonInProgram {
 @immutable
 class LearningProgram {
   final String uri;
-  final Language originLanguageUri;
-  final Language learnedLanguageUri;
+  final String learnedLanguageUri;
+  final String originLanguageUri;
   final List<LessonInProgram> lessons;
 
-  const LearningProgram(this.uri, this.originLanguageUri, this.learnedLanguageUri, this.lessons);
+  const LearningProgram(this.uri, this.learnedLanguageUri, this.originLanguageUri, this.lessons);
 }

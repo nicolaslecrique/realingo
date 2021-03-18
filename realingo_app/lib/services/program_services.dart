@@ -1,6 +1,5 @@
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
-import 'package:realingo_app/tech_services/database/db.dart';
 import 'package:realingo_app/tech_services/rest/rest_api.dart';
 import 'package:realingo_app/tech_services/user_config.dart';
 
@@ -14,43 +13,30 @@ class ProgramServices {
   }
 
   static Future<LearningProgram> getProgram(Language learnedLanguage, Language originLanguage) async {
-    return await RestApi.getProgram(learnedLanguage, originLanguage);
-  }
-
-  static Future<void> buildUserProgram(LearningProgram program, ItemToLearn firstItemToLearn) async {
-    final now = DateTime.now().toString();
-
-    String userProgramUri = '${program.uri}-$now';
-
-    List<UserItemToLearn> userItems = <UserItemToLearn>[];
-    UserItemToLearnStatus status = UserItemToLearnStatus.SkippedAtStart;
-    for (int i = 0; i < program.itemsToLearn.length; i++) {
-      ItemToLearn current = program.itemsToLearn[i];
-      if (current == firstItemToLearn) {
-        status = UserItemToLearnStatus.NotLearned;
-      }
-      userItems.add(UserItemToLearn(
-          '${current.uri}-$userProgramUri',
-          current.uri,
-          current.label,
-          current.sentences
-              .map((s) => UserItemToLearnSentence(s.uri, '${s.uri}-$userProgramUri', s.sentence, s.translation, s.hint))
-              .toList(),
-          status));
-    }
-
-    final userProgram =
-        UserLearningProgram(userProgramUri, program.uri, userItems, program.learnedLanguage, program.originLanguage);
-    await db.insertUserLearningProgram(userProgram);
-    await UserConfig.setDefaultUserProgramUri(userProgram.uri);
+    return await RestApi.getProgramByLanguage(learnedLanguage, originLanguage);
   }
 
   static Future<UserLearningProgram> getDefaultUserProgramOrNull() async {
-    String uri = await UserConfig.getDefaultUserProgramUriOrNull();
-    if (uri != null) {
-      return await db.getUserLearningProgram(uri);
+    ProgramState programState = await UserConfig.getDefaultProgramStateOrNull();
+    if (programState != null) {
+      LearningProgram program = await RestApi.getProgram(programState.programUri);
+      Lesson nextLesson = await RestApi.getLesson(programState.programUri, programState.nextLessonUri);
+      return UserLearningProgram(program, nextLesson);
     } else {
       return null;
     }
+  }
+
+  static Future<void> setDefaultUserProgram(LearningProgram program) async {
+    await UserConfig.setDefaultProgram(program.uri);
+    return await UserConfig.setNextLessonUri(program.uri, program.lessons.first.uri);
+  }
+
+  static Future<void> setUserProgramNextLesson(LearningProgram program, String completedLessonUri) async {
+    int lastLessonIdx = program.lessons.indexWhere((e) => e.uri == completedLessonUri);
+    int nextLessonIdx = lastLessonIdx == program.lessons.length - 1 ? lastLessonIdx : lastLessonIdx + 1;
+    String nextLessonUri = program.lessons[nextLessonIdx].uri;
+
+    return await UserConfig.setNextLessonUri(program.uri, nextLessonUri);
   }
 }

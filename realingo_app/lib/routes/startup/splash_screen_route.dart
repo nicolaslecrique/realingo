@@ -7,7 +7,6 @@ import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/home/home_route.dart';
 import 'package:realingo_app/routes/new_program/building_program_route.dart';
 import 'package:realingo_app/services/program_services.dart';
-import 'package:realingo_app/tech_services/database/db.dart';
 
 @immutable
 class SplashScreenRoute extends StatefulWidget {
@@ -28,7 +27,6 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   }
 
   Future<void> loadUserDataThenRedirect() async {
-    await db.init();
     var model = Provider.of<UserProgramModel>(context, listen: false);
     await model.reload();
     UserLearningProgram userProgram = model.program;

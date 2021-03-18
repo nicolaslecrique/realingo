@@ -4,14 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 @immutable
 class ProgramState {
   final String programUri;
-  final String lastCompletedLessonUriOrNull;
+  final String nextLessonUri;
 
-  const ProgramState(this.programUri, this.lastCompletedLessonUriOrNull);
+  const ProgramState(this.programUri, this.nextLessonUri);
 }
 
 class UserConfig {
   static const String _defaultProgramUriKey = 'default_program_uri';
-  static String _getLastCompletedLessonUriKey(String programUri) => '${programUri}/last_completed_lesson_uri';
+  static String _getNextLessonUriKey(String programUri) => '${programUri}/next_lesson_uri';
 
   static Future<void> clear() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -25,7 +25,7 @@ class UserConfig {
     }
 
     String programUri = prefs.getString(_defaultProgramUriKey);
-    String lessonKey = _getLastCompletedLessonUriKey(programUri);
+    String lessonKey = _getNextLessonUriKey(programUri);
     if (!prefs.containsKey(lessonKey)) {
       String lessonUri = prefs.getString(lessonKey);
       return ProgramState(programUri, lessonUri);
@@ -39,9 +39,9 @@ class UserConfig {
     await prefs.setString(_defaultProgramUriKey, programUri);
   }
 
-  static Future<void> setLastCompletedLessonUri(String programUri, String lessonUri) async {
+  static Future<void> setNextLessonUri(String programUri, String lessonUri) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String lessonKey = _getLastCompletedLessonUriKey(programUri);
+    String lessonKey = _getNextLessonUriKey(programUri);
     await prefs.setString(lessonKey, lessonUri);
   }
 }

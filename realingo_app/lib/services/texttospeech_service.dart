@@ -4,11 +4,10 @@ import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/tech_services/rest/rest_api.dart';
 
 class TextToSpeech {
-  static Future<void> play(Language language, UserItemToLearnSentence sentence) async {
+  static Future<void> play(Language language, Sentence sentence) async {
     final Directory directory = await getApplicationSupportDirectory();
     String path = '${directory.absolute.path}/sentence_records/${sentence.uri}.wav';
     File file = File(path);

@@ -33,20 +33,29 @@ class RestApi {
     return languages;
   }
 
-  static Future<LearningProgram> getProgram(Language learnedLanguage, Language originLanguage) async {
+  static Future<LearningProgram> getProgramByLanguage(Language learnedLanguage, Language originLanguage) async {
     http.Response response = await http.get(
-        '$_restApiBaseUrl/program?learned_language_uri=${learnedLanguage.uri}&origin_language_uri=${originLanguage.uri}');
-    final restProgram = RestLearningProgram.fromJson(json.decode(response.body) as Map<String, dynamic>);
+        '$_restApiBaseUrl/program_by_language?learned_language_uri=${learnedLanguage.uri}&origin_language_uri=${originLanguage.uri}');
+    return _programFromRest(response);
+  }
+
+  static Future<LearningProgram> getProgram(String programUri) async {
+    http.Response response = await http.get('$_restApiBaseUrl/program?program_uri=${programUri}');
+    return _programFromRest(response);
+  }
+
+  static LearningProgram _programFromRest(http.Response responseProgram) {
+    final restProgram = RestLearningProgram.fromJson(json.decode(responseProgram.body) as Map<String, dynamic>);
 
     final lessons = List<LessonInProgram>.unmodifiable(
         restProgram.lessons.map<LessonInProgram>((e) => LessonInProgram(e.uri, e.label)));
 
-    return LearningProgram(restProgram.uri, originLanguage, learnedLanguage, lessons);
+    return LearningProgram(restProgram.uri, restProgram.learnedLanguageUri, restProgram.originLanguageUri, lessons);
   }
 
-  static Future<Lesson> getLesson(LearningProgram program, String lessonUri) async {
+  static Future<Lesson> getLesson(String programUri, String lessonUri) async {
     http.Response response =
-        await http.get('$_restApiBaseUrl/lesson?program_uri=${program.uri}&lesson_uri=${lessonUri}');
+        await http.get('$_restApiBaseUrl/lesson?program_uri=${programUri}&lesson_uri=${lessonUri}');
     final restLesson = RestLesson.fromJson(json.decode(response.body) as Map<String, dynamic>);
 
     final sentences = List<Sentence>.unmodifiable(restLesson.sentences.map<Sentence>((e) => Sentence(
