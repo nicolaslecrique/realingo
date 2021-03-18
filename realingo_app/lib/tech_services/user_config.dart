@@ -26,12 +26,8 @@ class UserConfig {
 
     String programUri = prefs.getString(_defaultProgramUriKey);
     String lessonKey = _getNextLessonUriKey(programUri);
-    if (!prefs.containsKey(lessonKey)) {
-      String lessonUri = prefs.getString(lessonKey);
-      return ProgramState(programUri, lessonUri);
-    } else {
-      return ProgramState(programUri, null);
-    }
+    String lessonUri = prefs.getString(lessonKey);
+    return ProgramState(programUri, lessonUri);
   }
 
   static Future<void> setDefaultProgram(String programUri) async {
