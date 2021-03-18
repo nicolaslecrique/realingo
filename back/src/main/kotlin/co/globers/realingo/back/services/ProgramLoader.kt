@@ -52,7 +52,7 @@ private fun loadLessons(program: ProgramBuilderLearningProgram, programUri: Stri
             currentLessonSentences.addAll(
                 item.sentences.take(nbSentencesByItem).mapIndexed { idx, s ->
                     Sentence(
-                        uri = generateUri("$currentLessonLabel-sent-$idx", programUri),
+                        uri = generateUri("$currentLessonLabel-item-$currentItemIndex-sent-$idx", programUri),
                         sentence = s.sentence,
                         translation = s.translation,
                         hint = s.hint,
