@@ -13,12 +13,12 @@ class ReplyRichText extends StatelessWidget {
     var defaultTextStyle = Theme.of(context).textTheme.headline5;
     var errorTextStyle = defaultTextStyle.apply(color: StandardColors.accentColor);
     if (itemState.lastAnswerOrNull == null) {
-      return RichText(text: TextSpan(text: itemState.lessonItem.sentence.hint, style: defaultTextStyle));
+      return RichText(text: TextSpan(text: itemState.sentence.hint, style: defaultTextStyle));
     }
 
     switch (itemState.lastAnswerOrNull.answerStatus) {
       case AnswerStatus.CorrectAnswerCorrectPronunciation:
-        return RichText(text: TextSpan(text: itemState.lessonItem.sentence.sentence, style: defaultTextStyle));
+        return RichText(text: TextSpan(text: itemState.sentence.sentence, style: defaultTextStyle));
       case AnswerStatus.CorrectAnswerBadPronunciation:
       case AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry:
         return RichText(
@@ -28,7 +28,7 @@ class ReplyRichText extends StatelessWidget {
                         text: e.expectedWord, style: e.isPronunciationCorrect ? defaultTextStyle : errorTextStyle))
                     .toList()));
       case AnswerStatus.BadAnswer:
-        return RichText(text: TextSpan(text: itemState.lessonItem.sentence.sentence, style: defaultTextStyle));
+        return RichText(text: TextSpan(text: itemState.sentence.sentence, style: defaultTextStyle));
     }
   }
 }

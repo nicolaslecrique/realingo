@@ -37,7 +37,7 @@ class LessonItemScreen extends StatelessWidget {
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(state.currentItemOrNull.lessonItem.sentence.translation,
+                      child: Text(state.currentItemOrNull.sentence.translation,
                           style: Theme.of(context).textTheme.headline6),
                     ),
                     Row(
@@ -45,8 +45,7 @@ class LessonItemScreen extends StatelessWidget {
                         IconButton(
                             icon: Icon(Icons.volume_up),
                             onPressed: state.currentItemOrNull.status == LessonItemStatus.OnAnswerFeedback
-                                ? () => TextToSpeech.play(
-                                    lesson.learnedLanguage, state.currentItemOrNull.lessonItem.sentence)
+                                ? () => TextToSpeech.play(lesson.learnedLanguageUri, state.currentItemOrNull.sentence)
                                 : null,
                             tooltip: 'Play'),
                         ReplyRichText(itemState: state.currentItemOrNull),

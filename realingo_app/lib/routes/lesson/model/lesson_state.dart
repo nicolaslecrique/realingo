@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
-
-import 'lesson_builder.dart';
+import 'package:realingo_app/model/program.dart';
 
 enum LessonStatus { WaitForVoiceServiceReady, OnLessonItem, Completed }
 
@@ -30,11 +29,11 @@ enum AnswerStatus {
 
 @immutable
 class LessonItemState {
-  final LessonItem lessonItem;
+  final Sentence sentence;
   final AnswerResult lastAnswerOrNull; // null if not reply given still
   final LessonItemStatus status;
 
-  const LessonItemState(this.lessonItem, this.lastAnswerOrNull, this.status);
+  const LessonItemState(this.sentence, this.lastAnswerOrNull, this.status);
 }
 
 @immutable

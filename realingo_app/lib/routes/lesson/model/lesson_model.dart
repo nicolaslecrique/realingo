@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:edit_distance/edit_distance.dart';
 import 'package:flutter/foundation.dart';
 import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/routes/lesson/model/lesson_builder.dart';
 import 'package:realingo_app/services/voice_service.dart';
 
 import 'lesson_state.dart';
@@ -13,8 +12,8 @@ enum _AnswerQuality { Good, GoodResultBadPronunciation, Bad }
 
 class LessonModel extends ChangeNotifier {
   // immutable fields
-  final Language learnedLanguage;
-  final List<LessonItem> _lessonItems;
+  final String learnedLanguageUri;
+  final Lesson lesson;
   static final Levenshtein _distance = Levenshtein();
   static const double _maxDistance = 0.5;
   static const int _nbTryForPronunciation = 3;
@@ -25,16 +24,16 @@ class LessonModel extends ChangeNotifier {
 
   // internal current state
   LessonState _state;
-  Queue<LessonItem> _remainingItems;
+  Queue<Sentence> _remainingItems;
   bool actionInProcess = false; // init, start, stop and nextItem should not happens at the same time
 
   // getters on current state
-  LessonItem get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
+  Sentence get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
   LessonState get state => _state;
-  double get ratioCompleted => (_lessonItems.length - _remainingItems.length).toDouble() / _lessonItems.length;
+  double get ratioCompleted => (lesson.sentences.length - _remainingItems.length).toDouble() / lesson.sentences.length;
 
-  LessonModel(this.learnedLanguage, this._lessonItems) {
-    _remainingItems = QueueList<LessonItem>.from(_lessonItems);
+  LessonModel(this.learnedLanguageUri, this.lesson) {
+    _remainingItems = QueueList<Sentence>.from(lesson.sentences);
     _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     _voiceService = VoiceService.get();
     _init();
@@ -130,7 +129,7 @@ class LessonModel extends ChangeNotifier {
           LessonStatus.OnLessonItem));
     } else {
       AnswerResult newAnswerResult =
-          _getNewAnswerResult(_currentItemOrNull.sentence.sentence, result, _state.currentItemOrNull.lastAnswerOrNull);
+          _getNewAnswerResult(_currentItemOrNull.sentence, result, _state.currentItemOrNull.lastAnswerOrNull);
       _updateState(LessonState(
           ratioCompleted,
           LessonItemState(_currentItemOrNull, newAnswerResult, LessonItemStatus.OnAnswerFeedback),

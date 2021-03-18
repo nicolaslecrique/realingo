@@ -1,33 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/design/constants.dart';
-import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/model/program.dart';
 
-class LearningItemCard extends StatelessWidget {
-  final String itemLabel;
-  final UserItemToLearnStatus status;
+enum LessonInProgramStatus { Learned, Current, NotLearned }
 
-  const LearningItemCard({Key key, @required this.itemLabel, @required this.status}) : super(key: key);
+class LessonCard extends StatelessWidget {
+  final LessonInProgram lessonInProgram;
+  final LessonInProgramStatus status;
+
+  const LessonCard({Key key, @required this.lessonInProgram, @required this.status}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Icon icon;
     switch (status) {
-      case UserItemToLearnStatus.SkippedAtStart:
+      case LessonInProgramStatus.Learned:
         icon = Icon(
           Icons.check,
           color: StandardColors.brandBlue,
         );
         break;
-      case UserItemToLearnStatus.Learned:
-        icon = Icon(
-          Icons.check,
-          color: StandardColors.brandBlue,
-        );
-        break;
-      case UserItemToLearnStatus.Skipped:
+      case LessonInProgramStatus.Current:
         icon = null;
         break;
-      case UserItemToLearnStatus.NotLearned:
+      case LessonInProgramStatus.NotLearned:
         icon = null;
         break;
     }
@@ -36,7 +32,7 @@ class LearningItemCard extends StatelessWidget {
       child: ListTile(
         visualDensity: VisualDensity.compact,
         title: Text(
-          itemLabel,
+          lessonInProgram.label,
           style: StandardFonts.wordItem,
         ),
         subtitle: Text(
