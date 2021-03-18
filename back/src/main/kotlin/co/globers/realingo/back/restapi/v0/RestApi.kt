@@ -31,8 +31,8 @@ class RestApi(val programCache: ProgramCache, val textToSpeech: TextToSpeech) {
 
     // dart client use latin1 format if utf-8 not explicitly specified by the server
     // https://github.com/dart-lang/http/issues/175
-    @GetMapping("/api/v0/program", produces = [jsonUtf8Header])
-    suspend fun getProgram(
+    @GetMapping("/api/v0/program_by_language", produces = [jsonUtf8Header])
+    suspend fun getProgramByLanguage(
             @RequestParam(value = "learned_language_uri") learnedLanguageUri: String,
             @RequestParam(value = "origin_language_uri") originLanguageUri: String): RestLearningProgram {
 
@@ -44,6 +44,16 @@ class RestApi(val programCache: ProgramCache, val textToSpeech: TextToSpeech) {
         val restProgram = ModelToRestAdapter.toRest(program)
         return restProgram
     }
+
+    @GetMapping("/api/v0/program", produces = [jsonUtf8Header])
+    suspend fun getProgram(
+        @RequestParam(value = "program_uri") programUri: String): RestLearningProgram {
+
+        val program = programCache.programsByUri.getValue(programUri)
+        val restProgram = ModelToRestAdapter.toRest(program)
+        return restProgram
+    }
+
 
     @GetMapping("/api/v0/lesson", produces = [jsonUtf8Header])
     suspend fun getLesson(
