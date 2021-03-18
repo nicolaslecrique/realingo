@@ -36,7 +36,7 @@ class LessonCard extends StatelessWidget {
           style: StandardFonts.wordItem,
         ),
         subtitle: Text(
-          'traduction',
+          lessonInProgram.description,
           style: StandardFonts.wordItem,
         ),
         onTap: () => null,

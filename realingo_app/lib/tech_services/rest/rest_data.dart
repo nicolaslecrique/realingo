@@ -64,9 +64,10 @@ class RestSentence {
 class RestLesson {
   final String uri;
   final String label;
+  final String description;
   final List<RestSentence> sentences;
 
-  const RestLesson(this.uri, this.label, this.sentences);
+  const RestLesson(this.uri, this.label, this.sentences, this.description);
 
   factory RestLesson.fromJson(Map<String, dynamic> json) => _$RestLessonFromJson(json);
 }
@@ -78,8 +79,9 @@ class RestLesson {
 class RestLessonInProgram {
   final String uri;
   final String label;
+  final String description;
 
-  const RestLessonInProgram(this.uri, this.label);
+  const RestLessonInProgram(this.uri, this.label, this.description);
 
   factory RestLessonInProgram.fromJson(Map<String, dynamic> json) => _$RestLessonInProgramFromJson(json);
 }

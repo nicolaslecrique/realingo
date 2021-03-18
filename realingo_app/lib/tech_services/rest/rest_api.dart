@@ -48,7 +48,7 @@ class RestApi {
     final restProgram = RestLearningProgram.fromJson(json.decode(responseProgram.body) as Map<String, dynamic>);
 
     final lessons = List<LessonInProgram>.unmodifiable(
-        restProgram.lessons.map<LessonInProgram>((e) => LessonInProgram(e.uri, e.label)));
+        restProgram.lessons.map<LessonInProgram>((e) => LessonInProgram(e.uri, e.label, e.description)));
 
     return LearningProgram(restProgram.uri, restProgram.learnedLanguageUri, restProgram.originLanguageUri, lessons);
   }
@@ -70,7 +70,7 @@ class RestApi {
             List<ItemTranslation>.unmodifiable(
                 e.translations.map<ItemTranslation>((e) => ItemTranslation(e.translation, e.englishDefinition)))))))));
 
-    return Lesson(restLesson.uri, restLesson.label, sentences);
+    return Lesson(restLesson.uri, restLesson.label, restLesson.description, sentences);
   }
 
   static Future<Uint8List> getRecord(String languageUri, String sentence) async {

@@ -55,6 +55,7 @@ RestLesson _$RestLessonFromJson(Map<String, dynamic> json) {
         ?.map((e) =>
             e == null ? null : RestSentence.fromJson(e as Map<String, dynamic>))
         ?.toList(),
+    json['description'] as String,
   );
 }
 
@@ -62,6 +63,7 @@ RestLessonInProgram _$RestLessonInProgramFromJson(Map<String, dynamic> json) {
   return RestLessonInProgram(
     json['uri'] as String,
     json['label'] as String,
+    json['description'] as String,
   );
 }
 

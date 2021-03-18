@@ -32,6 +32,7 @@ data class RestSentence(
 data class RestLesson(
     val uri: String,
     val label: String,
+    val description: String,
     val sentences: List<RestSentence>
 )
 
@@ -40,6 +41,7 @@ data class RestLesson(
 data class RestLessonInProgram(
     val uri: String,
     val label: String,
+    val description: String,
 )
 
 data class RestLearningProgram(

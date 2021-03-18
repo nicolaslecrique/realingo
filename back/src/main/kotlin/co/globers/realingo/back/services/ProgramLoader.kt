@@ -1,5 +1,6 @@
 package co.globers.realingo.back.services
 
+import co.globers.realingo.back.dataloader.ProgramBuilderItem
 import co.globers.realingo.back.dataloader.ProgramBuilderLearningProgram
 import co.globers.realingo.back.dataloader.loadProgramFromFile
 import co.globers.realingo.back.model.ItemInSentence
@@ -35,43 +36,48 @@ private fun loadLessons(program: ProgramBuilderLearningProgram, programUri: Stri
 
     val lessons = mutableListOf<Lesson>()
     var currentLessonSentences = mutableListOf<Sentence>()
+    var currentLessonItems = mutableListOf<ProgramBuilderItem>()
     var currentLessonLabel = "Lesson 1"
 
     for ((currentItemIndex, item) in program.items.withIndex()) {
+
+        currentLessonItems.add(item)
+        currentLessonSentences.addAll(
+            item.sentences.take(nbSentencesByItem).mapIndexed { idx, s ->
+                Sentence(
+                    uri = generateUri("$currentLessonLabel-item-$currentItemIndex-sent-$idx", programUri),
+                    sentence = s.sentence,
+                    translation = s.translation,
+                    hint = s.hint,
+                    items = s.itemsInSentence.map { item ->
+                        ItemInSentence(
+                            startIndex = item.startIndexInSentence,
+                            endIndex = item.endIndexInSentence,
+                            label = item.itemStdForm,
+                            translations = dict.getValue(item.itemStdForm).map { def ->
+                                ItemTranslation(
+                                    translation = def.itemInEnglish,
+                                    englishDefinition = def.definitionInEnglish
+                                )
+                            }
+                        )
+                    }
+                )
+            }
+        )
+
         if (currentItemIndex % nbItemsByLesson == nbItemsByLesson - 1) {
             lessons.add(
                 Lesson(
                     uri = generateUri(currentLessonLabel, programUri),
                     label = currentLessonLabel,
+                    description = currentLessonItems.joinToString { it.itemStdFormat },
                     sentences = currentLessonSentences
                 )
             )
             currentLessonSentences = mutableListOf()
+            currentLessonItems = mutableListOf()
             currentLessonLabel = "Lesson ${lessons.size + 1}"
-        } else {
-            currentLessonSentences.addAll(
-                item.sentences.take(nbSentencesByItem).mapIndexed { idx, s ->
-                    Sentence(
-                        uri = generateUri("$currentLessonLabel-item-$currentItemIndex-sent-$idx", programUri),
-                        sentence = s.sentence,
-                        translation = s.translation,
-                        hint = s.hint,
-                        items = s.itemsInSentence.map { item ->
-                            ItemInSentence(
-                                startIndex = item.startIndexInSentence,
-                                endIndex = item.endIndexInSentence,
-                                label = item.itemStdForm,
-                                translations = dict.getValue(item.itemStdForm).map { def ->
-                                    ItemTranslation(
-                                        translation = def.itemInEnglish,
-                                        englishDefinition = def.definitionInEnglish
-                                    )
-                                }
-                            )
-                        }
-                    )
-                }
-            )
         }
     }
     return lessons

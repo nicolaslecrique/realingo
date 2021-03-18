@@ -23,6 +23,7 @@ data class Sentence(
 data class Lesson(
     val uri: String,
     val label: String,
+    val description: String,
     val sentences: List<Sentence>
 )
 

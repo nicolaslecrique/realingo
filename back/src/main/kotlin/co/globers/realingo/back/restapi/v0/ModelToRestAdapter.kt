@@ -23,7 +23,9 @@ class ModelToRestAdapter {
                 lessons = program.lessons.map {
                     RestLessonInProgram(
                         uri = it.uri,
-                        label = it.label)
+                        label = it.label,
+                        description = it.description
+                    )
                 }
             )
         }
@@ -32,6 +34,7 @@ class ModelToRestAdapter {
             return RestLesson(
                 uri = lesson.uri,
                 label = lesson.label,
+                description = lesson.description,
                 sentences = lesson.sentences.map { s ->
                     RestSentence(
                         uri= s.uri,

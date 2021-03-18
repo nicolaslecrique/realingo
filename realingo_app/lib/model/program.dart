@@ -43,9 +43,10 @@ class Sentence {
 class Lesson {
   final String uri;
   final String label;
+  final String description;
   final List<Sentence> sentences;
 
-  const Lesson(this.uri, this.label, this.sentences);
+  const Lesson(this.uri, this.label, this.description, this.sentences);
 }
 
 // --------- Program -----------
@@ -54,8 +55,9 @@ class Lesson {
 class LessonInProgram {
   final String uri;
   final String label;
+  final String description;
 
-  const LessonInProgram(this.uri, this.label);
+  const LessonInProgram(this.uri, this.label, this.description);
 }
 
 @immutable
