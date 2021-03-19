@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 
 fun loadProgramFromFile(originLanguage: Language, learnedLanguage: Language): ProgramBuilderLearningProgram {
     val filename = "program_${learnedLanguage.shortCode}_from_${originLanguage.shortCode}.json"
-    val programStr = FileLoader.getFileFromResource("programs/${filename}").readText()
+    val programStr = FileLoader.getFileFromResource("programs/${filename}")
     val program = Json.decodeFromString<ProgramBuilderLearningProgram>(programStr)
     return program
 }

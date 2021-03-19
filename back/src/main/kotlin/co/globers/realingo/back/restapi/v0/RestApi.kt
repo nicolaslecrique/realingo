@@ -18,6 +18,11 @@ private const val jsonUtf8Header: String = MediaType.APPLICATION_JSON_UTF8_VALUE
 @RestController
 class RestApi(val programCache: ProgramCache, val textToSpeech: TextToSpeech) {
 
+    @GetMapping("/")
+    suspend fun home(): String {
+        return "hello"
+    }
+
     @GetMapping("/api/v0/available_origin_languages", produces = [jsonUtf8Header])
     suspend fun getAvailableOriginLanguages(
             @RequestParam(value = "learned_language_uri") learnedLanguageUri: String): List<RestLanguage> {

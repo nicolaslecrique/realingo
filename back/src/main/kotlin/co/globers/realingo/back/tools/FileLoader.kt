@@ -1,15 +1,14 @@
 package co.globers.realingo.back.tools
 
-import java.io.File
-import java.net.URL
+import java.io.InputStream
 
 class FileLoader {
 
     companion object {
-        fun getFileFromResource(fileName: String): File {
+        fun getFileFromResource(fileName: String): String {
             val classLoader: ClassLoader = FileLoader::class.java.classLoader
-            val resource: URL = classLoader.getResource(fileName)!!
-            return File(resource.toURI())
+            val resource: InputStream = classLoader.getResourceAsStream(fileName)!!
+            return resource.reader().readText()
         }
     }
 
