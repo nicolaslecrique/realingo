@@ -28,12 +28,12 @@ dependencies:
   # manage relative path, used by sqflite
   path: ^1.7.0
   # access common document locations
-  path_provider: ^1.6.24
+  path_provider: ^2.0.1
 
   # http requests to rest API backend
   http: ^0.12.2
   # Json serialization / deserialization for http requests
-  json_annotation: ^3.1.0
+  json_annotation: ^4.0.1
   # To restart app in case of unexpected error
   # TODO NICO : might not use it in production
   flutter_phoenix: ^0.1.0
@@ -47,16 +47,16 @@ dependencies:
   provider: ^4.3.2+2
 
   # store local user profs
-  shared_preferences: ^0.5.12+4
+  shared_preferences: ^2.0.5
 
   # utils
   collection: ^1.14.13
 
-  speech_to_text: ^3.0.1
+  speech_to_text: ^4.0.0-nullsafety
 
   # to play records
   # flutter_sound: ^6.4.8+2
-  audioplayers: ^0.17.0
+  audioplayers: ^0.18.0
 
   # firebase services
   firebase_core: ^1.0.1
@@ -72,7 +72,7 @@ dev_dependencies:
   # to generate source code, used by json_serializable
   build_runner: ^1.10.4
   # to serialize / unserialize data from rest API
-  json_serializable: ^3.5.0
+  json_serializable: ^4.1.0
 
 
   # distance between strings (levenshtein..)
@@ -81,7 +81,7 @@ dev_dependencies:
   # fonts
   google_fonts: ^1.1.1
 
-  flutter_launcher_icons: ^0.8.1
+  flutter_launcher_icons: ^0.9.0
 
 
   # For information on the generic Dart part of this file, see the
