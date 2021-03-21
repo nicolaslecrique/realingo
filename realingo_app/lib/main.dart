@@ -12,10 +12,10 @@ import 'package:realingo_app/tech_services/user_config.dart';
 import 'design/constants.dart';
 
 void main() {
+  // for debug
+  // cf. https://flutter.dev/docs/cookbook/persistence/sqlite, needed to access SharedPreference
+  WidgetsFlutterBinding.ensureInitialized();
   if (AppConfig.deleteDataAtStartup) {
-    // for debug
-    // cf. https://flutter.dev/docs/cookbook/persistence/sqlite, needed to access SharedPreference
-    WidgetsFlutterBinding.ensureInitialized();
     UserConfig.clear();
   }
 

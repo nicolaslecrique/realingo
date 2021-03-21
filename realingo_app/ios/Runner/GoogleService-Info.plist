@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>934813146125-d45nr3qqmamsjk2sopgs4n48jonmjrdk.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.934813146125-d45nr3qqmamsjk2sopgs4n48jonmjrdk</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCuXG2Udo89x9f7TXXuSaJT-v4T_Hr_02s</string>
+	<key>GCM_SENDER_ID</key>
+	<string>934813146125</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>app.speakio</string>
+	<key>PROJECT_ID</key>
+	<string>realingo</string>
+	<key>STORAGE_BUCKET</key>
+	<string>realingo.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:934813146125:ios:afd6eaf7bd337e61a84944</string>
+</dict>
+</plist>

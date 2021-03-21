@@ -23,6 +23,11 @@ if (flutterVersionName == null) {
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+// added following firebase setup tutorial for android
+apply plugin: 'com.google.gms.google-services'
+// added from https://firebase.flutter.dev/docs/crashlytics/overview/
+apply plugin: 'com.google.firebase.crashlytics'
+
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 def keystoreProperties = new Properties()

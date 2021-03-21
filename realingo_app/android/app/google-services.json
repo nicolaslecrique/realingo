@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "934813146125",
+    "project_id": "realingo",
+    "storage_bucket": "realingo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934813146125:android:feccc25cb4a2447fa84944",
+        "android_client_info": {
+          "package_name": "app.speakio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934813146125-pn97e90mocgcgbv026j5af9n1kgjdh26.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8H37l8YHu59a9YecG_tdc8seTqWcATEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934813146125-pn97e90mocgcgbv026j5af9n1kgjdh26.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

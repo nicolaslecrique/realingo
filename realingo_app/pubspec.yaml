@@ -58,6 +58,10 @@ dependencies:
   # flutter_sound: ^6.4.8+2
   audioplayers: ^0.17.0
 
+  # firebase services
+  firebase_core: ^1.0.1
+  firebase_crashlytics: ^1.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
