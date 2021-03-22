@@ -1,3 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:provider/provider.dart';
@@ -11,12 +14,19 @@ import 'package:realingo_app/tech_services/user_config.dart';
 
 import 'design/constants.dart';
 
-void main() {
+Future<void> main() async {
   // for debug
   // cf. https://flutter.dev/docs/cookbook/persistence/sqlite, needed to access SharedPreference
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+  if (kDebugMode) {
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+  }
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+
   if (AppConfig.deleteDataAtStartup) {
-    UserConfig.clear();
+    await UserConfig.clear();
   }
 
   runApp(Phoenix(child: MyApp()));
