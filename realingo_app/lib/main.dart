@@ -23,6 +23,8 @@ Future<void> main() async {
   if (kDebugMode) {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   }
+  // NB: for now crashlytics seems not to work well with flutter (obfuscated stack trace)
+  // https://github.com/FirebaseExtended/flutterfire/issues/1150
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
   if (AppConfig.deleteDataAtStartup) {
