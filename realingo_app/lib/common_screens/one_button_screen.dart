@@ -18,8 +18,8 @@ class OneButtonScreen extends StatelessWidget {
       titleOrNull: titleOrNull,
       contentChild: child,
       bottomChild: ElevatedButton(
-        child: Text(buttonText),
         onPressed: onButtonPressed,
+        child: Text(buttonText),
       ),
     );
   }

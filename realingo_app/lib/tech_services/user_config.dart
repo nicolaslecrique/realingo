@@ -11,7 +11,7 @@ class ProgramState {
 
 class UserConfig {
   static const String _defaultProgramUriKey = 'default_program_uri';
-  static String _getNextLessonUriKey(String programUri) => '${programUri}/next_lesson_uri';
+  static String _getNextLessonUriKey(String programUri) => '$programUri/next_lesson_uri';
 
   static Future<void> clear() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

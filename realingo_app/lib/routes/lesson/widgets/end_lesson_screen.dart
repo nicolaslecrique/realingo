@@ -29,6 +29,8 @@ class EndLessonScreen extends StatelessWidget {
       loadingMessage: 'Saving lesson',
       future: updateProgram(context),
       childBuilder: (int _) => OneButtonScreen(
+        buttonText: 'Ok',
+        onButtonPressed: () => Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (route) => false),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -36,8 +38,6 @@ class EndLessonScreen extends StatelessWidget {
             Text('Lesson completed', style: StandardFonts.bigFunnyAccent),
           ],
         ),
-        buttonText: 'Ok',
-        onButtonPressed: () => Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (route) => false),
       ),
     );
   }
