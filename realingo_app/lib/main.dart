@@ -21,7 +21,7 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
   if (kDebugMode) {
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   }
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
