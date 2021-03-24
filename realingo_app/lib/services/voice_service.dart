@@ -94,7 +94,7 @@ class VoiceService {
     }
   }
 
-  Future<String> stopListening() async {
+  Future<String?> stopListening() async {
     debugPrint('VoiceService:stopListening');
 
     _completeCompletersOnError();

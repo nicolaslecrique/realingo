@@ -83,7 +83,7 @@ class LessonItemBottomBar extends StatelessWidget {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget? child) {
       var status = lesson.state.currentItemOrNull!.status;
 
-      _State state = _State.getState(status, lesson.state.currentItemOrNull!.lastAnswerOrNull!.answerStatus);
+      _State state = _State.getState(status, lesson.state.currentItemOrNull!.lastAnswerOrNull?.answerStatus);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

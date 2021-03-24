@@ -121,9 +121,9 @@ class LessonModel extends ChangeNotifier {
             _currentItemOrNull!, _state.currentItemOrNull!.lastAnswerOrNull, LessonItemStatus.WaitForAnswerResult),
         LessonStatus.OnLessonItem));
 
-    String result = await _voiceService.stopListening();
+    String? result = await _voiceService.stopListening();
 
-    if (result.isEmpty) {
+    if (result == null || result.isEmpty) {
       bool firstAnswer = _state.currentItemOrNull!.lastAnswerOrNull == null;
       _updateState(LessonState(
           ratioCompleted,
