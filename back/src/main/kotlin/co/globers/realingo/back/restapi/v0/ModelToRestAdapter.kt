@@ -1,5 +1,6 @@
 package co.globers.realingo.back.restapi.v0
 
+import co.globers.realingo.back.model.ExerciseType
 import co.globers.realingo.back.model.Language
 import co.globers.realingo.back.model.LearningProgram
 import co.globers.realingo.back.model.Lesson
@@ -13,6 +14,13 @@ class ModelToRestAdapter {
                 uri = language.uri,
                 label = language.label
             )
+        }
+
+        fun toRest(exerciseType: ExerciseType): RestExerciseType {
+            return when(exerciseType){
+                ExerciseType.translateToLearningLanguage -> RestExerciseType.translateToLearningLanguage
+                ExerciseType.repeat -> RestExerciseType.repeat
+            }
         }
 
         fun toRest(program: LearningProgram): RestLearningProgram {
@@ -35,13 +43,14 @@ class ModelToRestAdapter {
                 uri = lesson.uri,
                 label = lesson.label,
                 description = lesson.description,
-                sentences = lesson.sentences.map { s ->
-                    RestSentence(
-                        uri= s.uri,
-                        sentence= s.sentence,
-                        translation= s.translation,
-                        hint= s.hint,
-                        items = s.items.map {
+                exercises = lesson.exercises.map { e ->
+                    RestExercise(
+                        sentence= RestSentence(
+                        uri= e.sentence.uri,
+                        sentence= e.sentence.sentence,
+                        translation= e.sentence.translation,
+                        hint= e.sentence.hint,
+                        items = e.sentence.items.map {
                             RestItemInSentence(
                                 startIndex = it.startIndex,
                                 endIndex = it.endIndex,
@@ -54,6 +63,8 @@ class ModelToRestAdapter {
                                 }
                             )
                         }
+                    ),
+                        exerciseType = toRest(e.exerciseType)
                     )
                 }
             )

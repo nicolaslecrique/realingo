@@ -1,5 +1,7 @@
 package co.globers.realingo.back.restapi.v0
 
+import co.globers.realingo.back.model.Sentence
+
 // ------ Language --------
 
 data class RestLanguage(
@@ -29,11 +31,21 @@ data class RestSentence(
     val items: List<RestItemInSentence>
 )
 
+enum class RestExerciseType {
+    translateToLearningLanguage,
+    repeat
+}
+
+data class RestExercise(
+    val exerciseType: RestExerciseType,
+    val sentence: RestSentence
+)
+
 data class RestLesson(
     val uri: String,
     val label: String,
     val description: String,
-    val sentences: List<RestSentence>
+    val exercises: List<RestExercise>
 )
 
 // --------- Program -----------

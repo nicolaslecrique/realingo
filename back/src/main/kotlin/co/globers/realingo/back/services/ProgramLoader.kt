@@ -3,6 +3,8 @@ package co.globers.realingo.back.services
 import co.globers.realingo.back.dataloader.ProgramBuilderItem
 import co.globers.realingo.back.dataloader.ProgramBuilderLearningProgram
 import co.globers.realingo.back.dataloader.loadProgramFromFile
+import co.globers.realingo.back.model.Exercise
+import co.globers.realingo.back.model.ExerciseType
 import co.globers.realingo.back.model.ItemInSentence
 import co.globers.realingo.back.model.ItemTranslation
 import co.globers.realingo.back.model.Language
@@ -72,7 +74,8 @@ private fun loadLessons(program: ProgramBuilderLearningProgram, programUri: Stri
                     uri = generateUri(currentLessonLabel, programUri),
                     label = currentLessonLabel,
                     description = currentLessonItems.joinToString { it.itemStdFormat },
-                    sentences = currentLessonSentences
+                    exercises = currentLessonSentences.map { Exercise(ExerciseType.repeat, it) } +
+                            currentLessonSentences.map { Exercise(ExerciseType.translateToLearningLanguage, it) }
                 )
             )
             currentLessonSentences = mutableListOf()

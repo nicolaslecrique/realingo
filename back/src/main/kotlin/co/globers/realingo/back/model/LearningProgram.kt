@@ -24,7 +24,17 @@ data class Lesson(
     val uri: String,
     val label: String,
     val description: String,
-    val sentences: List<Sentence>
+    val exercises: List<Exercise>
+)
+
+enum class ExerciseType {
+    translateToLearningLanguage,
+    repeat
+}
+
+data class Exercise(
+    val exerciseType: ExerciseType,
+    val sentence: Sentence
 )
 
 data class LearningProgram(
