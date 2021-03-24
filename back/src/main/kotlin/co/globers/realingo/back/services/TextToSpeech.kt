@@ -26,8 +26,10 @@ enum class TtsLanguage(val languageCode: String, val voiceNames: List<String>){
 @Service
 class TextToSpeech {
 
+
+
     // https://cloud.google.com/text-to-speech/docs/libraries#client-libraries-install-java
-    suspend fun getRecord(language: Language, sentence: String): ByteArray {
+    fun getRecord(language: Language, sentence: String): ByteArray {
 
         val ttsLanguage = TtsLanguage.fromLanguage(language)
 
