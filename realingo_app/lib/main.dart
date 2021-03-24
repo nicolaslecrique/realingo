@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -11,6 +12,7 @@ import 'package:realingo_app/routes/new_program/building_program_route.dart';
 import 'package:realingo_app/routes/startup/splash_screen_route.dart';
 import 'package:realingo_app/tech_services/app_config.dart';
 import 'package:realingo_app/tech_services/user_config.dart';
+import 'package:realingo_app/tech_services/uxcam.dart';
 
 import 'design/constants.dart';
 
@@ -38,8 +40,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!kDebugMode) {
-      //FlutterUxcam.optInOverall();
-      //FlutterUxcam.startWithKey('8yhqvisgpswtm7s');
+      initUxCam();
     }
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (context) => UserProgramModel())],
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
             HomeRoute.route: (BuildContext context) => const HomeRoute(),
             LessonRoute.route: (BuildContext context) => const LessonRoute(),
             BuildingProgramRoute.route: (BuildContext context) =>
-                BuildingProgramRoute(ModalRoute.of(context)!.settings.arguments as BuildingProgramRouteArgs?),
+                BuildingProgramRoute(ModalRoute.of(context).settings.arguments as BuildingProgramRouteArgs),
           }),
     );
   }
