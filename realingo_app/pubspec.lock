@@ -184,12 +184,12 @@ packages:
     source: hosted
     version: "2.0.0"
   edit_distance:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: edit_distance
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.5.0-nullsafety.0"
   fake_async:
     dependency: transitive
     description:
