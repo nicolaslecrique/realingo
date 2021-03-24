@@ -3,11 +3,11 @@ import 'package:realingo_app/design/constants.dart';
 
 @immutable
 class StandardScreen extends StatelessWidget {
-  final String titleOrNull;
+  final String? titleOrNull;
   final Widget contentChild;
   final Widget bottomChild;
 
-  const StandardScreen({Key key, this.titleOrNull, @required this.contentChild, @required this.bottomChild})
+  const StandardScreen({Key? key, this.titleOrNull, required this.contentChild, required this.bottomChild})
       : super(key: key);
 
   @override
@@ -16,7 +16,7 @@ class StandardScreen extends StatelessWidget {
         appBar: titleOrNull == null
             ? null
             : AppBar(
-                title: Text(titleOrNull),
+                title: Text(titleOrNull!),
                 automaticallyImplyLeading: true,
               ),
         body: Padding(

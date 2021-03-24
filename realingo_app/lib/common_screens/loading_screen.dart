@@ -5,7 +5,7 @@ import 'package:realingo_app/design/constants.dart';
 class LoadingScreen extends StatelessWidget {
   final String message;
 
-  const LoadingScreen({Key key, @required this.message}) : super(key: key);
+  const LoadingScreen({Key? key, required this.message}) : super(key: key);
 
   // #57B4FA
   // #1696F7

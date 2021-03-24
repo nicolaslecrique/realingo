@@ -8,11 +8,11 @@ class LessonCard extends StatelessWidget {
   final LessonInProgram lessonInProgram;
   final LessonInProgramStatus status;
 
-  const LessonCard({Key key, @required this.lessonInProgram, @required this.status}) : super(key: key);
+  const LessonCard({Key? key, required this.lessonInProgram, required this.status}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Icon icon;
+    Icon? icon;
     switch (status) {
       case LessonInProgramStatus.Learned:
         icon = Icon(

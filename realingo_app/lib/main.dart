@@ -3,7 +3,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:flutter_uxcam/flutter_uxcam.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/home/home_route.dart';
@@ -39,8 +38,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!kDebugMode) {
-      FlutterUxcam.optInOverall();
-      FlutterUxcam.startWithKey('8yhqvisgpswtm7s');
+      //FlutterUxcam.optInOverall();
+      //FlutterUxcam.startWithKey('8yhqvisgpswtm7s');
     }
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (context) => UserProgramModel())],
@@ -57,7 +56,7 @@ class MyApp extends StatelessWidget {
             HomeRoute.route: (BuildContext context) => const HomeRoute(),
             LessonRoute.route: (BuildContext context) => const LessonRoute(),
             BuildingProgramRoute.route: (BuildContext context) =>
-                BuildingProgramRoute(ModalRoute.of(context).settings.arguments as BuildingProgramRouteArgs),
+                BuildingProgramRoute(ModalRoute.of(context)!.settings.arguments as BuildingProgramRouteArgs?),
           }),
     );
   }

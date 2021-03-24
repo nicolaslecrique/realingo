@@ -4,7 +4,7 @@ import 'package:realingo_app/design/constants.dart';
 class LessonProgressBar extends StatelessWidget {
   final double ratioCompleted;
 
-  const LessonProgressBar({Key key, this.ratioCompleted}) : super(key: key);
+  const LessonProgressBar({Key? key, required this.ratioCompleted}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

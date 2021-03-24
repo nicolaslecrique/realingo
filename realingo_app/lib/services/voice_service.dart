@@ -8,21 +8,21 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 class VoiceService {
   final stt.SpeechToText _speech = stt.SpeechToText();
-  static VoiceService _instance;
+  static VoiceService? _instance;
 
   // stop completer is completed
   // 1) false in case of error
   // 2) false in case of another start of stop call
   // 3) true in case of recognizedWords in listen
   // 4) after timeout
-  Completer<String> _stopCompleter;
+  Completer<String>? _stopCompleter;
 
   // start completer completed
   // 1) false in case of error
   // 2) false in case of another start of stop call
   // 3) true in case of statusListener change to "listening"
   // 4) after timeout
-  Completer<bool> _startCompleter;
+  Completer<bool>? _startCompleter;
 
   // true if init succeeded, else false
   Future<bool> init() async {
@@ -34,7 +34,7 @@ class VoiceService {
   // we make a singleton because _speech.initialize should be called only once (callback are not used)
   factory VoiceService.get() {
     _instance ??= VoiceService._constructor();
-    return _instance;
+    return _instance!;
   }
 
   // only called from error to "listen" function, so it's only a recognize error (i.e. : no one spoke)
@@ -60,8 +60,8 @@ class VoiceService {
           debugPrint(
               "VoiceService:startListening, final: ${result.finalResult}, new result: '${result.recognizedWords}'");
           if (result.finalResult) {
-            if (_stopCompleter != null && !_stopCompleter.isCompleted) {
-              _stopCompleter.complete(result.recognizedWords);
+            if (_stopCompleter != null && !_stopCompleter!.isCompleted) {
+              _stopCompleter!.complete(result.recognizedWords);
               _stopCompleter = null;
             }
           }
@@ -87,9 +87,9 @@ class VoiceService {
 
   void _statusListener(String status) {
     debugPrint('VoiceService:_statusListener, received status $status, _startCompleter=$_startCompleter');
-    if (status == 'listening' && _startCompleter != null && !_startCompleter.isCompleted) {
+    if (status == 'listening' && _startCompleter != null && !_startCompleter!.isCompleted) {
       debugPrint('VoiceService:_statusListener, complete _startCompleter');
-      _startCompleter.complete(true);
+      _startCompleter!.complete(true);
       _startCompleter = null;
     }
   }
@@ -117,13 +117,13 @@ class VoiceService {
   }
 
   void _completeCompletersOnError() {
-    if (_stopCompleter != null && !_stopCompleter.isCompleted) {
+    if (_stopCompleter != null && !_stopCompleter!.isCompleted) {
       debugPrint('VoiceService:_completeCompletersOnError, _stopCompleter');
-      _stopCompleter.complete(null);
+      _stopCompleter!.complete(null);
     }
-    if (_startCompleter != null && !_startCompleter.isCompleted) {
+    if (_startCompleter != null && !_startCompleter!.isCompleted) {
       debugPrint('VoiceService:_completeCompletersOnError, _startCompleter');
-      _startCompleter.complete(false);
+      _startCompleter!.complete(false);
     }
     _stopCompleter = null;
     _startCompleter = null;

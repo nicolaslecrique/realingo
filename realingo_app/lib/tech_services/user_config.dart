@@ -11,22 +11,22 @@ class ProgramState {
 
 class UserConfig {
   static const String _defaultProgramUriKey = 'default_program_uri';
-  static String _getNextLessonUriKey(String programUri) => '$programUri/next_lesson_uri';
+  static String _getNextLessonUriKey(String? programUri) => '$programUri/next_lesson_uri';
 
   static Future<void> clear() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
 
-  static Future<ProgramState> getDefaultProgramStateOrNull() async {
+  static Future<ProgramState?> getDefaultProgramStateOrNull() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(_defaultProgramUriKey)) {
       return null;
     }
 
-    String programUri = prefs.getString(_defaultProgramUriKey);
+    String programUri = prefs.getString(_defaultProgramUriKey)!;
     String lessonKey = _getNextLessonUriKey(programUri);
-    String lessonUri = prefs.getString(lessonKey);
+    String lessonUri = prefs.getString(lessonKey)!;
     return ProgramState(programUri, lessonUri);
   }
 
@@ -35,7 +35,7 @@ class UserConfig {
     await prefs.setString(_defaultProgramUriKey, programUri);
   }
 
-  static Future<void> setNextLessonUri(String programUri, String lessonUri) async {
+  static Future<void> setNextLessonUri(String? programUri, String lessonUri) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String lessonKey = _getNextLessonUriKey(programUri);
     await prefs.setString(lessonKey, lessonUri);

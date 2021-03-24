@@ -4,8 +4,7 @@ import 'package:realingo_app/common_screens/unexpected_error_screen.dart';
 
 @immutable
 class FutureBuilderWrapper<T> extends StatelessWidget {
-  const FutureBuilderWrapper(
-      {Key key, @required this.future, @required this.childBuilder, @required this.loadingMessage})
+  const FutureBuilderWrapper({Key? key, required this.future, required this.childBuilder, required this.loadingMessage})
       : super(key: key);
 
   final Future<T> future;
@@ -18,9 +17,9 @@ class FutureBuilderWrapper<T> extends StatelessWidget {
       future: future,
       builder: (context, AsyncSnapshot<T> snapshot) {
         if (snapshot.hasData) {
-          return childBuilder(snapshot.data);
+          return childBuilder(snapshot.data!);
         } else if (snapshot.hasError) {
-          return UnexpectedErrorScreen(snapshot.error);
+          return UnexpectedErrorScreen(snapshot.error!);
         } else {
           return LoadingScreen(message: loadingMessage);
         }

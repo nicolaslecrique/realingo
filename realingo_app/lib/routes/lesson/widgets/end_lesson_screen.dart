@@ -12,7 +12,7 @@ class EndLessonScreen extends StatelessWidget {
   final LearningProgram program;
   final Lesson completedLesson;
 
-  const EndLessonScreen({Key key, @required this.program, @required this.completedLesson}) : super(key: key);
+  const EndLessonScreen({Key? key, required this.program, required this.completedLesson}) : super(key: key);
 
   // we use dummy "int" for future because FutureBuilderWrapper requires a data result
   // to work
@@ -28,7 +28,7 @@ class EndLessonScreen extends StatelessWidget {
     return FutureBuilderWrapper<int>(
       loadingMessage: 'Saving lesson',
       future: updateProgram(context),
-      childBuilder: (int _) => OneButtonScreen(
+      childBuilder: (int? _) => OneButtonScreen(
         buttonText: 'Ok',
         onButtonPressed: () => Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (route) => false),
         child: Column(

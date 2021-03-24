@@ -16,8 +16,8 @@ class ProgramServices {
     return await RestApi.getProgramByLanguage(learnedLanguage, originLanguage);
   }
 
-  static Future<UserLearningProgram> getDefaultUserProgramOrNull() async {
-    ProgramState programState = await UserConfig.getDefaultProgramStateOrNull();
+  static Future<UserLearningProgram?> getDefaultUserProgramOrNull() async {
+    ProgramState? programState = await UserConfig.getDefaultProgramStateOrNull();
     if (programState != null) {
       LearningProgram program = await RestApi.getProgram(programState.programUri);
       Lesson nextLesson = await RestApi.getLesson(programState.programUri, programState.nextLessonUri);

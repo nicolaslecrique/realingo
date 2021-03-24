@@ -19,7 +19,7 @@ class LessonRouteArgs {
 class LessonRoute extends StatefulWidget {
   static const route = '/lesson';
 
-  const LessonRoute({Key key}) : super(key: key);
+  const LessonRoute({Key? key}) : super(key: key);
 
   @override
   _LessonRouteState createState() => _LessonRouteState();
@@ -28,11 +28,11 @@ class LessonRoute extends StatefulWidget {
 class _LessonRouteState extends State<LessonRoute> {
   @override
   Widget build(BuildContext context) {
-    LessonRouteArgs args = ModalRoute.of(context).settings.arguments as LessonRouteArgs;
+    LessonRouteArgs args = ModalRoute.of(context)!.settings.arguments as LessonRouteArgs;
 
     return ChangeNotifierProvider(
         create: (context) => LessonModel(args.program.learnedLanguageUri, args.lesson),
-        child: Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
+        child: Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget? child) {
           LessonState state = lesson.state;
           if (state.status == LessonStatus.WaitForVoiceServiceReady) {
             return LoadingScreen(message: 'Loading lesson');

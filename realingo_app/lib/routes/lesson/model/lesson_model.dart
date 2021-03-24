@@ -28,11 +28,14 @@ class LessonModel extends ChangeNotifier {
   bool actionInProcess = false; // init, start, stop and nextItem should not happens at the same time
 
   // getters on current state
-  Sentence get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
+  Sentence? get _currentItemOrNull => _remainingItems.isEmpty ? null : _remainingItems.first;
   LessonState get state => _state;
   double get ratioCompleted => (lesson.sentences.length - _remainingItems.length).toDouble() / lesson.sentences.length;
 
-  LessonModel(this.learnedLanguageUri, this.lesson) {
+  LessonModel(this.learnedLanguageUri, this.lesson)
+      : _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady),
+        _remainingItems = QueueList<Sentence>.from(lesson.sentences),
+        _voiceService = VoiceService.get() {
     _remainingItems = QueueList<Sentence>.from(lesson.sentences);
     _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady);
     _voiceService = VoiceService.get();
@@ -66,7 +69,7 @@ class LessonModel extends ChangeNotifier {
     bool initOk = await _voiceService.init();
     if (initOk) {
       _updateState(LessonState(ratioCompleted,
-          LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
+          LessonItemState(_currentItemOrNull!, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
     } else {
       throw Exception('LessonModel:init, init voiceService failed');
     }
@@ -86,8 +89,8 @@ class LessonModel extends ChangeNotifier {
 
     _updateState(LessonState(
         ratioCompleted,
-        LessonItemState(
-            _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.WaitForListeningAvailable),
+        LessonItemState(_currentItemOrNull!, _state.currentItemOrNull!.lastAnswerOrNull,
+            LessonItemStatus.WaitForListeningAvailable),
         LessonStatus.OnLessonItem));
 
     bool startedOk = await _voiceService.startListening();
@@ -96,7 +99,7 @@ class LessonModel extends ChangeNotifier {
       _updateState(LessonState(
           ratioCompleted,
           LessonItemState(
-              _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.ListeningAnswer),
+              _currentItemOrNull!, _state.currentItemOrNull!.lastAnswerOrNull, LessonItemStatus.ListeningAnswer),
           LessonStatus.OnLessonItem));
     } else {
       _updateState(before); // it failed, so we come back to whatever the previous state was
@@ -115,24 +118,24 @@ class LessonModel extends ChangeNotifier {
     _updateState(LessonState(
         ratioCompleted,
         LessonItemState(
-            _currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull, LessonItemStatus.WaitForAnswerResult),
+            _currentItemOrNull!, _state.currentItemOrNull!.lastAnswerOrNull, LessonItemStatus.WaitForAnswerResult),
         LessonStatus.OnLessonItem));
 
     String result = await _voiceService.stopListening();
 
-    if (result == null || result.isEmpty) {
-      bool firstAnswer = _state.currentItemOrNull.lastAnswerOrNull == null;
+    if (result.isEmpty) {
+      bool firstAnswer = _state.currentItemOrNull!.lastAnswerOrNull == null;
       _updateState(LessonState(
           ratioCompleted,
-          LessonItemState(_currentItemOrNull, _state.currentItemOrNull.lastAnswerOrNull,
+          LessonItemState(_currentItemOrNull!, _state.currentItemOrNull!.lastAnswerOrNull,
               firstAnswer ? LessonItemStatus.ReadyForFirstAnswer : LessonItemStatus.OnAnswerFeedback),
           LessonStatus.OnLessonItem));
     } else {
       AnswerResult newAnswerResult =
-          _getNewAnswerResult(_currentItemOrNull.sentence, result, _state.currentItemOrNull.lastAnswerOrNull);
+          _getNewAnswerResult(_currentItemOrNull!.sentence, result, _state.currentItemOrNull!.lastAnswerOrNull);
       _updateState(LessonState(
           ratioCompleted,
-          LessonItemState(_currentItemOrNull, newAnswerResult, LessonItemStatus.OnAnswerFeedback),
+          LessonItemState(_currentItemOrNull!, newAnswerResult, LessonItemStatus.OnAnswerFeedback),
           LessonStatus.OnLessonItem));
     }
 
@@ -146,29 +149,30 @@ class LessonModel extends ChangeNotifier {
       return;
     }
 
-    if (_state.currentItemOrNull.lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry ||
-        _state.currentItemOrNull.lastAnswerOrNull.answerStatus == AnswerStatus.CorrectAnswerCorrectPronunciation) {
+    if (_state.currentItemOrNull!.lastAnswerOrNull!.answerStatus ==
+            AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry ||
+        _state.currentItemOrNull!.lastAnswerOrNull!.answerStatus == AnswerStatus.CorrectAnswerCorrectPronunciation) {
       _remainingItems.removeFirst();
       if (_remainingItems.isEmpty) {
         _updateState(LessonState(1.0, null, LessonStatus.Completed));
       } else {
         _updateState(LessonState(
             ratioCompleted,
-            LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer),
+            LessonItemState(_currentItemOrNull!, null, LessonItemStatus.ReadyForFirstAnswer),
             LessonStatus.OnLessonItem));
       }
     } else {
       // bad answer
       _remainingItems.addLast(_remainingItems.removeFirst());
       _updateState(LessonState(ratioCompleted,
-          LessonItemState(_currentItemOrNull, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
+          LessonItemState(_currentItemOrNull!, null, LessonItemStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
     }
 
     _releaseLock();
   }
 
   void _checkStatus(List<LessonItemStatus> expectedStatus) {
-    if (_state.status != LessonStatus.OnLessonItem || !expectedStatus.contains(_state.currentItemOrNull.status)) {
+    if (_state.status != LessonStatus.OnLessonItem || !expectedStatus.contains(_state.currentItemOrNull!.status)) {
       throw Exception('expected status $expectedStatus, but was ${_state.currentItemOrNull?.status}');
     }
   }
@@ -206,7 +210,7 @@ class LessonModel extends ChangeNotifier {
   }
 
   // ignore: missing_return
-  static AnswerResult _getNewAnswerResult(String expectedSentence, String voiceResult, AnswerResult lastAnswerOrNull) {
+  static AnswerResult _getNewAnswerResult(String expectedSentence, String voiceResult, AnswerResult? lastAnswerOrNull) {
     final normalizedExpectedSentence = _normalizeString(expectedSentence);
     final normalizedVoiceResult = _normalizeString(voiceResult);
 
@@ -225,13 +229,12 @@ class LessonModel extends ChangeNotifier {
             return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry, 0);
           } else {
             return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciation,
-                lastAnswerOrNull.remainingTryIfBadPronunciationOrNull - 1);
+                lastAnswerOrNull.remainingTryIfBadPronunciationOrNull! - 1);
           }
         } else {
           throw Exception(
               "LessonModel:_getNewAnswerResult invalid state, lastAnswerStatus is '${lastAnswerOrNull.answerStatus}'");
         }
-        break; // useless, just to shut up compiler
       case _AnswerQuality.Bad:
         if (lastAnswerOrNull == null) {
           return AnswerResult(voiceResult, answerParts, AnswerStatus.BadAnswer, null);
@@ -240,7 +243,7 @@ class LessonModel extends ChangeNotifier {
             return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry, 0);
           } else {
             return AnswerResult(voiceResult, answerParts, AnswerStatus.CorrectAnswerBadPronunciation,
-                lastAnswerOrNull.remainingTryIfBadPronunciationOrNull - 1);
+                lastAnswerOrNull.remainingTryIfBadPronunciationOrNull! - 1);
           }
         } else {
           throw Exception(

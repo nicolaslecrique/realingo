@@ -12,7 +12,7 @@ import 'package:realingo_app/services/program_services.dart';
 class SplashScreenRoute extends StatefulWidget {
   static const route = '/splash_screen';
 
-  const SplashScreenRoute({Key key}) : super(key: key);
+  const SplashScreenRoute({Key? key}) : super(key: key);
 
   @override
   _SplashScreenRouteState createState() => _SplashScreenRouteState();
@@ -29,7 +29,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   Future<void> loadUserDataThenRedirect() async {
     var model = Provider.of<UserProgramModel>(context, listen: false);
     await model.reload();
-    UserLearningProgram userProgram = model.program;
+    UserLearningProgram? userProgram = model.programOrNull;
 
     if (userProgram == null) {
       List<Language> targets = await ProgramServices.getAvailableTargetLanguages();

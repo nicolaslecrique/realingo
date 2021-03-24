@@ -11,7 +11,7 @@ import 'widgets/lesson_card.dart';
 class HomeRoute extends StatefulWidget {
   static const route = '/home';
 
-  const HomeRoute({Key key}) : super(key: key);
+  const HomeRoute({Key? key}) : super(key: key);
 
   @override
   _HomeRouteState createState() => _HomeRouteState();
@@ -25,7 +25,7 @@ class _HomeRouteState extends State<HomeRoute> {
 
   Future<void> startLesson() async {
     var model = Provider.of<UserProgramModel>(context, listen: false);
-    UserLearningProgram userProgram = model.program;
+    UserLearningProgram userProgram = model.programOrNull!;
 
     LessonRouteArgs lessonRouteArgs = LessonRouteArgs(userProgram.program, userProgram.nextLesson);
     await Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
@@ -35,7 +35,7 @@ class _HomeRouteState extends State<HomeRoute> {
   Widget build(BuildContext context) {
     // for now no need to use consumer, we suppose it cannot change while we are on this route
     var model = Provider.of<UserProgramModel>(context, listen: false);
-    UserLearningProgram userProgram = model.program;
+    UserLearningProgram userProgram = model.programOrNull!;
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<LessonInProgram> lessons = userProgram.program.lessons;

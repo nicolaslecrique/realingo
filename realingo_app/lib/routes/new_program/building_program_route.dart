@@ -19,9 +19,9 @@ class BuildingProgramRouteArgs {
 @immutable
 class BuildingProgramRoute extends StatefulWidget {
   static const route = '/building_program';
-  final BuildingProgramRouteArgs args;
+  final BuildingProgramRouteArgs? args;
 
-  const BuildingProgramRoute(this.args, {Key key}) : super(key: key);
+  const BuildingProgramRoute(this.args, {Key? key}) : super(key: key);
 
   @override
   _BuildingProgramRouteState createState() => _BuildingProgramRouteState();
@@ -35,7 +35,7 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
   }
 
   Future<void> _buildProgram() async {
-    LearningProgram program = await ProgramServices.getProgram(widget.args.learnedLanguage, widget.args.originLanguage);
+    LearningProgram program = await ProgramServices.getProgram(widget.args!.learnedLanguage, widget.args!.originLanguage);
 
     await ProgramServices.setDefaultUserProgram(program);
     UserProgramModel model = Provider.of<UserProgramModel>(context, listen: false);

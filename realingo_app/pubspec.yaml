@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 
 dependencies:
@@ -62,7 +62,7 @@ dependencies:
   firebase_core: ^1.0.1
   firebase_crashlytics: ^1.0.0
 
-  flutter_uxcam: ^1.3.2
+  # flutter_uxcam: ^1.3.2
 
   # distance between strings (levenshtein..)
   edit_distance: ^0.5.0-nullsafety.0

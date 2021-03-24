@@ -12,9 +12,11 @@ import 'lesson_item_bottom_bar.dart';
 class LessonItemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget child) {
+    return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget? child) {
+      // TODO REFACTO: WE CAN SET LessonState as constructor parameter
       LessonState state = lesson.state;
       debugPrint('lesson state changed to ${lesson.state.status}/${lesson.state.currentItemOrNull?.status}');
+      LessonItemState currentItem = lesson.state.currentItemOrNull!;
 
       return Scaffold(
           body: SafeArea(
@@ -37,18 +39,17 @@ class LessonItemScreen extends StatelessWidget {
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(state.currentItemOrNull.sentence.translation,
-                          style: Theme.of(context).textTheme.headline6),
+                      child: Text(currentItem.sentence.translation, style: Theme.of(context).textTheme.headline6),
                     ),
                     Row(
                       children: [
                         IconButton(
                             icon: Icon(Icons.volume_up),
-                            onPressed: state.currentItemOrNull.status == LessonItemStatus.OnAnswerFeedback
-                                ? () => TextToSpeech.play(lesson.learnedLanguageUri, state.currentItemOrNull.sentence)
+                            onPressed: currentItem.status == LessonItemStatus.OnAnswerFeedback
+                                ? () => TextToSpeech.play(lesson.learnedLanguageUri, currentItem.sentence)
                                 : null,
                             tooltip: 'Play'),
-                        ReplyRichText(itemState: state.currentItemOrNull),
+                        ReplyRichText(itemState: currentItem),
                       ],
                     ),
                   ],
