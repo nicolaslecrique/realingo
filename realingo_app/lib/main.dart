@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!kDebugMode) {
       FlutterUxcam.optInOverall();
-      FlutterUxcam.startWithKey("8yhqvisgpswtm7s");
+      FlutterUxcam.startWithKey('8yhqvisgpswtm7s');
     }
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (context) => UserProgramModel())],
