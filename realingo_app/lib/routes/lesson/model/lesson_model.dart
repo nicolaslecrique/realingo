@@ -16,7 +16,7 @@ class LessonModel extends ChangeNotifier {
   final Lesson lesson;
   static final Levenshtein _distance = Levenshtein();
   static const double _maxDistance = 0.5;
-  static const int _nbTryForPronunciation = 3;
+  static const int _nbTryForPronunciation = 1;
   final VoiceService _voiceService;
   // https://stackoverflow.com/questions/15531928/matching-unicode-letters-with-regexp
   static final RegExp _normalizeStrRegex = RegExp(r'[^\p{L}]+', unicode: true);
