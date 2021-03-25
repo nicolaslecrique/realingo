@@ -28,8 +28,8 @@ data class Lesson(
 )
 
 enum class ExerciseType {
-    translateToLearningLanguage,
-    repeat
+    TranslateToLearningLanguage,
+    Repeat
 }
 
 data class Exercise(

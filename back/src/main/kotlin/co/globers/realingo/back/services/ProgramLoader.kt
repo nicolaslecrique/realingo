@@ -74,8 +74,8 @@ private fun loadLessons(program: ProgramBuilderLearningProgram, programUri: Stri
                     uri = generateUri(currentLessonLabel, programUri),
                     label = currentLessonLabel,
                     description = currentLessonItems.joinToString { it.itemStdFormat },
-                    exercises = currentLessonSentences.map { Exercise(ExerciseType.repeat, it) } +
-                            currentLessonSentences.map { Exercise(ExerciseType.translateToLearningLanguage, it) }
+                    exercises = currentLessonSentences.map { Exercise(ExerciseType.Repeat, it) } +
+                            currentLessonSentences.map { Exercise(ExerciseType.TranslateToLearningLanguage, it) }
                 )
             )
             currentLessonSentences = mutableListOf()

@@ -18,8 +18,8 @@ class ModelToRestAdapter {
 
         fun toRest(exerciseType: ExerciseType): RestExerciseType {
             return when(exerciseType){
-                ExerciseType.translateToLearningLanguage -> RestExerciseType.translateToLearningLanguage
-                ExerciseType.repeat -> RestExerciseType.repeat
+                ExerciseType.TranslateToLearningLanguage -> RestExerciseType.TranslateToLearningLanguage
+                ExerciseType.Repeat -> RestExerciseType.Repeat
             }
         }
 

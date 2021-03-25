@@ -32,8 +32,8 @@ data class RestSentence(
 )
 
 enum class RestExerciseType {
-    translateToLearningLanguage,
-    repeat
+    TranslateToLearningLanguage,
+    Repeat
 }
 
 data class RestExercise(
