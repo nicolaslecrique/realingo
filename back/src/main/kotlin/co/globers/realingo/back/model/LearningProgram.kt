@@ -33,6 +33,7 @@ enum class ExerciseType {
 }
 
 data class Exercise(
+    val uri: String,
     val exerciseType: ExerciseType,
     val sentence: Sentence
 )

@@ -69,13 +69,20 @@ private fun loadLessons(program: ProgramBuilderLearningProgram, programUri: Stri
         )
 
         if (currentItemIndex % nbItemsByLesson == nbItemsByLesson - 1) {
+            val lessonUri = generateUri(currentLessonLabel, programUri);
             lessons.add(
                 Lesson(
                     uri = generateUri(currentLessonLabel, programUri),
                     label = currentLessonLabel,
                     description = currentLessonItems.joinToString { it.itemStdFormat },
-                    exercises = currentLessonSentences.map { Exercise(ExerciseType.Repeat, it) } +
-                            currentLessonSentences.map { Exercise(ExerciseType.TranslateToLearningLanguage, it) }
+                    exercises = currentLessonSentences.map {
+                        Exercise(generateUri("${ExerciseType.Repeat}-${it.sentence}", lessonUri), ExerciseType.Repeat, it)
+                    } +
+                            currentLessonSentences.map {
+                                Exercise(
+                                    generateUri("${ExerciseType.TranslateToLearningLanguage}-${it.sentence}", lessonUri),
+                                    ExerciseType.TranslateToLearningLanguage,
+                                    it) }
                 )
             )
             currentLessonSentences = mutableListOf()
