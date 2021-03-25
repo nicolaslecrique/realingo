@@ -5,7 +5,7 @@
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- below line is added following firebase setup tutorial https://firebase.flutter.dev/docs/installation/android/ -->
-    <application usesCleartextTraffic="true">
+    <application android:usesCleartextTraffic="true">
         <!-- possibly other elements -->
     </application>
 </manifest>
