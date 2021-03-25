@@ -43,12 +43,51 @@ RestSentence _$RestSentenceFromJson(Map<String, dynamic> json) {
   );
 }
 
+RestExercise _$RestExerciseFromJson(Map<String, dynamic> json) {
+  return RestExercise(
+    json['uri'] as String,
+    _$enumDecode(_$RestExerciseTypeEnumMap, json['exerciseType']),
+    RestSentence.fromJson(json['sentence'] as Map<String, dynamic>),
+  );
+}
+
+K _$enumDecode<K, V>(
+  Map<K, V> enumValues,
+  Object? source, {
+  K? unknownValue,
+}) {
+  if (source == null) {
+    throw ArgumentError(
+      'A value must be provided. Supported values: '
+      '${enumValues.values.join(', ')}',
+    );
+  }
+
+  return enumValues.entries.singleWhere(
+    (e) => e.value == source,
+    orElse: () {
+      if (unknownValue == null) {
+        throw ArgumentError(
+          '`$source` is not one of the supported values: '
+          '${enumValues.values.join(', ')}',
+        );
+      }
+      return MapEntry(unknownValue, enumValues.values.first);
+    },
+  ).key;
+}
+
+const _$RestExerciseTypeEnumMap = {
+  RestExerciseType.TranslateToLearningLanguage: 'TranslateToLearningLanguage',
+  RestExerciseType.Repeat: 'Repeat',
+};
+
 RestLesson _$RestLessonFromJson(Map<String, dynamic> json) {
   return RestLesson(
     json['uri'] as String,
     json['label'] as String,
-    (json['sentences'] as List<dynamic>)
-        .map((e) => RestSentence.fromJson(e as Map<String, dynamic>))
+    (json['exercises'] as List<dynamic>)
+        .map((e) => RestExercise.fromJson(e as Map<String, dynamic>))
         .toList(),
     json['description'] as String,
   );

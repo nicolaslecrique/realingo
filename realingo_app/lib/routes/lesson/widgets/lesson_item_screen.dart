@@ -15,8 +15,8 @@ class LessonItemScreen extends StatelessWidget {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget? child) {
       // TODO REFACTO: WE CAN SET LessonState as constructor parameter
       LessonState state = lesson.state;
-      debugPrint('lesson state changed to ${lesson.state.status}/${lesson.state.currentItemOrNull?.status}');
-      LessonItemState currentItem = lesson.state.currentItemOrNull!;
+      debugPrint('lesson state changed to ${lesson.state.status}/${lesson.state.currentExerciseOrNull?.status}');
+      ExerciseState currentItem = lesson.state.currentExerciseOrNull!;
 
       return Scaffold(
           body: SafeArea(
@@ -39,17 +39,18 @@ class LessonItemScreen extends StatelessWidget {
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(currentItem.sentence.translation, style: Theme.of(context).textTheme.headline6),
+                      child:
+                          Text(currentItem.exercise.sentence.translation, style: Theme.of(context).textTheme.headline6),
                     ),
                     Row(
                       children: [
                         IconButton(
                             icon: Icon(Icons.volume_up),
-                            onPressed: currentItem.status == LessonItemStatus.OnAnswerFeedback
-                                ? () => TextToSpeech.play(lesson.learnedLanguageUri, currentItem.sentence)
+                            onPressed: currentItem.status == ExerciseStatus.OnAnswerFeedback
+                                ? () => TextToSpeech.play(lesson.learnedLanguageUri, currentItem.exercise.sentence)
                                 : null,
                             tooltip: 'Play'),
-                        ReplyRichText(itemState: currentItem),
+                        ReplyRichText(exerciseState: currentItem),
                       ],
                     ),
                   ],

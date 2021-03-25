@@ -58,19 +58,31 @@ class RestApi {
         await http.get(Uri.parse('$_restApiBaseUrl/lesson?program_uri=$programUri&lesson_uri=$lessonUri'));
     final restLesson = RestLesson.fromJson(json.decode(response.body) as Map<String, dynamic>);
 
-    final sentences = List<Sentence>.unmodifiable(restLesson.sentences.map<Sentence>((e) => Sentence(
+    final exercises = List<Exercise>.unmodifiable(restLesson.exercises.map<Exercise>((e) => Exercise(
         e.uri,
-        e.sentence,
-        e.translation,
-        e.hint,
-        List<ItemInSentence>.unmodifiable(e.items.map<ItemInSentence>((e) => ItemInSentence(
-            e.startIndex,
-            e.endIndex,
-            e.label,
-            List<ItemTranslation>.unmodifiable(
-                e.translations.map<ItemTranslation>((e) => ItemTranslation(e.translation, e.englishDefinition)))))))));
+        fromRest(e.exerciseType),
+        Sentence(
+            e.sentence.uri,
+            e.sentence.sentence,
+            e.sentence.translation,
+            e.sentence.hint,
+            List<ItemInSentence>.unmodifiable(e.sentence.items.map<ItemInSentence>((e) => ItemInSentence(
+                e.startIndex,
+                e.endIndex,
+                e.label,
+                List<ItemTranslation>.unmodifiable(e.translations
+                    .map<ItemTranslation>((e) => ItemTranslation(e.translation, e.englishDefinition))))))))));
 
-    return Lesson(restLesson.uri, restLesson.label, restLesson.description, sentences);
+    return Lesson(restLesson.uri, restLesson.label, restLesson.description, exercises);
+  }
+
+  static ExerciseType fromRest(RestExerciseType exerciseType) {
+    switch (exerciseType) {
+      case RestExerciseType.TranslateToLearningLanguage:
+        return ExerciseType.TranslateToLearningLanguage;
+      case RestExerciseType.Repeat:
+        return ExerciseType.Repeat;
+    }
   }
 
   static Future<Uint8List> getRecord(String languageUri, String sentence) async {

@@ -59,15 +59,28 @@ class RestSentence {
   factory RestSentence.fromJson(Map<String, dynamic> json) => _$RestSentenceFromJson(json);
 }
 
+enum RestExerciseType { TranslateToLearningLanguage, Repeat }
+
+@JsonSerializable(createToJson: false)
+@immutable
+class RestExercise {
+  final String uri;
+  final RestExerciseType exerciseType;
+  final RestSentence sentence;
+
+  const RestExercise(this.uri, this.exerciseType, this.sentence);
+  factory RestExercise.fromJson(Map<String, dynamic> json) => _$RestExerciseFromJson(json);
+}
+
 @JsonSerializable(createToJson: false)
 @immutable
 class RestLesson {
   final String uri;
   final String label;
   final String description;
-  final List<RestSentence> sentences;
+  final List<RestExercise> exercises;
 
-  const RestLesson(this.uri, this.label, this.sentences, this.description);
+  const RestLesson(this.uri, this.label, this.exercises, this.description);
 
   factory RestLesson.fromJson(Map<String, dynamic> json) => _$RestLessonFromJson(json);
 }

@@ -12,7 +12,7 @@ class _State {
   final Color? backgroundColorOrNull;
   final Color? textColorOrNull;
   final String titleText;
-  final String Function(LessonItemState item)? subtitleTextOrNull;
+  final String Function(ExerciseState item)? subtitleTextOrNull;
 
   _State(this.buttonText, this.buttonIcon, this.buttonColorOrNull, this.buttonAction,
       {this.backgroundColorOrNull, this.textColorOrNull, this.titleText = '', this.subtitleTextOrNull});
@@ -26,7 +26,7 @@ class _State {
       backgroundColorOrNull: Colors.grey,
       textColorOrNull: StandardColors.correct,
       titleText: 'Good!',
-      subtitleTextOrNull: (LessonItemState item) =>
+      subtitleTextOrNull: (ExerciseState item) =>
           "Listen and try to improve your pronunciation (${item.lastAnswerOrNull!.remainingTryIfBadPronunciationOrNull} more ${item.lastAnswerOrNull!.remainingTryIfBadPronunciationOrNull == 1 ? 'try' : 'tries'})");
 
   static final _State badPronunciationNoTry = _State(
@@ -34,34 +34,34 @@ class _State {
       backgroundColorOrNull: Colors.grey,
       textColorOrNull: StandardColors.correct,
       titleText: 'Good!',
-      subtitleTextOrNull: (LessonItemState item) => "No more try, you'll do better next time");
+      subtitleTextOrNull: (ExerciseState item) => "No more try, you'll do better next time");
 
   static final _State perfect = _State(
       'Continue', Icons.check, StandardColors.correct, (LessonModel lesson) => lesson.nextLessonItem,
       backgroundColorOrNull: Colors.grey,
       textColorOrNull: StandardColors.correct,
       titleText: 'Perfect!',
-      subtitleTextOrNull: (LessonItemState item) => 'Keep going, you are the best!');
+      subtitleTextOrNull: (ExerciseState item) => 'Keep going, you are the best!');
 
   static final _State bad = _State(
       'Continue', Icons.arrow_forward_ios, StandardColors.incorrect, (LessonModel lesson) => lesson.nextLessonItem,
       backgroundColorOrNull: Colors.grey,
       textColorOrNull: StandardColors.incorrect,
       titleText: 'Wrong answer, your reply:',
-      subtitleTextOrNull: (LessonItemState item) => item.lastAnswerOrNull!.rawAnswer);
+      subtitleTextOrNull: (ExerciseState item) => item.lastAnswerOrNull!.rawAnswer);
 
   // ignore: missing_return
-  static _State getState(LessonItemStatus status, AnswerStatus? answerStatusOrNull) {
+  static _State getState(ExerciseStatus status, AnswerStatus? answerStatusOrNull) {
     switch (status) {
-      case LessonItemStatus.ReadyForFirstAnswer:
+      case ExerciseStatus.ReadyForFirstAnswer:
         return ready;
-      case LessonItemStatus.WaitForListeningAvailable:
+      case ExerciseStatus.WaitForListeningAvailable:
         return wait;
-      case LessonItemStatus.ListeningAnswer:
+      case ExerciseStatus.ListeningAnswer:
         return listen;
-      case LessonItemStatus.WaitForAnswerResult:
+      case ExerciseStatus.WaitForAnswerResult:
         return wait;
-      case LessonItemStatus.OnAnswerFeedback:
+      case ExerciseStatus.OnAnswerFeedback:
         AnswerStatus answerStatus = answerStatusOrNull!;
         switch (answerStatus) {
           case AnswerStatus.CorrectAnswerCorrectPronunciation:
@@ -81,9 +81,9 @@ class LessonItemBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget? child) {
-      var status = lesson.state.currentItemOrNull!.status;
+      var status = lesson.state.currentExerciseOrNull!.status;
 
-      _State state = _State.getState(status, lesson.state.currentItemOrNull!.lastAnswerOrNull?.answerStatus);
+      _State state = _State.getState(status, lesson.state.currentExerciseOrNull!.lastAnswerOrNull?.answerStatus);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -94,7 +94,7 @@ class LessonItemBottomBar extends StatelessWidget {
               // maxLine and '\n' trick to always keep same size
               state.subtitleTextOrNull == null
                   ? '\n'
-                  : state.subtitleTextOrNull!(lesson.state.currentItemOrNull!) + '\n',
+                  : state.subtitleTextOrNull!(lesson.state.currentExerciseOrNull!) + '\n',
               maxLines: 2,
               style: Theme.of(context).textTheme.subtitle1!.apply(color: state.textColorOrNull)),
           ElevatedButton.icon(

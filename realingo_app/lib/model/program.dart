@@ -39,14 +39,25 @@ class Sentence {
   const Sentence(this.uri, this.sentence, this.translation, this.hint, this.items);
 }
 
+enum ExerciseType { TranslateToLearningLanguage, Repeat }
+
+@immutable
+class Exercise {
+  final String uri;
+  final ExerciseType exerciseType;
+  final Sentence sentence;
+
+  const Exercise(this.uri, this.exerciseType, this.sentence);
+}
+
 @immutable
 class Lesson {
   final String uri;
   final String label;
   final String description;
-  final List<Sentence> sentences;
+  final List<Exercise> exercises;
 
-  const Lesson(this.uri, this.label, this.description, this.sentences);
+  const Lesson(this.uri, this.label, this.description, this.exercises);
 }
 
 // --------- Program -----------

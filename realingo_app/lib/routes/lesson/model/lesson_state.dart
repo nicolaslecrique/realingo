@@ -6,13 +6,13 @@ enum LessonStatus { WaitForVoiceServiceReady, OnLessonItem, Completed }
 @immutable
 class LessonState {
   final double ratioCompleted;
-  final LessonItemState? currentItemOrNull;
+  final ExerciseState? currentExerciseOrNull;
   final LessonStatus status;
 
-  const LessonState(this.ratioCompleted, this.currentItemOrNull, this.status);
+  const LessonState(this.ratioCompleted, this.currentExerciseOrNull, this.status);
 }
 
-enum LessonItemStatus {
+enum ExerciseStatus {
   ReadyForFirstAnswer,
   WaitForListeningAvailable,
   ListeningAnswer,
@@ -28,12 +28,12 @@ enum AnswerStatus {
 }
 
 @immutable
-class LessonItemState {
-  final Sentence sentence;
+class ExerciseState {
+  final Exercise exercise;
   final AnswerResult? lastAnswerOrNull; // null if not reply given still
-  final LessonItemStatus status;
+  final ExerciseStatus status;
 
-  const LessonItemState(this.sentence, this.lastAnswerOrNull, this.status);
+  const ExerciseState(this.exercise, this.lastAnswerOrNull, this.status);
 }
 
 @immutable
