@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
+import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
 import 'package:realingo_app/routes/lesson/widgets/lesson_progress_bar.dart';
@@ -31,7 +32,8 @@ class LessonItemScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: StandardSizes.medium),
                   child: Align(
                       alignment: Alignment.centerLeft,
-                      child: Text('Translate the sentence', style: Theme.of(context).textTheme.headline5)),
+                      child: Text(_getInstructions(currentItem.exercise.exerciseType),
+                          style: Theme.of(context).textTheme.headline5)),
                 ),
                 Expanded(
                     child: Column(
@@ -46,7 +48,9 @@ class LessonItemScreen extends StatelessWidget {
                       children: [
                         IconButton(
                             icon: Icon(Icons.volume_up),
-                            onPressed: currentItem.status == ExerciseStatus.OnAnswerFeedback
+                            onPressed: currentItem.status == ExerciseStatus.OnAnswerFeedback ||
+                                    (currentItem.status == ExerciseStatus.ReadyForFirstAnswer &&
+                                        currentItem.exercise.exerciseType == ExerciseType.Repeat)
                                 ? () => TextToSpeech.play(lesson.learnedLanguageUri, currentItem.exercise.sentence)
                                 : null,
                             tooltip: 'Play'),
@@ -60,5 +64,14 @@ class LessonItemScreen extends StatelessWidget {
             )),
       ));
     });
+  }
+
+  static String _getInstructions(ExerciseType exerciseType) {
+    switch (exerciseType) {
+      case ExerciseType.TranslateToLearningLanguage:
+        return 'Translate the sentence';
+      case ExerciseType.Repeat:
+        return 'Repeat the sentence';
+    }
   }
 }
