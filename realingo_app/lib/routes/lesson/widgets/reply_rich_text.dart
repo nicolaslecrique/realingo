@@ -11,7 +11,7 @@ class ReplyRichText extends StatelessWidget {
   @override
   // ignore: missing_return
   Widget build(BuildContext context) {
-    return RichText(text: _getTextSpan(context, exerciseState));
+    return Flexible(child: RichText(text: _getTextSpan(context, exerciseState)));
   }
 
   TextSpan _getTextSpan(BuildContext context, ExerciseState exerciseState) {
