@@ -16,7 +16,9 @@ class ReplyRichText extends StatelessWidget {
 
   TextSpan _getTextSpan(BuildContext context, ExerciseState exerciseState) {
     var defaultTextStyle = Theme.of(context).textTheme.headline5!;
-    var errorTextStyle = defaultTextStyle.apply(color: StandardColors.accentColor);
+    var badPronunciationTextStyle = defaultTextStyle.apply(color: StandardColors.accentColor);
+    var goodTextStyle = defaultTextStyle.apply(color: StandardColors.correct);
+    var errorTextStyle = defaultTextStyle.apply(color: StandardColors.incorrect);
 
     if (exerciseState.lastAnswerOrNull == null) {
       switch (exerciseState.exercise.exerciseType) {
@@ -28,16 +30,17 @@ class ReplyRichText extends StatelessWidget {
     } else {
       switch (exerciseState.lastAnswerOrNull!.answerStatus) {
         case AnswerStatus.CorrectAnswerCorrectPronunciation:
-          return TextSpan(text: exerciseState.exercise.sentence.sentence, style: defaultTextStyle);
+          return TextSpan(text: exerciseState.exercise.sentence.sentence, style: goodTextStyle);
         case AnswerStatus.CorrectAnswerBadPronunciation:
         case AnswerStatus.CorrectAnswerBadPronunciationNoMoreTry:
           return TextSpan(
               children: exerciseState.lastAnswerOrNull!.processedAnswer
                   .map((AnswerPart e) => TextSpan(
-                      text: e.expectedWord, style: e.isPronunciationCorrect ? defaultTextStyle : errorTextStyle))
+                      text: e.expectedWord,
+                      style: e.isPronunciationCorrect ? goodTextStyle : badPronunciationTextStyle))
                   .toList());
         case AnswerStatus.BadAnswer:
-          return TextSpan(text: exerciseState.exercise.sentence.sentence, style: defaultTextStyle);
+          return TextSpan(text: exerciseState.exercise.sentence.sentence, style: errorTextStyle);
       }
     }
   }

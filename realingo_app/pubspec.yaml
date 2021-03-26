@@ -72,7 +72,7 @@ dev_dependencies:
     sdk: flutter
 
   # lint
-  pedantic: ^1.9.2
+  pedantic: ^1.11.0
 
   # to generate source code, used by json_serializable
   build_runner: ^1.12.2
