@@ -5,6 +5,7 @@ import 'package:edit_distance/edit_distance.dart';
 import 'package:flutter/foundation.dart';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/services/voice_service.dart';
+import 'package:realingo_app/tech_services/sound.dart';
 
 import 'lesson_state.dart';
 
@@ -42,7 +43,21 @@ class LessonModel extends ChangeNotifier {
 
   void _updateState(LessonState state) {
     _state = state;
+    playAnswerSoundIfNeeded();
     notifyListeners();
+  }
+
+  void playAnswerSoundIfNeeded() {
+    var exercise = _state.currentExerciseOrNull;
+    if (exercise != null) {
+      if (!exercise.lastAnswerCanceledOrEmpty && exercise.status == ExerciseStatus.OnAnswerFeedback) {
+        if (exercise.lastAnswerOrNull!.answerStatus == AnswerStatus.BadAnswer) {
+          Sound.WrongAnswer();
+        } else {
+          Sound.GoodAnswer();
+        }
+      }
+    }
   }
 
   bool _takeLock() {
@@ -66,10 +81,8 @@ class LessonModel extends ChangeNotifier {
     _updateState(LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady));
     bool initOk = await _voiceService.init();
     if (initOk) {
-      _updateState(LessonState(
-          ratioCompleted,
-          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer, null),
-          LessonStatus.OnLessonItem));
+      _updateState(LessonState(ratioCompleted,
+          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
     } else {
       throw Exception('LessonModel:init, init voiceService failed');
     }
@@ -90,7 +103,7 @@ class LessonModel extends ChangeNotifier {
     _updateState(LessonState(
         ratioCompleted,
         ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-            ExerciseStatus.WaitForListeningAvailable, null),
+            ExerciseStatus.WaitForListeningAvailable),
         LessonStatus.OnLessonItem));
 
     bool startedOk = await _voiceService.startListening();
@@ -98,8 +111,8 @@ class LessonModel extends ChangeNotifier {
     if (startedOk) {
       _updateState(LessonState(
           ratioCompleted,
-          ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-              ExerciseStatus.ListeningAnswer, null),
+          ExerciseState(
+              _currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull, ExerciseStatus.ListeningAnswer),
           LessonStatus.OnLessonItem));
     } else {
       _updateState(before); // it failed, so we come back to whatever the previous state was
@@ -119,7 +132,7 @@ class LessonModel extends ChangeNotifier {
     _updateState(LessonState(
         ratioCompleted,
         ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-            ExerciseStatus.WaitForAnswerResult, null),
+            ExerciseStatus.WaitForAnswerResult),
         LessonStatus.OnLessonItem));
 
     // 2) stop listening
@@ -141,8 +154,9 @@ class LessonModel extends ChangeNotifier {
             result, answerQuality == _AnswerQuality.Bad ? result : _currentExerciseOrNull!.sentence.sentence);
         _updateState(LessonState(
             ratioCompleted,
-            ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-                ExerciseStatus.ConfirmOrCancel, waitingAnswer),
+            ExerciseState(
+                _currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull, ExerciseStatus.ConfirmOrCancel,
+                AnswerWaitingForConfirmationOrNull: waitingAnswer),
             LessonStatus.OnLessonItem));
       } else {
         _updateToNewOnAnswerFeedback(result);
@@ -158,7 +172,8 @@ class LessonModel extends ChangeNotifier {
     _updateState(LessonState(
         ratioCompleted,
         ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-            firstAnswer ? ExerciseStatus.ReadyForFirstAnswer : ExerciseStatus.OnAnswerFeedback, null),
+            firstAnswer ? ExerciseStatus.ReadyForFirstAnswer : ExerciseStatus.OnAnswerFeedback,
+            lastAnswerCanceledOrEmpty: true),
         LessonStatus.OnLessonItem));
   }
 
@@ -180,7 +195,7 @@ class LessonModel extends ChangeNotifier {
 
     _updateState(LessonState(
         ratioCompleted,
-        ExerciseState(_currentExerciseOrNull!, newAnswerResult, ExerciseStatus.OnAnswerFeedback, null),
+        ExerciseState(_currentExerciseOrNull!, newAnswerResult, ExerciseStatus.OnAnswerFeedback),
         LessonStatus.OnLessonItem));
   }
 
@@ -211,16 +226,14 @@ class LessonModel extends ChangeNotifier {
       } else {
         _updateState(LessonState(
             ratioCompleted,
-            ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer, null),
+            ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer),
             LessonStatus.OnLessonItem));
       }
     } else {
       // bad answer
       _remainingExercises.addLast(_remainingExercises.removeFirst());
-      _updateState(LessonState(
-          ratioCompleted,
-          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer, null),
-          LessonStatus.OnLessonItem));
+      _updateState(LessonState(ratioCompleted,
+          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
     }
 
     _releaseLock();

@@ -34,8 +34,10 @@ class ExerciseState {
   final WaitingAnswer? AnswerWaitingForConfirmationOrNull; // not null if ExerciseStatus is ConfirmOrCancel
   final AnswerResult? lastAnswerOrNull; // null if not reply given still
   final ExerciseStatus status;
+  final bool lastAnswerCanceledOrEmpty;
 
-  const ExerciseState(this.exercise, this.lastAnswerOrNull, this.status, this.AnswerWaitingForConfirmationOrNull);
+  const ExerciseState(this.exercise, this.lastAnswerOrNull, this.status,
+      {this.AnswerWaitingForConfirmationOrNull, this.lastAnswerCanceledOrEmpty = false});
 }
 
 @immutable
