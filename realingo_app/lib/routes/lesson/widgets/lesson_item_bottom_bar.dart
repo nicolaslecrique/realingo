@@ -25,7 +25,8 @@ class _State {
   static final _State ready = _State('Reply', Icons.mic, null, (LessonModel lesson) => lesson.startListening);
   static final _State wait =
       _State('...', Icons.mic, StandardColors.brandBlue, (LessonModel lesson) => lesson.stopListening);
-  static final _State listen = _State('...', Icons.mic, null, (LessonModel lesson) => lesson.stopListening);
+  static final _State listen =
+      _State('End', Icons.mic, StandardColors.accentColor, (LessonModel lesson) => lesson.stopListening);
 
   static final _State badPronunciation = _State('Retry', Icons.mic, null, (LessonModel lesson) => lesson.startListening,
       backgroundColorOrNull: Colors.grey,
@@ -115,7 +116,7 @@ class LessonItemBottomBar extends StatelessWidget {
                 ? [
                     Expanded(
                       child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(primary: Colors.yellow),
+                          style: ElevatedButton.styleFrom(primary: StandardColors.accentColor),
                           onPressed: lesson.cancelAnswer,
                           icon: Icon(Icons.close),
                           label: Text('Retry')),
