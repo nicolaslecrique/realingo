@@ -66,8 +66,10 @@ class LessonModel extends ChangeNotifier {
     _updateState(LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady));
     bool initOk = await _voiceService.init();
     if (initOk) {
-      _updateState(LessonState(ratioCompleted,
-          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
+      _updateState(LessonState(
+          ratioCompleted,
+          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer, null),
+          LessonStatus.OnLessonItem));
     } else {
       throw Exception('LessonModel:init, init voiceService failed');
     }
@@ -88,7 +90,7 @@ class LessonModel extends ChangeNotifier {
     _updateState(LessonState(
         ratioCompleted,
         ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-            ExerciseStatus.WaitForListeningAvailable),
+            ExerciseStatus.WaitForListeningAvailable, null),
         LessonStatus.OnLessonItem));
 
     bool startedOk = await _voiceService.startListening();
@@ -96,8 +98,8 @@ class LessonModel extends ChangeNotifier {
     if (startedOk) {
       _updateState(LessonState(
           ratioCompleted,
-          ExerciseState(
-              _currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull, ExerciseStatus.ListeningAnswer),
+          ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
+              ExerciseStatus.ListeningAnswer, null),
           LessonStatus.OnLessonItem));
     } else {
       _updateState(before); // it failed, so we come back to whatever the previous state was
@@ -113,30 +115,82 @@ class LessonModel extends ChangeNotifier {
       return;
     }
 
+    // 1) mark status as WaitForAnswerResult
     _updateState(LessonState(
         ratioCompleted,
         ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-            ExerciseStatus.WaitForAnswerResult),
+            ExerciseStatus.WaitForAnswerResult, null),
         LessonStatus.OnLessonItem));
 
+    // 2) stop listening
     String? result = await _voiceService.stopListening();
 
     if (result == null || result.isEmpty) {
-      bool firstAnswer = _state.currentExerciseOrNull!.lastAnswerOrNull == null;
-      _updateState(LessonState(
-          ratioCompleted,
-          ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
-              firstAnswer ? ExerciseStatus.ReadyForFirstAnswer : ExerciseStatus.OnAnswerFeedback),
-          LessonStatus.OnLessonItem));
+      // non result => back to previous state
+      _updateToPreviousAnswerState();
     } else {
-      AnswerResult newAnswerResult = _getNewAnswerResult(
-          _currentExerciseOrNull!.sentence.sentence, result, _state.currentExerciseOrNull!.lastAnswerOrNull);
-      _updateState(LessonState(
-          ratioCompleted,
-          ExerciseState(_currentExerciseOrNull!, newAnswerResult, ExerciseStatus.OnAnswerFeedback),
-          LessonStatus.OnLessonItem));
+      if (_state.currentExerciseOrNull!.lastAnswerOrNull == null) {
+        // if first reply ot translation exercise => ask for confirmation
+        final normalizedExpectedSentence = _normalizeString(_currentExerciseOrNull!.sentence.sentence);
+        final normalizedVoiceResult = _normalizeString(result);
+        // for now, the "tolerant" STT equals expected reply
+        // we still need a "tolerant" reply if it's not good (by tolerant matching word-by-word)
+        var answerQuality = _getAnswerStatusWithVoiceResult(normalizedExpectedSentence, normalizedVoiceResult);
+
+        WaitingAnswer waitingAnswer = WaitingAnswer(
+            result, answerQuality == _AnswerQuality.Bad ? result : _currentExerciseOrNull!.sentence.sentence);
+        _updateState(LessonState(
+            ratioCompleted,
+            ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
+                ExerciseStatus.ConfirmOrCancel, waitingAnswer),
+            LessonStatus.OnLessonItem));
+      } else {
+        _updateToNewOnAnswerFeedback(result);
+      }
     }
 
+    _releaseLock();
+  }
+
+  void _updateToPreviousAnswerState() {
+    // non result => back to previous state
+    bool firstAnswer = _state.currentExerciseOrNull!.lastAnswerOrNull == null;
+    _updateState(LessonState(
+        ratioCompleted,
+        ExerciseState(_currentExerciseOrNull!, _state.currentExerciseOrNull!.lastAnswerOrNull,
+            firstAnswer ? ExerciseStatus.ReadyForFirstAnswer : ExerciseStatus.OnAnswerFeedback, null),
+        LessonStatus.OnLessonItem));
+  }
+
+  void confirmAnswer() {
+    debugPrint('lesson_model:confirmAnswer');
+
+    if (!_takeLock()) {
+      return;
+    }
+
+    _updateToNewOnAnswerFeedback(_state.currentExerciseOrNull!.AnswerWaitingForConfirmationOrNull!.rawAnswer);
+
+    _releaseLock();
+  }
+
+  void _updateToNewOnAnswerFeedback(String newRawAnswer) {
+    AnswerResult newAnswerResult = _getNewAnswerResult(
+        _currentExerciseOrNull!.sentence.sentence, newRawAnswer, _state.currentExerciseOrNull!.lastAnswerOrNull);
+
+    _updateState(LessonState(
+        ratioCompleted,
+        ExerciseState(_currentExerciseOrNull!, newAnswerResult, ExerciseStatus.OnAnswerFeedback, null),
+        LessonStatus.OnLessonItem));
+  }
+
+  void cancelAnswer() {
+    debugPrint('lesson_model:cancelAnswer');
+
+    if (!_takeLock()) {
+      return;
+    }
+    _updateToPreviousAnswerState();
     _releaseLock();
   }
 
@@ -157,14 +211,16 @@ class LessonModel extends ChangeNotifier {
       } else {
         _updateState(LessonState(
             ratioCompleted,
-            ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer),
+            ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer, null),
             LessonStatus.OnLessonItem));
       }
     } else {
       // bad answer
       _remainingExercises.addLast(_remainingExercises.removeFirst());
-      _updateState(LessonState(ratioCompleted,
-          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
+      _updateState(LessonState(
+          ratioCompleted,
+          ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer, null),
+          LessonStatus.OnLessonItem));
     }
 
     _releaseLock();
@@ -208,7 +264,6 @@ class LessonModel extends ChangeNotifier {
     return list;
   }
 
-  // ignore: missing_return
   static AnswerResult _getNewAnswerResult(String expectedSentence, String voiceResult, AnswerResult? lastAnswerOrNull) {
     final normalizedExpectedSentence = _normalizeString(expectedSentence);
     final normalizedVoiceResult = _normalizeString(voiceResult);

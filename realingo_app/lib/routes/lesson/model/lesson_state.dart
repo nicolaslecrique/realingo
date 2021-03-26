@@ -17,6 +17,7 @@ enum ExerciseStatus {
   WaitForListeningAvailable,
   ListeningAnswer,
   WaitForAnswerResult,
+  ConfirmOrCancel,
   OnAnswerFeedback
 }
 
@@ -30,10 +31,19 @@ enum AnswerStatus {
 @immutable
 class ExerciseState {
   final Exercise exercise;
+  final WaitingAnswer? AnswerWaitingForConfirmationOrNull; // not null if ExerciseStatus is ConfirmOrCancel
   final AnswerResult? lastAnswerOrNull; // null if not reply given still
   final ExerciseStatus status;
 
-  const ExerciseState(this.exercise, this.lastAnswerOrNull, this.status);
+  const ExerciseState(this.exercise, this.lastAnswerOrNull, this.status, this.AnswerWaitingForConfirmationOrNull);
+}
+
+@immutable
+class WaitingAnswer {
+  final String rawAnswer;
+  final String guessedAnswer; // we try to infer what the user wanted to say
+
+  const WaitingAnswer(this.rawAnswer, this.guessedAnswer);
 }
 
 @immutable

@@ -13,9 +13,14 @@ class _State {
   final Color? textColorOrNull;
   final String titleText;
   final String Function(ExerciseState item)? subtitleTextOrNull;
+  final bool displayCancelReplyButton;
 
   _State(this.buttonText, this.buttonIcon, this.buttonColorOrNull, this.buttonAction,
-      {this.backgroundColorOrNull, this.textColorOrNull, this.titleText = '', this.subtitleTextOrNull});
+      {this.backgroundColorOrNull,
+      this.textColorOrNull,
+      this.titleText = '',
+      this.subtitleTextOrNull,
+      this.displayCancelReplyButton = false});
 
   static final _State ready = _State('Reply', Icons.mic, null, (LessonModel lesson) => lesson.startListening);
   static final _State wait =
@@ -50,6 +55,12 @@ class _State {
       titleText: 'Wrong answer, your reply:',
       subtitleTextOrNull: (ExerciseState item) => item.lastAnswerOrNull!.rawAnswer);
 
+  static final _State _confirmOrCancel = _State(
+      'Confirm', Icons.check, StandardColors.brandBlue, (lesson) => lesson.confirmAnswer,
+      displayCancelReplyButton: true,
+      titleText: 'Your reply:',
+      subtitleTextOrNull: (ExerciseState item) => item.AnswerWaitingForConfirmationOrNull!.guessedAnswer);
+
   // ignore: missing_return
   static _State getState(ExerciseStatus status, AnswerStatus? answerStatusOrNull) {
     switch (status) {
@@ -61,6 +72,8 @@ class _State {
         return listen;
       case ExerciseStatus.WaitForAnswerResult:
         return wait;
+      case ExerciseStatus.ConfirmOrCancel:
+        return _confirmOrCancel;
       case ExerciseStatus.OnAnswerFeedback:
         AnswerStatus answerStatus = answerStatusOrNull!;
         switch (answerStatus) {
@@ -97,14 +110,33 @@ class LessonItemBottomBar extends StatelessWidget {
                   : state.subtitleTextOrNull!(lesson.state.currentExerciseOrNull!) + '\n',
               maxLines: 2,
               style: Theme.of(context).textTheme.subtitle1!.apply(color: state.textColorOrNull)),
-          ElevatedButton.icon(
-              style:
-                  state.buttonColorOrNull == null ? null : ElevatedButton.styleFrom(primary: state.buttonColorOrNull),
-              onPressed: state.buttonAction(lesson),
-              icon: Icon(state.buttonIcon),
-              label: Text(state.buttonText))
+          Row(
+            children: state.displayCancelReplyButton
+                ? [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(primary: Colors.yellow),
+                          onPressed: lesson.cancelAnswer,
+                          icon: Icon(Icons.close),
+                          label: Text('Retry')),
+                    ),
+                    SizedBox(width: StandardSizes.medium),
+                    buildMainButton(state, lesson),
+                  ]
+                : [buildMainButton(state, lesson)],
+          )
         ],
       );
     });
+  }
+
+  Widget buildMainButton(_State state, LessonModel lesson) {
+    return Expanded(
+      child: ElevatedButton.icon(
+          style: state.buttonColorOrNull == null ? null : ElevatedButton.styleFrom(primary: state.buttonColorOrNull),
+          onPressed: state.buttonAction(lesson),
+          icon: Icon(state.buttonIcon),
+          label: Text(state.buttonText)),
+    );
   }
 }
