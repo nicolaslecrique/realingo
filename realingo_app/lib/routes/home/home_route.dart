@@ -4,7 +4,6 @@ import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
-import 'package:realingo_app/routes/lesson/lesson_route.dart';
 
 import 'widgets/lesson_card.dart';
 
@@ -21,14 +20,6 @@ class _HomeRouteState extends State<HomeRoute> {
   @override
   void initState() {
     super.initState();
-  }
-
-  Future<void> startLesson() async {
-    var model = Provider.of<UserProgramModel>(context, listen: false);
-    UserLearningProgram userProgram = model.programOrNull!;
-
-    LessonRouteArgs lessonRouteArgs = LessonRouteArgs(userProgram.program, userProgram.nextLesson);
-    await Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
   }
 
   @override
@@ -61,14 +52,6 @@ class _HomeRouteState extends State<HomeRoute> {
                                 : LessonInProgramStatus.NotLearned,
                       );
                     }),
-              ),
-              SizedBox(height: StandardSizes.medium),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => startLesson(),
-                  child: Text('Start lesson'),
-                ),
               )
             ],
           ),
