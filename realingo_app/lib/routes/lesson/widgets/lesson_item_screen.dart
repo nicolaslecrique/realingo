@@ -46,14 +46,21 @@ class LessonItemScreen extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        IconButton(
-                            icon: Icon(Icons.volume_up),
-                            onPressed: currentItem.status == ExerciseStatus.OnAnswerFeedback ||
-                                    (currentItem.status == ExerciseStatus.ReadyForFirstAnswer &&
-                                        currentItem.exercise.exerciseType == ExerciseType.Repeat)
-                                ? () => TextToSpeech.play(lesson.learnedLanguageUri, currentItem.exercise.sentence)
-                                : null,
-                            tooltip: 'Play'),
+                        Ink(
+                          decoration: const ShapeDecoration(
+                            color: StandardColors.brandBlue,
+                            shape: CircleBorder(),
+                          ),
+                          child: IconButton(
+                              icon: Icon(Icons.volume_up),
+                              onPressed: currentItem.status == ExerciseStatus.OnAnswerFeedback ||
+                                      (currentItem.status == ExerciseStatus.ReadyForFirstAnswer &&
+                                          currentItem.exercise.exerciseType == ExerciseType.Repeat)
+                                  ? () => TextToSpeech.play(lesson.learnedLanguageUri, currentItem.exercise.sentence)
+                                  : null,
+                              tooltip: 'Play'),
+                        ),
+                        SizedBox(width: StandardSizes.medium),
                         ReplyRichText(exerciseState: currentItem),
                       ],
                     ),
