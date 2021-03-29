@@ -13,7 +13,7 @@ class TextToSpeech {
     final List<Result<String>> path =
         await Future.wait(sentences.map((e) => _loadOrGetSentenceRecordFilePath(directory, e, languageUri)));
 
-    return Result.mergeList<void, String>(path, (_) => null);
+    return Result.mergeList<void, String>(path, (_) => 0);
   }
 
   static Future<Result<void>> play(String languageUri, Sentence sentence) async {
