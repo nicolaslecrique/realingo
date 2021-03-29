@@ -30,7 +30,7 @@ class _HomeRouteState extends State<HomeRoute> {
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<LessonInProgram> lessons = userProgram.program.lessons;
-    int nextLessonIndex = lessons.indexWhere((element) => element.uri == userProgram.nextLesson.uri);
+    int nextLessonIndex = lessons.indexWhere((element) => element.uri == userProgram.nextLessonUri);
 
     return Scaffold(
       body: SafeArea(
@@ -44,6 +44,7 @@ class _HomeRouteState extends State<HomeRoute> {
                     itemBuilder: (context, index) {
                       final lesson = lessons[index];
                       return LessonCard(
+                        program: userProgram.program,
                         lessonInProgram: lesson,
                         status: index < nextLessonIndex
                             ? LessonInProgramStatus.Learned

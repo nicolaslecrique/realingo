@@ -40,7 +40,7 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
 
     await ProgramServices.setDefaultUserProgram(program);
     UserProgramModel model = Provider.of<UserProgramModel>(context, listen: false);
-    await model.reload();
+    await model.loadDefaultProgram();
   }
 
   @override

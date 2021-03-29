@@ -33,4 +33,13 @@ class Result<T> {
       return Result.ko(res1.error);
     }
   }
+
+  static Result<U> mergeList<U, T>(Iterable<Result<T>> results, U Function(Iterable<T> ok) builder) {
+    Result<T>? firstKo = results.cast<Result<T>?>().firstWhere((element) => !element!.isOk, orElse: () => null);
+    if (firstKo != null) {
+      return Result.ko(firstKo.error);
+    } else {
+      return Result.ok(builder(results.map((e) => e.result)));
+    }
+  }
 }

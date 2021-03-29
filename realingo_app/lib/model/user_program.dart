@@ -4,7 +4,7 @@ import 'package:realingo_app/model/program.dart';
 @immutable
 class UserLearningProgram {
   final LearningProgram program;
-  final Lesson nextLesson;
+  final String nextLessonUri;
 
-  const UserLearningProgram(this.program, this.nextLesson);
+  const UserLearningProgram(this.program, this.nextLessonUri);
 }

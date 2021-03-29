@@ -6,7 +6,6 @@ import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/home/home_route.dart';
-import 'package:realingo_app/services/program_services.dart';
 
 class EndLessonScreen extends StatelessWidget {
   final LearningProgram program;
@@ -17,9 +16,8 @@ class EndLessonScreen extends StatelessWidget {
   // we use dummy "int" for future because FutureBuilderWrapper requires a data result
   // to work
   Future<int> updateProgram(BuildContext context) async {
-    await ProgramServices.setUserProgramNextLesson(program, completedLesson.uri);
     var model = Provider.of<UserProgramModel>(context, listen: false);
-    await model.reload();
+    await model.setUserProgramNextLesson(completedLesson.uri);
     return 0;
   }
 

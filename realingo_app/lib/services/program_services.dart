@@ -1,5 +1,6 @@
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/services/texttospeech_service.dart';
 import 'package:realingo_app/tech_services/rest/rest_api.dart';
 import 'package:realingo_app/tech_services/result.dart';
 import 'package:realingo_app/tech_services/user_config.dart';
@@ -24,7 +25,7 @@ class ProgramServices {
       Result<Lesson> nextLesson = await RestApi.getLesson(programState.programUri, programState.nextLessonUri);
 
       final userProgram = Result.merge<UserLearningProgram, LearningProgram, Lesson>(
-          program, nextLesson, (p, l) => UserLearningProgram(p, l));
+          program, nextLesson, (p, l) => UserLearningProgram(p, programState.nextLessonUri));
 
       return userProgram;
     } else {
@@ -32,16 +33,33 @@ class ProgramServices {
     }
   }
 
+  static Future<Result<Lesson>> getLesson(LearningProgram program, String lessonUri) async {
+    Result<Lesson> lesson = await RestApi.getLesson(program.uri, lessonUri);
+    if (lesson.isOk) {
+      final Result<void> resultRecords = await TextToSpeech.loadSentences(program.learnedLanguageUri,
+          List<Sentence>.unmodifiable(lesson.result.exercises.map<Sentence>((e) => e.sentence)));
+      return Result.merge<Lesson, Lesson, void>(lesson, resultRecords, (l, r) => l);
+    }
+    return lesson;
+  }
+
   static Future<void> setDefaultUserProgram(LearningProgram program) async {
     await UserConfig.setDefaultProgram(program.uri);
     return await UserConfig.setNextLessonUri(program.uri, program.lessons.first.uri);
   }
 
-  static Future<void> setUserProgramNextLesson(LearningProgram program, String completedLessonUri) async {
-    int lastLessonIdx = program.lessons.indexWhere((e) => e.uri == completedLessonUri);
-    int nextLessonIdx = lastLessonIdx == program.lessons.length - 1 ? lastLessonIdx : lastLessonIdx + 1;
+  static Future<String> setCompletedLessonReturnNext(LearningProgram program, String completedLessonUri) async {
+    final String previousNextLessonUri = (await UserConfig.getDefaultProgramStateOrNull())!.nextLessonUri;
+    if (previousNextLessonUri != completedLessonUri) {
+      // nothing to do
+      return previousNextLessonUri;
+    }
+
+    int completedLessonIdx = program.lessons.indexWhere((e) => e.uri == completedLessonUri);
+    int nextLessonIdx = completedLessonIdx == program.lessons.length - 1 ? completedLessonIdx : completedLessonIdx + 1;
     String nextLessonUri = program.lessons[nextLessonIdx].uri;
 
-    return await UserConfig.setNextLessonUri(program.uri, nextLessonUri);
+    await UserConfig.setNextLessonUri(program.uri, nextLessonUri);
+    return nextLessonUri;
   }
 }

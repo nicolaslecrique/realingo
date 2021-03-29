@@ -28,7 +28,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
 
   Future<void> loadUserDataThenRedirect() async {
     var model = Provider.of<UserProgramModel>(context, listen: false);
-    await model.reload();
+    await model.loadDefaultProgram();
     UserLearningProgram? userProgram = model.programOrNull;
 
     if (userProgram == null) {

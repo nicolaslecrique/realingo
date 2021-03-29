@@ -8,9 +8,12 @@ import 'package:realingo_app/tech_services/rest/rest_api.dart';
 import 'package:realingo_app/tech_services/result.dart';
 
 class TextToSpeech {
-  static Future<void> loadSentences(String languageUri, List<Sentence> sentences) async {
+  static Future<Result<void>> loadSentences(String languageUri, List<Sentence> sentences) async {
     final Directory directory = await getApplicationSupportDirectory();
-    await Future.wait(sentences.map((e) => _loadOrGetSentenceRecordFilePath(directory, e, languageUri)));
+    final List<Result<String>> path =
+        await Future.wait(sentences.map((e) => _loadOrGetSentenceRecordFilePath(directory, e, languageUri)));
+
+    return Result.mergeList<void, String>(path, (_) => null);
   }
 
   static Future<Result<void>> play(String languageUri, Sentence sentence) async {

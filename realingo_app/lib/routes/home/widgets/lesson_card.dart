@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/program.dart';
-import 'package:realingo_app/model/user_program.dart';
-import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/lesson/lesson_route.dart';
 
 enum LessonInProgramStatus { Learned, Current, NotLearned }
 
 class LessonCard extends StatelessWidget {
+  final LearningProgram program;
   final LessonInProgram lessonInProgram;
   final LessonInProgramStatus status;
 
-  const LessonCard({Key? key, required this.lessonInProgram, required this.status}) : super(key: key);
+  const LessonCard({Key? key, required this.program, required this.lessonInProgram, required this.status})
+      : super(key: key);
 
   Future<void> startLesson(BuildContext context) async {
-    UserProgramModel model = Provider.of<UserProgramModel>(context, listen: false);
-    UserLearningProgram userProgram = model.programOrNull!;
-
-    LessonRouteArgs lessonRouteArgs = LessonRouteArgs(userProgram.program, userProgram.nextLesson);
+    LessonRouteArgs lessonRouteArgs = LessonRouteArgs(program, lessonInProgram);
     await Navigator.pushNamed(context, LessonRoute.route, arguments: lessonRouteArgs);
   }
 
