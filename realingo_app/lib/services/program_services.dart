@@ -1,27 +1,32 @@
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/tech_services/rest/rest_api.dart';
+import 'package:realingo_app/tech_services/result.dart';
 import 'package:realingo_app/tech_services/user_config.dart';
 
 class ProgramServices {
-  static Future<List<Language>> getAvailableTargetLanguages() async {
+  static Future<Result<List<Language>>> getAvailableTargetLanguages() async {
     return await RestApi.getAvailableLearnedLanguages();
   }
 
-  static Future<List<Language>> getAvailableOriginLanguages(Language learnedLanguage) async {
+  static Future<Result<List<Language>>> getAvailableOriginLanguages(Language learnedLanguage) async {
     return await RestApi.getAvailableOriginLanguages(learnedLanguage.uri);
   }
 
-  static Future<LearningProgram> getProgram(Language learnedLanguage, Language originLanguage) async {
+  static Future<Result<LearningProgram>> getProgram(Language learnedLanguage, Language originLanguage) async {
     return await RestApi.getProgramByLanguage(learnedLanguage, originLanguage);
   }
 
-  static Future<UserLearningProgram?> getDefaultUserProgramOrNull() async {
+  static Future<Result<UserLearningProgram>?> getDefaultUserProgramOrNull() async {
     ProgramState? programState = await UserConfig.getDefaultProgramStateOrNull();
     if (programState != null) {
-      LearningProgram program = await RestApi.getProgram(programState.programUri);
-      Lesson nextLesson = await RestApi.getLesson(programState.programUri, programState.nextLessonUri);
-      return UserLearningProgram(program, nextLesson);
+      Result<LearningProgram> program = await RestApi.getProgram(programState.programUri);
+      Result<Lesson> nextLesson = await RestApi.getLesson(programState.programUri, programState.nextLessonUri);
+
+      final userProgram = Result.merge<UserLearningProgram, LearningProgram, Lesson>(
+          program, nextLesson, (p, l) => UserLearningProgram(p, l));
+
+      return userProgram;
     } else {
       return null;
     }

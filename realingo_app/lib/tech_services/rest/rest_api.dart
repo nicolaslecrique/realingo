@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -5,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/tech_services/app_config.dart';
 import 'package:realingo_app/tech_services/rest/rest_data.dart';
+import 'package:realingo_app/tech_services/result.dart';
 
 /*
 Rest API wrapper
@@ -12,40 +14,62 @@ Rest API wrapper
 class RestApi {
   static const String _restApiBaseUrl = '${AppConfig.apiUrl}/api/v0';
 
-  static Future<List<Language>> getAvailableOriginLanguages(String learnedLanguageUri) async {
-    http.Response response = await http
-        .get(Uri.parse('$_restApiBaseUrl/available_origin_languages?learned_language_uri=$learnedLanguageUri'));
+  static Future<Result<T>> _runGet<T>(String request, T Function(dynamic decodedBody) bodyToResult,
+      {dynamic Function(http.Response response)? decodeResponse}) async {
+    try {
+      http.Response response = await http.get(Uri.parse('$_restApiBaseUrl/$request')).timeout(Duration(seconds: 10));
 
-    final languages = List<Language>.unmodifiable((json.decode(response.body) as List<dynamic>)
-        .map((dynamic i) => RestLanguage.fromJson(i as Map<String, dynamic>))
-        .map<Language>((e) => Language(e.uri, e.label)));
+      if (response.statusCode != 200) return Result.ko(AppError.RestRequestFailed);
 
-    return languages;
+      dynamic jsonDecoded;
+      if (decodeResponse == null) {
+        jsonDecoded = json.decode(response.body);
+      } else {
+        jsonDecoded = decodeResponse(response);
+      }
+
+      T result = bodyToResult(jsonDecoded);
+      return Result.ok(result);
+    } on TimeoutException catch (_) {
+      return Result.ko(AppError.RestRequestFailed);
+    }
   }
 
-  static Future<List<Language>> getAvailableLearnedLanguages() async {
-    http.Response response = await http.get(Uri.parse('$_restApiBaseUrl/available_learned_languages'));
-
-    final languages = List<Language>.unmodifiable((json.decode(response.body) as List<dynamic>)
-        .map((dynamic i) => RestLanguage.fromJson(i as Map<String, dynamic>))
-        .map<Language>((e) => Language(e.uri, e.label)));
-
-    return languages;
+  static Future<Result<List<Language>>> getAvailableOriginLanguages(String learnedLanguageUri) async {
+    return _runGet('available_origin_languages?learned_language_uri=$learnedLanguageUri', (dynamic decodedBody) {
+      final languages = List<Language>.unmodifiable((decodedBody as List<dynamic>)
+          .map((dynamic i) => RestLanguage.fromJson(i as Map<String, dynamic>))
+          .map<Language>((e) => Language(e.uri, e.label)));
+      return languages;
+    });
   }
 
-  static Future<LearningProgram> getProgramByLanguage(Language learnedLanguage, Language originLanguage) async {
-    http.Response response = await http.get(Uri.parse(
-        '$_restApiBaseUrl/program_by_language?learned_language_uri=${learnedLanguage.uri}&origin_language_uri=${originLanguage.uri}'));
-    return _programFromRest(response);
+  static Future<Result<List<Language>>> getAvailableLearnedLanguages() async {
+    return _runGet('available_learned_languages', (dynamic decodedBody) {
+      final languages = List<Language>.unmodifiable((decodedBody as List<dynamic>)
+          .map((dynamic i) => RestLanguage.fromJson(i as Map<String, dynamic>))
+          .map<Language>((e) => Language(e.uri, e.label)));
+
+      return languages;
+    });
   }
 
-  static Future<LearningProgram> getProgram(String programUri) async {
-    http.Response response = await http.get(Uri.parse('$_restApiBaseUrl/program?program_uri=$programUri'));
-    return _programFromRest(response);
+  static Future<Result<LearningProgram>> getProgramByLanguage(Language learnedLanguage, Language originLanguage) async {
+    return _runGet(
+        'program_by_language?learned_language_uri=${learnedLanguage.uri}&origin_language_uri=${originLanguage.uri}',
+        (dynamic decodedBody) {
+      return _programFromRest(decodedBody);
+    });
   }
 
-  static LearningProgram _programFromRest(http.Response responseProgram) {
-    final restProgram = RestLearningProgram.fromJson(json.decode(responseProgram.body) as Map<String, dynamic>);
+  static Future<Result<LearningProgram>> getProgram(String programUri) async {
+    return _runGet('program?program_uri=$programUri', (dynamic decodedBody) {
+      return _programFromRest(decodedBody);
+    });
+  }
+
+  static LearningProgram _programFromRest(dynamic responseBody) {
+    final restProgram = RestLearningProgram.fromJson(responseBody as Map<String, dynamic>);
 
     final lessons = List<LessonInProgram>.unmodifiable(
         restProgram.lessons.map<LessonInProgram>((e) => LessonInProgram(e.uri, e.label, e.description)));
@@ -53,27 +77,27 @@ class RestApi {
     return LearningProgram(restProgram.uri, restProgram.learnedLanguageUri, restProgram.originLanguageUri, lessons);
   }
 
-  static Future<Lesson> getLesson(String programUri, String lessonUri) async {
-    http.Response response =
-        await http.get(Uri.parse('$_restApiBaseUrl/lesson?program_uri=$programUri&lesson_uri=$lessonUri'));
-    final restLesson = RestLesson.fromJson(json.decode(response.body) as Map<String, dynamic>);
+  static Future<Result<Lesson>> getLesson(String programUri, String lessonUri) async {
+    return _runGet('$_restApiBaseUrl/lesson?program_uri=$programUri&lesson_uri=$lessonUri', (dynamic decodedBody) {
+      final restLesson = RestLesson.fromJson(decodedBody as Map<String, dynamic>);
 
-    final exercises = List<Exercise>.unmodifiable(restLesson.exercises.map<Exercise>((e) => Exercise(
-        e.uri,
-        fromRest(e.exerciseType),
-        Sentence(
-            e.sentence.uri,
-            e.sentence.sentence,
-            e.sentence.translation,
-            e.sentence.hint,
-            List<ItemInSentence>.unmodifiable(e.sentence.items.map<ItemInSentence>((e) => ItemInSentence(
-                e.startIndex,
-                e.endIndex,
-                e.label,
-                List<ItemTranslation>.unmodifiable(e.translations
-                    .map<ItemTranslation>((e) => ItemTranslation(e.translation, e.englishDefinition))))))))));
+      final exercises = List<Exercise>.unmodifiable(restLesson.exercises.map<Exercise>((e) => Exercise(
+          e.uri,
+          fromRest(e.exerciseType),
+          Sentence(
+              e.sentence.uri,
+              e.sentence.sentence,
+              e.sentence.translation,
+              e.sentence.hint,
+              List<ItemInSentence>.unmodifiable(e.sentence.items.map<ItemInSentence>((e) => ItemInSentence(
+                  e.startIndex,
+                  e.endIndex,
+                  e.label,
+                  List<ItemTranslation>.unmodifiable(e.translations
+                      .map<ItemTranslation>((e) => ItemTranslation(e.translation, e.englishDefinition))))))))));
 
-    return Lesson(restLesson.uri, restLesson.label, restLesson.description, exercises);
+      return Lesson(restLesson.uri, restLesson.label, restLesson.description, exercises);
+    });
   }
 
   static ExerciseType fromRest(RestExerciseType exerciseType) {
@@ -85,11 +109,9 @@ class RestApi {
     }
   }
 
-  static Future<Uint8List> getRecord(String languageUri, String sentence) async {
-    http.Response response =
-        await http.get(Uri.parse('$_restApiBaseUrl/sentence_record?language_uri=$languageUri&sentence=$sentence'));
-
-    Uint8List body = response.bodyBytes;
-    return body;
+  static Future<Result<Uint8List>> getRecord(String languageUri, String sentence) async {
+    return _runGet('sentence_record?language_uri=$languageUri&sentence=$sentence',
+        (dynamic decodedBody) => decodedBody as Uint8List,
+        decodeResponse: (http.Response response) => response.bodyBytes);
   }
 }
