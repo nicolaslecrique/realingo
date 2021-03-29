@@ -19,7 +19,9 @@ class RestApi {
     try {
       http.Response response = await http.get(Uri.parse('$_restApiBaseUrl/$request')).timeout(Duration(seconds: 10));
 
-      if (response.statusCode != 200) return Result.ko(AppError.RestRequestFailed);
+      if (response.statusCode != 200) {
+        return Result.ko(AppError.RestRequestFailed);
+      }
 
       dynamic jsonDecoded;
       if (decodeResponse == null) {
@@ -78,7 +80,7 @@ class RestApi {
   }
 
   static Future<Result<Lesson>> getLesson(String programUri, String lessonUri) async {
-    return _runGet('$_restApiBaseUrl/lesson?program_uri=$programUri&lesson_uri=$lessonUri', (dynamic decodedBody) {
+    return _runGet('lesson?program_uri=$programUri&lesson_uri=$lessonUri', (dynamic decodedBody) {
       final restLesson = RestLesson.fromJson(decodedBody as Map<String, dynamic>);
 
       final exercises = List<Exercise>.unmodifiable(restLesson.exercises.map<Exercise>((e) => Exercise(
