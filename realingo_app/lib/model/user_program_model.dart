@@ -8,8 +8,9 @@ import 'package:realingo_app/tech_services/result.dart';
 class UserProgramModel extends ChangeNotifier {
   UserLearningProgram? _programOrNull;
 
-  Future<Result<void>> reload() async {
-    _programOrNull = await ProgramServices.getDefaultUserProgramOrNull();
+  Future<void> reload() async {
+    final Result<UserLearningProgram>? programResult = await ProgramServices.getDefaultUserProgramOrNull();
+    _programOrNull = programResult == null ? null : programResult.result;
     if (_programOrNull != null) {
       await TextToSpeech.loadSentences(_programOrNull!.program.learnedLanguageUri,
           List<Sentence>.unmodifiable(_programOrNull!.nextLesson.exercises.map<Sentence>((e) => e.sentence)));

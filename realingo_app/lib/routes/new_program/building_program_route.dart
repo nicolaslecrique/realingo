@@ -35,7 +35,8 @@ class _BuildingProgramRouteState extends State<BuildingProgramRoute> {
   }
 
   Future<void> _buildProgram() async {
-    LearningProgram program = await ProgramServices.getProgram(widget.args!.learnedLanguage, widget.args!.originLanguage);
+    LearningProgram program =
+        (await ProgramServices.getProgram(widget.args!.learnedLanguage, widget.args!.originLanguage)).result;
 
     await ProgramServices.setDefaultUserProgram(program);
     UserProgramModel model = Provider.of<UserProgramModel>(context, listen: false);

@@ -32,8 +32,8 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
     UserLearningProgram? userProgram = model.programOrNull;
 
     if (userProgram == null) {
-      List<Language> targets = await ProgramServices.getAvailableTargetLanguages();
-      List<Language> origins = await ProgramServices.getAvailableOriginLanguages(targets.first);
+      List<Language> targets = (await ProgramServices.getAvailableTargetLanguages()).result;
+      List<Language> origins = (await ProgramServices.getAvailableOriginLanguages(targets.first)).result;
       await Navigator.pushNamedAndRemoveUntil(context, BuildingProgramRoute.route, (r) => false,
           arguments: BuildingProgramRouteArgs(origins.first, targets.first));
     } else {
