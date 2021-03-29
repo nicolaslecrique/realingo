@@ -50,10 +50,7 @@ class LessonCard extends StatelessWidget {
           lessonInProgram.description,
           style: StandardFonts.wordItem,
         ),
-        onTap: status == LessonInProgramStatus.Current
-            ? () => startLesson(context)
-            : () => ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Lesson already completed'), duration: Duration(milliseconds: 500))),
+        onTap: () => startLesson(context),
         trailing: icon,
         enabled: status != LessonInProgramStatus.NotLearned,
         selected: status == LessonInProgramStatus.Current,
