@@ -6,6 +6,7 @@ import ProgramBuilderItemDictionaryDefinition
 import ProgramBuilderItemInSentence
 import ProgramBuilderLearningProgram
 import ProgramBuilderSentence
+import dataLoaders.BlacklistLoader
 import dataLoaders.DictLoader
 import dataLoaders.DictionaryFromEnglish
 import dataLoaders.ItemizedSentence
@@ -27,9 +28,12 @@ class ProgramBuilder {
         fun buildProgram() : ProgramBuilderLearningProgram {
             val translations = SentencesTranslationLoader.load("./language_data/vietnamese/open_subtitles_translated.jsonl")
             val itemized = ItemizedSentencesLoader.load("./language_data/vietnamese/itemized_sentences_vn.json")
+            val blacklist = BlacklistLoader.buildEnglishBlacklist()
+
 
             val dict = DictLoader.load("vi")
             val dictValidEntries = dict.entries
+                .filter { it.definition.word !in blacklist }
                 .flatMap { it.translations.map { it.word } }
                 .toSet()
 

@@ -1,3 +1,4 @@
+import dataLoaders.BlacklistLoader
 import dataLoaders.DictLoader
 
 fun main() {
