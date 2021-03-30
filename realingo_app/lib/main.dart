@@ -1,5 +1,4 @@
 // @dart=2.9
-import 'package:connectivity_wrapper/connectivity_wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -43,26 +42,23 @@ class MyApp extends StatelessWidget {
     if (!kDebugMode) {
       initUxCam();
     }
-    return ConnectivityAppWrapper(
-      app: MultiProvider(
-        providers: [ChangeNotifierProvider(create: (context) => UserProgramModel())],
-        child: MaterialApp(
-            title: 'Flutter Demo',
-            theme: ThemeData(
-              primarySwatch: StandardColors.themeColor,
-              visualDensity: VisualDensity.adaptivePlatformDensity,
-              accentColor: StandardColors.accentColor,
-            ),
-            initialRoute: SplashScreenRoute.route,
-            routes: {
-              SplashScreenRoute.route: (BuildContext context) => const SplashScreenRoute(),
-              HomeRoute.route: (BuildContext context) =>
-                  ConnectivityWidgetWrapper(disableInteraction: true, child: const HomeRoute()),
-              LessonRoute.route: (BuildContext context) => const LessonRoute(),
-              BuildingProgramRoute.route: (BuildContext context) =>
-                  BuildingProgramRoute(ModalRoute.of(context).settings.arguments as BuildingProgramRouteArgs),
-            }),
-      ),
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (context) => UserProgramModel())],
+      child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: StandardColors.themeColor,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            accentColor: StandardColors.accentColor,
+          ),
+          initialRoute: SplashScreenRoute.route,
+          routes: {
+            SplashScreenRoute.route: (BuildContext context) => const SplashScreenRoute(),
+            HomeRoute.route: (BuildContext context) => HomeRoute(),
+            LessonRoute.route: (BuildContext context) => const LessonRoute(),
+            BuildingProgramRoute.route: (BuildContext context) =>
+                BuildingProgramRoute(ModalRoute.of(context).settings.arguments as BuildingProgramRouteArgs),
+          }),
     );
   }
 }

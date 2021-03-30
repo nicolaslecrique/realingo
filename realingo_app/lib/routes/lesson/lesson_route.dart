@@ -1,4 +1,3 @@
-import 'package:connectivity_wrapper/connectivity_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realingo_app/common_screens/loading_screen.dart';
@@ -37,20 +36,18 @@ class _LessonRouteState extends State<LessonRoute> {
       loadingMessage: 'Loading lesson',
       futureResultBuilder: () => ProgramServices.getLesson(args.program, args.lesson.uri),
       childBuilder: (Lesson lesson) => ChangeNotifierProvider(
-          create: (context) => LessonModel(args.program.learnedLanguageUri, lesson),
-          child: ConnectivityWidgetWrapper(
-            disableInteraction: true,
-            child: Consumer<LessonModel>(builder: (BuildContext context, LessonModel lessonModel, Widget? child) {
-              LessonState state = lessonModel.state;
-              if (state.status == LessonStatus.WaitForVoiceServiceReady) {
-                return LoadingScreen(message: 'Loading lesson');
-              } else if (state.status == LessonStatus.Completed) {
-                return EndLessonScreen(program: args.program, completedLesson: lessonModel.lesson);
-              } else {
-                return LessonItemScreen();
-              }
-            }),
-          )),
+        create: (context) => LessonModel(args.program.learnedLanguageUri, lesson),
+        child: Consumer<LessonModel>(builder: (BuildContext context, LessonModel lessonModel, Widget? child) {
+          LessonState state = lessonModel.state;
+          if (state.status == LessonStatus.WaitForVoiceServiceReady) {
+            return LoadingScreen(message: 'Loading lesson');
+          } else if (state.status == LessonStatus.Completed) {
+            return EndLessonScreen(program: args.program, completedLesson: lessonModel.lesson);
+          } else {
+            return LessonItemScreen();
+          }
+        }),
+      ),
     );
   }
 }
