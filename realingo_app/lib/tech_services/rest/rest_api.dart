@@ -34,6 +34,8 @@ class RestApi {
       return Result.ok(result);
     } on TimeoutException catch (_) {
       return Result.ko(AppError.RestRequestFailed);
+    } on SocketException catch (_) {
+      return Result.ko(AppError.RestRequestFailed);
     }
   }
 
