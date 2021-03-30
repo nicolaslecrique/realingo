@@ -26,7 +26,7 @@ class _HomeRouteState extends State<HomeRoute> {
   Widget build(BuildContext context) {
     // for now no need to use consumer, we suppose it cannot change while we are on this route
     var model = Provider.of<UserProgramModel>(context, listen: false);
-    UserLearningProgram userProgram = model.programOrNull!;
+    UserLearningProgram userProgram = model.userProgram;
 
     // https://flutter.dev/docs/cookbook/lists/long-lists
     final List<LessonInProgram> lessons = userProgram.program.lessons;

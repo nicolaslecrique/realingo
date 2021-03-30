@@ -3,21 +3,28 @@ import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/services/program_services.dart';
 import 'package:realingo_app/tech_services/result.dart';
 
+enum UserProgramModelStatus { NoDefaultProgram, LoadingFailed, Loaded }
+
 class UserProgramModel extends ChangeNotifier {
-  UserLearningProgram? _programOrNull;
+  Result<UserLearningProgram>? _programOrNull;
 
   Future<void> loadDefaultProgram() async {
-    final Result<UserLearningProgram>? programResult = await ProgramServices.getDefaultUserProgramOrNull();
-    _programOrNull = programResult == null ? null : programResult.result; // TODO ICI MANAGE ERROR CASE
+    _programOrNull = await ProgramServices.getDefaultUserProgramOrNull();
     notifyListeners();
   }
 
   Future<void> setUserProgramNextLesson(String completedLessonUri) async {
-    String nextLessonUri =
-        await ProgramServices.setCompletedLessonReturnNext(_programOrNull!.program, completedLessonUri);
-    _programOrNull = UserLearningProgram(_programOrNull!.program, nextLessonUri);
+    String nextLessonUri = await ProgramServices.setCompletedLessonReturnNext(userProgram.program, completedLessonUri);
+    _programOrNull = Result.ok(UserLearningProgram(userProgram.program, nextLessonUri));
     notifyListeners();
   }
 
-  UserLearningProgram? get programOrNull => _programOrNull;
+  // should not be called if status != Loaded
+  UserLearningProgram get userProgram => _programOrNull!.result;
+
+  UserProgramModelStatus get status => _programOrNull == null
+      ? UserProgramModelStatus.NoDefaultProgram
+      : _programOrNull!.isOk
+          ? UserProgramModelStatus.Loaded
+          : UserProgramModelStatus.LoadingFailed;
 }

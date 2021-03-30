@@ -22,10 +22,9 @@ class ProgramServices {
     ProgramState? programState = await UserConfig.getDefaultProgramStateOrNull();
     if (programState != null) {
       Result<LearningProgram> program = await RestApi.getProgram(programState.programUri);
-      Result<Lesson> nextLesson = await RestApi.getLesson(programState.programUri, programState.nextLessonUri);
 
-      final userProgram = Result.merge<UserLearningProgram, LearningProgram, Lesson>(
-          program, nextLesson, (p, l) => UserLearningProgram(p, programState.nextLessonUri));
+      final userProgram = Result.mergeWrap<UserLearningProgram, LearningProgram, String>(
+          program, programState.nextLessonUri, (p, l) => UserLearningProgram(p, programState.nextLessonUri));
 
       return userProgram;
     } else {

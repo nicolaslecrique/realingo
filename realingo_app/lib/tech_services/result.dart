@@ -22,6 +22,14 @@ class Result<T> {
   T get result => _result!;
   AppError get error => _error!;
 
+  static Result<U> mergeWrap<U, T1, T2>(Result<T1> res1, T2 val2, U Function(T1 ok1, T2 ok2) builder) {
+    if (res1.isOk) {
+      return Result.ok(builder(res1.result, val2));
+    } else {
+      return Result.ko(res1.error);
+    }
+  }
+
   static Result<U> merge<U, T1, T2>(Result<T1> res1, Result<T2> res2, U Function(T1 ok1, T2 ok2) builder) {
     if (res1.isOk) {
       if (res2.isOk) {
