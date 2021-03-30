@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
@@ -17,7 +18,7 @@ class RestApi {
   static Future<Result<T>> _runGet<T>(String request, T Function(dynamic decodedBody) bodyToResult,
       {dynamic Function(http.Response response)? decodeResponse}) async {
     try {
-      http.Response response = await http.get(Uri.parse('$_restApiBaseUrl/$request')).timeout(Duration(seconds: 10));
+      http.Response response = await http.get(Uri.parse('$_restApiBaseUrl/$request')).timeout(Duration(seconds: 20));
 
       if (response.statusCode != 200) {
         return Result.ko(AppError.RestRequestFailed);
