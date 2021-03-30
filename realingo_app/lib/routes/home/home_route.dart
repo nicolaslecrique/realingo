@@ -4,6 +4,7 @@ import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/program.dart';
 import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/model/user_program_model.dart';
+import 'package:wiredash/wiredash.dart';
 
 import 'widgets/lesson_card.dart';
 
@@ -57,6 +58,19 @@ class _HomeRouteState extends State<HomeRoute> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.lightbulb_outline),
+            label: 'Feedback',
+          )
+        ],
+        onTap: (int value) => value == 1 ? Wiredash.of(context)!.show() : null,
       ),
     );
   }
