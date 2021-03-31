@@ -48,6 +48,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- added for mixpanel, following https://developer.mixpanel.com/docs/flutter -->
+        <meta-data android:name="com.mixpanel.android.MPConfig.EventsEndpoint"
+            android:value="https://api-eu.mixpanel.com/track?ip=1" />
+        <meta-data android:name="com.mixpanel.android.MPConfig.PeopleEndpoint"
+            android:value="https://api-eu.mixpanel.com/engage?ip=1" />
+        <meta-data android:name="com.mixpanel.android.MPConfig.GroupsEndpoint"
+            android:value="https://api-eu.mixpanel.com/groups" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
