@@ -7,6 +7,7 @@ import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/home/home_route.dart';
 import 'package:realingo_app/routes/new_program/building_program_route.dart';
 import 'package:realingo_app/services/program_services.dart';
+import 'package:realingo_app/tech_services/authentication.dart';
 
 @immutable
 class SplashScreenRoute extends StatefulWidget {
@@ -22,8 +23,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   @override
   void initState() {
     super.initState();
-    // https://pub.dev/documentation/provider/latest/provider/Provider/of.html
-    loadUserDataThenRedirect().then((value) => null);
+    initUser().then((value) => null);
   }
 
   bool _errorLoadingProgram = false;
@@ -34,7 +34,12 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
     });
   }
 
-  Future<void> loadUserDataThenRedirect() async {
+  Future<void> initUser() async {
+    await Authentication.authenticate(context);
+    await loadUserProgramThenRedirect();
+  }
+
+  Future<void> loadUserProgramThenRedirect() async {
     setErrorLoadingProgram(false);
     var model = Provider.of<UserProgramModel>(context, listen: false);
     await model.loadDefaultProgram();
@@ -70,7 +75,7 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
   @override
   Widget build(BuildContext context) {
     if (_errorLoadingProgram) {
-      return RecoverableError(taskMessage: 'Loading program', retryAction: loadUserDataThenRedirect);
+      return RecoverableError(taskMessage: 'Loading program', retryAction: loadUserProgramThenRedirect);
     } else {
       return Scaffold(
         //nb: logo is done with https://cooltext.com/
