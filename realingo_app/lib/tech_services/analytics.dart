@@ -14,6 +14,7 @@ class Analytics {
     _mixpanel!.identify(userId);
   }
 
+  // properties are prefixed with underscore so they are not mixed by with default mixpanel properties in mixpanel UI
   static Map<String, dynamic> _getProgramProps(UserLearningProgram program) {
     int nextLessonIdx = program.program.lessons.indexWhere((element) => element.uri == program.nextLessonUri);
     return <String, dynamic>{
