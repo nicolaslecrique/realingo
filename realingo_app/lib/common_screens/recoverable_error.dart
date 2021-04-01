@@ -24,18 +24,5 @@ class RecoverableError extends StatelessWidget {
         ],
       )),
     );
-
-    return Scaffold(
-        body: Padding(
-      padding: const EdgeInsets.all(StandardSizes.medium),
-      child: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('$taskMessage failed, are you connected to the internet?'),
-          ElevatedButton(onPressed: retryAction, child: Text('Retry'))
-        ],
-      )),
-    ));
   }
 }
