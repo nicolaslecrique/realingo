@@ -91,7 +91,7 @@ class _State {
   }
 }
 
-class LessonItemBottomBar extends StatelessWidget {
+class LessonExerciseBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget? child) {

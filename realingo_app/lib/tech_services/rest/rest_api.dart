@@ -101,7 +101,7 @@ class RestApi {
                   List<ItemTranslation>.unmodifiable(e.translations
                       .map<ItemTranslation>((e) => ItemTranslation(e.translation, e.englishDefinition))))))))));
 
-      return Lesson(restLesson.uri, restLesson.label, restLesson.description, exercises);
+      return Lesson(LessonInProgram(restLesson.uri, restLesson.label, restLesson.description), exercises);
     });
   }
 

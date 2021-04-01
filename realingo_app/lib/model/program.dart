@@ -52,12 +52,10 @@ class Exercise {
 
 @immutable
 class Lesson {
-  final String uri;
-  final String label;
-  final String description;
+  final LessonInProgram lessonInProgram;
   final List<Exercise> exercises;
 
-  const Lesson(this.uri, this.label, this.description, this.exercises);
+  const Lesson(this.lessonInProgram, this.exercises);
 }
 
 // --------- Program -----------

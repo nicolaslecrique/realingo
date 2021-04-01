@@ -6,11 +6,10 @@ import 'package:realingo_app/routes/lesson/model/lesson_model.dart';
 import 'package:realingo_app/routes/lesson/model/lesson_state.dart';
 import 'package:realingo_app/routes/lesson/widgets/lesson_progress_bar.dart';
 import 'package:realingo_app/routes/lesson/widgets/reply_rich_text.dart';
-import 'package:realingo_app/services/texttospeech_service.dart';
 
-import 'lesson_item_bottom_bar.dart';
+import 'lesson_exercise_bottom_bar.dart';
 
-class LessonItemScreen extends StatelessWidget {
+class LessonItemExercise extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LessonModel>(builder: (BuildContext context, LessonModel lesson, Widget? child) {
@@ -56,7 +55,7 @@ class LessonItemScreen extends StatelessWidget {
                               onPressed: currentItem.status == ExerciseStatus.OnAnswerFeedback ||
                                       (currentItem.status == ExerciseStatus.ReadyForFirstAnswer &&
                                           currentItem.exercise.exerciseType == ExerciseType.Repeat)
-                                  ? () => TextToSpeech.play(lesson.learnedLanguageUri, currentItem.exercise.sentence)
+                                  ? () => lesson.playCurrentSentenceRecording()
                                   : null,
                               tooltip: 'Play'),
                         ),
@@ -66,7 +65,7 @@ class LessonItemScreen extends StatelessWidget {
                     ),
                   ],
                 )),
-                LessonItemBottomBar(),
+                LessonExerciseBottomBar(),
               ],
             )),
       ));

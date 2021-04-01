@@ -45,7 +45,7 @@ class _HomeRouteState extends State<HomeRoute> {
                     itemBuilder: (context, index) {
                       final lesson = lessons[index];
                       return LessonCard(
-                        program: userProgram.program,
+                        program: userProgram,
                         lessonInProgram: lesson,
                         status: index < nextLessonIndex
                             ? LessonInProgramStatus.Learned

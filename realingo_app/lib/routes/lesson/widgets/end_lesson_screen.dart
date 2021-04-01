@@ -17,7 +17,7 @@ class EndLessonScreen extends StatelessWidget {
   // to work
   Future<int> updateProgram(BuildContext context) async {
     var model = Provider.of<UserProgramModel>(context, listen: false);
-    await model.setUserProgramNextLesson(completedLesson.uri);
+    await model.setUserProgramNextLesson(completedLesson.lessonInProgram.uri);
     return 0;
   }
 

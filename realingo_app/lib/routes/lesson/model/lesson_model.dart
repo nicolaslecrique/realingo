@@ -4,7 +4,10 @@ import 'package:collection/collection.dart';
 import 'package:edit_distance/edit_distance.dart';
 import 'package:flutter/foundation.dart';
 import 'package:realingo_app/model/program.dart';
+import 'package:realingo_app/model/user_program.dart';
+import 'package:realingo_app/services/texttospeech_service.dart';
 import 'package:realingo_app/services/voice_service.dart';
+import 'package:realingo_app/tech_services/analytics.dart';
 import 'package:realingo_app/tech_services/sound.dart';
 
 import 'lesson_state.dart';
@@ -13,7 +16,7 @@ enum _AnswerQuality { Good, GoodResultBadPronunciation, Bad }
 
 class LessonModel extends ChangeNotifier {
   // immutable fields
-  final String learnedLanguageUri;
+  final UserLearningProgram userLearningProgram;
   final Lesson lesson;
   static final Levenshtein _distance = Levenshtein();
   static const double _maxDistance = 0.5;
@@ -34,7 +37,7 @@ class LessonModel extends ChangeNotifier {
   double get ratioCompleted =>
       (lesson.exercises.length - _remainingExercises.length).toDouble() / lesson.exercises.length;
 
-  LessonModel(this.learnedLanguageUri, this.lesson)
+  LessonModel(this.userLearningProgram, this.lesson)
       : _state = LessonState(0.0, null, LessonStatus.WaitForVoiceServiceReady),
         _remainingExercises = QueueList<Exercise>.from(lesson.exercises),
         _voiceService = VoiceService.get() {
@@ -43,11 +46,11 @@ class LessonModel extends ChangeNotifier {
 
   void _updateState(LessonState state) {
     _state = state;
-    playAnswerSoundIfNeeded();
+    _playAnswerSoundIfNeeded();
     notifyListeners();
   }
 
-  void playAnswerSoundIfNeeded() {
+  void _playAnswerSoundIfNeeded() {
     var exercise = _state.currentExerciseOrNull;
     if (exercise != null) {
       if (!exercise.lastAnswerCanceledOrEmpty && exercise.status == ExerciseStatus.OnAnswerFeedback) {
@@ -86,6 +89,7 @@ class LessonModel extends ChangeNotifier {
     } else {
       throw Exception('LessonModel:init, init voiceService failed');
     }
+    Analytics.startLesson(userLearningProgram, lesson.lessonInProgram);
     _releaseLock();
   }
 
@@ -183,7 +187,7 @@ class LessonModel extends ChangeNotifier {
     if (!_takeLock()) {
       return;
     }
-
+    Analytics.confirmAnswer(userLearningProgram, lesson, _state);
     _updateToNewOnAnswerFeedback(_state.currentExerciseOrNull!.AnswerWaitingForConfirmationOrNull!.rawAnswer);
 
     _releaseLock();
@@ -205,6 +209,7 @@ class LessonModel extends ChangeNotifier {
     if (!_takeLock()) {
       return;
     }
+    Analytics.cancelAnswer(userLearningProgram, lesson, _state);
     _updateToPreviousAnswerState();
     _releaseLock();
   }
@@ -223,6 +228,7 @@ class LessonModel extends ChangeNotifier {
       _remainingExercises.removeFirst();
       if (_remainingExercises.isEmpty) {
         _updateState(LessonState(1.0, null, LessonStatus.Completed));
+        Analytics.completeLesson(userLearningProgram, lesson.lessonInProgram);
       } else {
         _updateState(LessonState(
             ratioCompleted,
@@ -236,6 +242,15 @@ class LessonModel extends ChangeNotifier {
           ExerciseState(_currentExerciseOrNull!, null, ExerciseStatus.ReadyForFirstAnswer), LessonStatus.OnLessonItem));
     }
 
+    _releaseLock();
+  }
+
+  void playCurrentSentenceRecording() {
+    if (!_takeLock()) {
+      return;
+    }
+    Analytics.playSentenceRecording(userLearningProgram, lesson, _state);
+    TextToSpeech.play(userLearningProgram.program.learnedLanguageUri, _state.currentExerciseOrNull!.exercise.sentence);
     _releaseLock();
   }
 

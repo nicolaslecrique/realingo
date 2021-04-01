@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:realingo_app/design/constants.dart';
 import 'package:realingo_app/model/program.dart';
+import 'package:realingo_app/model/user_program.dart';
 import 'package:realingo_app/routes/lesson/lesson_route.dart';
 
 enum LessonInProgramStatus { Learned, Current, NotLearned }
 
 class LessonCard extends StatelessWidget {
-  final LearningProgram program;
+  final UserLearningProgram program;
   final LessonInProgram lessonInProgram;
   final LessonInProgramStatus status;
 

@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:realingo_app/tech_services/analytics.dart';
 import 'package:realingo_app/tech_services/uxcam.dart';
 import 'package:wiredash/wiredash.dart';
 
@@ -27,6 +28,7 @@ class Authentication {
     if (!kDebugMode) {
       // 4) init tracking
       initUxCam(userId);
+      await Analytics.init(userId);
     } else {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
     }
