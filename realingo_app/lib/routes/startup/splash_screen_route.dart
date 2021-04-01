@@ -84,7 +84,17 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
         //nb: logo is done with https://cooltext.com/
         body: Padding(
           padding: const EdgeInsets.all(StandardSizes.medium),
-          child: Center(child: Image(image: AssetImage('assets/images/logo.png'))),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Center(child: Image(image: AssetImage('assets/images/logo.png'))),
+              Center(
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(StandardSizes.medium),
+                      child: Image(
+                          image: AssetImage('assets/images/flag_vietnam.png'), height: 5 * StandardSizes.medium))),
+            ],
+          ),
         ),
       );
     }

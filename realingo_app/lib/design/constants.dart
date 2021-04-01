@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StandardSizes {
+  static const double small = 8;
   static const double medium = 24;
 }
 

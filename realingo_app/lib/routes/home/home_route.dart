@@ -34,6 +34,12 @@ class _HomeRouteState extends State<HomeRoute> {
     int nextLessonIndex = lessons.indexWhere((element) => element.uri == userProgram.nextLessonUri);
 
     return Scaffold(
+      appBar: AppBar(
+          backgroundColor: Colors.white,
+          leading: Padding(
+            padding: const EdgeInsets.all(StandardSizes.small),
+            child: Image(image: AssetImage('assets/images/flag_vietnam.png')),
+          )),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(StandardSizes.medium),
