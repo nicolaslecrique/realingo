@@ -7,7 +7,6 @@ import 'package:realingo_app/model/user_program_model.dart';
 import 'package:realingo_app/routes/home/home_route.dart';
 import 'package:realingo_app/routes/new_program/building_program_route.dart';
 import 'package:realingo_app/services/program_services.dart';
-import 'package:realingo_app/tech_services/analytics.dart';
 import 'package:realingo_app/tech_services/authentication.dart';
 
 @immutable
@@ -59,7 +58,6 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
         }
 
         List<Language> origins = (resultOrigin).result;
-        Analytics.setDefaultProgram(model.userProgram);
         await Navigator.pushNamedAndRemoveUntil(context, BuildingProgramRoute.route, (r) => false,
             arguments: BuildingProgramRouteArgs(origins.first, targets.first));
         break;
@@ -69,7 +67,6 @@ class _SplashScreenRouteState extends State<SplashScreenRoute> {
         });
         return;
       case UserProgramModelStatus.Loaded:
-        Analytics.setDefaultProgram(model.userProgram);
         await Navigator.pushNamedAndRemoveUntil(context, HomeRoute.route, (r) => false);
         break;
     }
